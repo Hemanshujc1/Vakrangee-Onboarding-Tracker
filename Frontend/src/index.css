@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  /* Color Scheme from ColorCodes.md */
+  --color-primary: #2C9DE6;       /* Bright Blue */
+  --color-secondary: #205081;     /* Dark Blue */
+  --color-text-dark: #4E4E4E;     /* Dark Grey */
+  --color-bg-light: #EFEFEF;      /* Light Grey */
+  
+  /* Accents */
+  --color-accent-orange: #E06A4E; /* Derived from conflict RGB */
+  --color-accent-gold: #DEB853;   /* Gold */
+  --color-accent-beige: #E2D9A2; /* Beige */
+  --color-accent-sage: #789F8A;   /* Sage Green */
+  --color-accent-green: #0A373A;  /* Dark Green */
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: var(--color-text-dark);
+  background-color: var(--color-bg-light);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center; /* This might center everything, usually not desired for a dashboard app, checking... */
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Reset body display for full app structure */
+body {
+  display: block;
+  place-items: unset;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
