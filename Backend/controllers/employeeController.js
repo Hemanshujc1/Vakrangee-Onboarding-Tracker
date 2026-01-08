@@ -17,7 +17,7 @@ exports.getAllEmployees = async (req, res) => {
     });
 
     
-    // Fetch all records with their master status to aggregate
+    // Fetch all records with their master status
     const allRecords = await EmployeeRecord.findAll({
         attributes: ['onboarding_hr_id'],
         include: [{
@@ -44,7 +44,7 @@ exports.getAllEmployees = async (req, res) => {
     });
 
 
-    // Format the response to match frontend expectations
+    // Format the response 
     const formattedEmployees = employees.map(emp => {
       const record = emp.EmployeeRecord || {};
       const user = emp.User || {};
@@ -57,7 +57,7 @@ exports.getAllEmployees = async (req, res) => {
         onboarding_stage: emp.onboarding_stage,
         firstName: record.firstname || '',
         lastName: record.lastname || '',
-        email: emp.company_email_id || user.username || '', // Fallback
+        email: emp.company_email_id || user.username || '', 
         department: record.department_name,
         location: record.work_location,
         jobTitle: record.job_title,
@@ -108,11 +108,10 @@ exports.getMyHR = async (req, res) => {
 
         const hrId = empRecord.onboarding_hr_id;
 
-        // Find HR's Master
+        // Find Hr Master
         const hrMaster = await EmployeeMaster.findOne({ where: { user_id: hrId } });
         if (!hrMaster) {
             // console.log(`Debug: HR Master not found for HR_ID: ${hrId}`);
-            // Fallback: Try finding HR in User table directly if Master doesn't exist (edge case)
             const hrUserDirect = await User.findByPk(hrId);
             if (hrUserDirect) {
                  return res.json({
@@ -163,7 +162,7 @@ exports.getEmployeeById = async (req, res) => {
                 },
                 {
                     model: User,
-                    attributes: ['username', 'id'] // Helper to get User ID
+                    attributes: ['username', 'id'] 
                 }
             ]
         });
@@ -175,14 +174,12 @@ exports.getEmployeeById = async (req, res) => {
         const record = employee.EmployeeRecord || {};
         const user = employee.User || {};
 
-        // Fetch Stats for this employee (if they are an HR/Admin)
         // Count employees assigned to this person (using their User ID)
         const assignedEmployees = await EmployeeRecord.count({
             where: { onboarding_hr_id: user.id }
         });
 
         // Count fully onboarded employees assigned to this person
-        // We need to join with EmployeeMaster to check onboarding_stage
         const assignedRecords = await EmployeeRecord.findAll({
             where: { onboarding_hr_id: user.id },
             include: [{
@@ -219,7 +216,7 @@ exports.getEmployeeById = async (req, res) => {
         if (record.onboarding_hr_id) {
             const hrUser = await User.findByPk(record.onboarding_hr_id); // HR's User Record
             if (hrUser) {
-                // Find HR's Employee Rec to get name
+                // Find Hr Employee record to get name
                 const hrMaster = await EmployeeMaster.findOne({ where: { user_id: hrUser.id } });
                 const hrRecord = hrMaster ? await EmployeeRecord.findOne({ where: { employee_id: hrMaster.id } }) : null;
                 
@@ -233,7 +230,7 @@ exports.getEmployeeById = async (req, res) => {
 
         res.json({
             id: employee.id,
-            userId: user.id, // Important for matching
+            userId: user.id, 
             firstName: record.firstname,
             lastName: record.lastname,
             email: employee.company_email_id || user.username,
@@ -246,11 +243,11 @@ exports.getEmployeeById = async (req, res) => {
                 ? `${req.protocol}://${req.get('host')}/uploads/profilepic/${record.profile_photo}`
                 : null,
             dateOfJoining: record.date_of_joining,
-            dateOfBirth: record.date_of_birth, // Added
+            dateOfBirth: record.date_of_birth, 
             gender: record.gender,
             role: employee.role,
-            onboardingStage: employee.onboarding_stage, // Added
-            assignedHR: assignedHR, // Added
+            onboardingStage: employee.onboarding_stage, 
+            assignedHR: assignedHR, 
             stats: {
                 totalAssigned: assignedEmployees,
                 activeOnboarding: activeCount,
@@ -282,7 +279,7 @@ exports.updateEmployeeDetails = async (req, res) => {
 
         const record = employee.EmployeeRecord;
         if (!record) {
-            // Should CREATE one if missing, but for now assuming it exists or error
+            // Should CREATE one if missing
              return res.status(404).json({ message: 'Employee record not initialized' });
         }
 

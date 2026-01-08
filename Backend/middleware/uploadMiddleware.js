@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-// Configure Multer for memory storage
+//  Multer for memory storage
 const storage = multer.memoryStorage();
 
 // Filter for image files
@@ -18,7 +18,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit  
 });
 
 // Middleware to resize and save image

@@ -11,7 +11,7 @@ const EmployeeMaster = sequelize.define('EmployeeMaster', {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: true, // Nullable initially? Or strictly linked? Assuming linked.
+    allowNull: true, 
     references: {
       model: User,
       key: 'id',
@@ -44,7 +44,7 @@ const EmployeeMaster = sequelize.define('EmployeeMaster', {
   timestamps: true // createdAt, updatedAt
 });
 
-  // --- Employee Record (Merged with Basic Info) ---
+  // --- Merged with Basic Info ---
   const EmployeeRecord = sequelize.define('EmployeeRecord', {
     id: {
       type: DataTypes.INTEGER,

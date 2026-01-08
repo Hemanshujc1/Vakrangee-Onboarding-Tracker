@@ -37,7 +37,7 @@ exports.updateProfile = async (req, res) => {
         tenth_percentage, twelfth_percentage, adhar_number, pan_number
     } = req.body;
     
-    // profile_photo will be injected by uploadMiddleware if a file was uploaded
+    // profile_photo 
     const profile_photo = req.body.profile_photo; 
 
     // Find EmployeeMaster

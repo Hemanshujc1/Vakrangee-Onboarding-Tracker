@@ -73,7 +73,6 @@ exports.register = async (req, res) => {
        await t.rollback();
     }
     console.error('Registration Error:', error);
-    // Send the specific error message to the client for debugging
     res.status(500).json({ message: `Server error during registration: ${error.message}`, error: error.message });
   }
 };

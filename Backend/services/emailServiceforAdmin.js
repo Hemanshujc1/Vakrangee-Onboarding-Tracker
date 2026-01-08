@@ -1,4 +1,4 @@
-// Short HR Admin Assignment Email
+// Short HR Admin  Email
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const path = require('path');

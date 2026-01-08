@@ -11,7 +11,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
-    // Note: Initially personal email, later company email
   },
   password: {
     type: DataTypes.STRING,
@@ -31,7 +30,7 @@ const User = sequelize.define('User', {
   }
 }, {
   tableName: 'users',
-  timestamps: false, // We are managing created_at manually if needed, or can enable timestamps
+  timestamps: false,
 });
 
 module.exports = User;

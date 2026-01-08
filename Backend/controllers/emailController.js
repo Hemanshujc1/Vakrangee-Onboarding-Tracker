@@ -5,11 +5,10 @@ exports.sendAdminWelcomeEmail = async (req, res) => {
     try {
         const { email, firstName, password, cc, portalUrl } = req.body;
         
-        // Pass extra params if needed, or default
         const result = await sendHRAdminAssignmentEmail(
             email, 
             firstName, 
-            email, // username is email
+            email, 
             password, 
             portalUrl || process.env.FRONTEND_URL || 'http://localhost:5173', // fallback
             cc
@@ -28,7 +27,7 @@ exports.sendAdminWelcomeEmail = async (req, res) => {
 
 exports.sendEmployeeWelcomeEmail = async (req, res) => {
     try {
-        // ... Logic for employee welcome email (using existing service)
+        // Logic for employee welcome email (using existing service)
         // Admin
         const { email, firstName, password, role, startDate, location, hrName, hrDesignation, cc } = req.body;
         
