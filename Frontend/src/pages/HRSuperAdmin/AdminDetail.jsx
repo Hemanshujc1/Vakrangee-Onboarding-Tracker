@@ -308,11 +308,20 @@ const AdminDetail = () => {
                                      <td className="px-6 py-4 text-right">
                                          <div className="flex items-center justify-end gap-2">
                                              <button 
+                                                 onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `/hr-super-admin/employees/${emp.id}`;
+                                                   }}
                                                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                              >
                                                  <Eye size={18} />
                                              </button>
-                                             <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                             <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                //  delete logic 
+                                               }}
+                                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                  <Trash2 size={18} />
                                              </button>
                                          </div>

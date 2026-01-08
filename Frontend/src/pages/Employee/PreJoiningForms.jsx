@@ -4,10 +4,10 @@ import { FileText, Edit, CheckCircle, ChevronRight } from 'lucide-react';
 
 const PreJoiningForms = () => {
   const forms = [
-      { id: 1, name: 'Personal History Form', description: 'Detailed educational and family background.', status: 'Pending', time: '15 mins' },
-      { id: 2, name: 'Family Details Declaration', description: 'Immediate family members and dependents.', status: 'Pending', time: '5 mins' },
-      { id: 3, name: 'Employee NDA', description: 'Non-Disclosure Agreement acceptance.', status: 'Completed', time: '5 mins' },
-      { id: 4, name: 'Code of Conduct', description: 'Company policies acknowledgement.', status: 'Pending', time: '10 mins' },
+      { id: 1, name: 'Employee Information Form', description: 'Detailed educational and family background.', status: 'Pending', time: '15 mins' },
+      { id: 2, name: 'Employment Application Form', description: 'Immediate family members and dependents.', status: 'Pending', time: '5 mins' },
+      { id: 3, name: 'Form-F-Gratuity Nomination', description: 'Non-Disclosure Agreement acceptance.', status: 'Completed', time: '5 mins' },
+      { id: 4, name: 'Mediclaim Form', description: 'Company policies acknowledgement.', status: 'Pending', time: '10 mins' },
   ];
 
   return (
@@ -36,7 +36,7 @@ const PreJoiningForms = () => {
                 </div>
                 
                 <h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-(--color-primary) transition-colors">{form.name}</h3>
-                <p className="text-sm text-gray-500 mb-6 min-h-[40px]">{form.description}</p>
+                <p className="text-sm text-gray-500 mb-6 min-h-10">{form.description}</p>
 
                 <button className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
                     form.status === 'Completed' 
