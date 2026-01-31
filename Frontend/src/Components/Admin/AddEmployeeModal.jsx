@@ -1,18 +1,11 @@
-  /*{ Required fields: 
-firstName, lastName,
-Personal Email (which is his username for the portal), Password (bydefault set to user@123), 
-Role ("EMPLOYEE" by default), job_title, department_name, work_location, joining_date, 
-HR_Name (super hr will select from the dropdown (all the hr admins/super hr admins names will be present there) and set onboarding_hr_id associated in the database), onboarding_status (bydefault set to 'BASIC_INFO'), set company_email for the employee as null by default.
-
-On clicking on the Add Employee button the Employee will be added to the database and an email will be sent to the added Employee with his login credentials (company email and password) and portal link. 
-}*/
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
+import { useAlert } from "../../context/AlertContext";
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
+  const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -47,7 +40,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
       const { data } = await axios.get("/api/employees", config);
       
       const adminRoles = ['HR_ADMIN', 'HR_SUPER_ADMIN'];
-      const filteredManagers = data.filter(emp => adminRoles.includes(emp.role));
+      const filteredManagers = data.filter(emp => adminRoles.includes(emp.role) && emp.accountStatus == 'ACTIVE');
       
       const sortedManagers = filteredManagers.sort((a, b) => a.firstName.localeCompare(b.firstName));
       setManagers(sortedManagers);
@@ -103,7 +96,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
 
   const handleSendEmail = async () => {
     if (!formData.email || !formData.firstName || !formData.password) {
-      alert("Please fill in First Name, Email and Password before sending Letter of Selection email.");
+      await showAlert("Please fill in First Name, Email and Password before sending Letter of Selection email.", { type: 'warning' });
       return;
     }
 
@@ -119,7 +112,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
           const selectedManager = managers.find(m => m.id === parseInt(formData.managerId));
           if (selectedManager) {
               hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
-              hrDesignation = selectedManager.role; 
+              hrDesignation = selectedManager.jobTitle; 
           }
       }
 
@@ -127,7 +120,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
         email: formData.email,
         firstName: formData.firstName,
         password: formData.password,
-        role: formData.role,
+        jobTitle: formData.jobTitle,
         startDate: formData.startDate,
         location: formData.location || 'Mumbai',
         hrName: hrName,
@@ -135,10 +128,10 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
         cc: formData.cc
       }, config);
 
-      alert("Letter of Selection email sent successfully!");
+      await showAlert("Letter of Selection email sent successfully!", { type: 'success' });
     } catch (error) {
       console.error("Error sending email:", error);
-      alert(error.response?.data?.message || "Failed to send Letter of Selection email.");
+      await showAlert(error.response?.data?.message || "Failed to send Letter of Selection email.", { type: 'error' });
     } finally {
       setSendingEmail(false);
     }
@@ -170,7 +163,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   First Name
@@ -201,7 +194,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Personal Email
@@ -233,7 +226,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
             
 
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department
@@ -284,7 +277,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
               ) : null} 
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
@@ -336,28 +329,28 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
                 </div>
             )}
 
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
               <button
                  type="button"
                  onClick={handleSendEmail}
                  disabled={sendingEmail}
-                 className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
+                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                   <Mail className="w-4 h-4" />
                   {sendingEmail ? "Sending..." : "Send Email"}
               </button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
                 >
                   <Plus className="w-4 h-4" />
                   {isAdminType ? 'Add Admin' : 'Add Employee'}

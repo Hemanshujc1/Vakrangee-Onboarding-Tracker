@@ -3,7 +3,7 @@ const { sendWelcomeEmail } = require('../services/emailServiceforEmployee'); // 
 
 exports.sendAdminWelcomeEmail = async (req, res) => {
     try {
-        const { email, firstName, password, cc, portalUrl } = req.body;
+        const { email, firstName, password, cc, portalUrl, hrName, hrDesignation } = req.body;
         
         const result = await sendHRAdminAssignmentEmail(
             email, 
@@ -11,7 +11,9 @@ exports.sendAdminWelcomeEmail = async (req, res) => {
             email, 
             password, 
             portalUrl || process.env.FRONTEND_URL || 'http://localhost:5173', // fallback
-            cc
+            cc,
+            hrName,
+            hrDesignation
         );
 
         if (result.success) {
@@ -25,13 +27,14 @@ exports.sendAdminWelcomeEmail = async (req, res) => {
     }
 };
 
+
 exports.sendEmployeeWelcomeEmail = async (req, res) => {
     try {
         // Logic for employee welcome email (using existing service)
         // Admin
-        const { email, firstName, password, role, startDate, location, hrName, hrDesignation, cc } = req.body;
+        const { email, firstName, password, jobTitle, startDate, location, hrName, hrDesignation, cc } = req.body;
         
-        const result = await sendWelcomeEmail(email, firstName, email, password, role, startDate, location, hrName, hrDesignation, cc);
+        const result = await sendWelcomeEmail(email, firstName, email, password, jobTitle, startDate, location, hrName, hrDesignation, cc);
         
         if (result.success) {
             res.status(200).json({ message: 'Employee welcome email sent successfully' });

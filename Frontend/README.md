@@ -121,3 +121,13 @@ A comprehensive web application designed to streamline the onboarding process fo
     npm run dev
     ```
 R
+
+
+
+
+  <span className={`px-3 py-1 text-xs font-medium rounded-full 
+                                ${getEmployeeStatus(employee) === 'Completed' ? 'bg-green-100 text-green-800' : 
+                                  getEmployeeStatus(employee) === 'Not Joined' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                 {getEmployeeStatus(employee)}
+                                 <StatusBadge status={statusText} />
+                            </span>

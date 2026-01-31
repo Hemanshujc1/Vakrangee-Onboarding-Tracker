@@ -45,4 +45,46 @@ const resizePhoto = async (req, res, next) => {
   }
 };
 
-module.exports = { upload, resizePhoto };
+// Middleware to resize and save signature
+const processSignature = async (req, res, next) => {
+  let fileToProcess = req.file;
+
+  if (!fileToProcess && req.files && req.files['signature'] && req.files['signature'].length > 0) {
+      fileToProcess = req.files['signature'][0];
+  }
+
+  if (!fileToProcess) return next();
+
+  if (!req.user || !req.user.id) {
+      console.error('Cannot process signature: User not authenticated');
+      return res.status(401).json({ message: 'User not authenticated during upload.' });
+  }
+
+  // Create unique filename
+  const filename = `sig-${req.user.id}-${Date.now()}.png`;
+  const uploadDir = path.join(__dirname, '../uploads/signatures');
+  
+  if (!fs.existsSync(uploadDir)){
+      fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const outputPath = path.join(uploadDir, filename);
+
+  try {
+    await sharp(fileToProcess.buffer)
+      .resize({ height: 100 }) // Resize to reasonable height, maintain aspect ratio
+      .toFormat('png')
+      .png({ quality: 90 })
+      .toFile(outputPath);
+
+    // Attach filename to req.body for controller to save in DB
+    
+    req.body.signature_path = filename;
+    next();
+  } catch (error) {
+    console.error('Error processing signature:', error);
+    return res.status(500).json({ message: 'Error processing signature upload' });
+  }
+};
+
+module.exports = { upload, resizePhoto, processSignature };

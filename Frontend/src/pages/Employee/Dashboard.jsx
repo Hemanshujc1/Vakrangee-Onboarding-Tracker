@@ -1,10 +1,73 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../Components/Layout/DashboardLayout';
-import { LayoutList, BookOpen, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { LayoutList, CheckCircle, Clock, AlertCircle, ArrowRight, Lock } from 'lucide-react';
+import axios from 'axios';
 
 const Dashboard = () => {
-    const progress = 25; 
-    
+  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/employees/dashboard-stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+      return (
+          <DashboardLayout>
+              <div className="flex justify-center items-center h-64">
+                  <div className="text-gray-500 animate-pulse">Loading dashboard...</div>
+              </div>
+          </DashboardLayout>
+      )
+  }
+
+  const { progress, basicInfoStatus, onboardingStage, nextAction } = stats || {};
+
+  // Helper to determine stage styles
+  const getBasicInfoStage = () => {
+    if (basicInfoStatus === 'VERIFIED') return { status: 'Completed', color: 'green', icon: CheckCircle };
+    if (basicInfoStatus === 'SUBMITTED') return { status: 'Under Review', color: 'yellow', icon: Clock };
+    if (basicInfoStatus === 'REJECTED') return { status: 'Action Needed', color: 'red', icon: AlertCircle };
+    return { status: 'Pending', color: 'blue', icon: AlertCircle };
+  };
+
+  const getPreJoiningStage = () => {
+      // Logic relies on onboardingStage sequence
+      if (['POST_JOINING', 'ACTIVE'].includes(onboardingStage)) return { status: 'Completed', color: 'green', icon: CheckCircle };
+      if (onboardingStage === 'PRE_JOINING') return { status: 'In Progress', color: 'blue', icon: Clock };
+      return { status: 'Locked', color: 'gray', icon: Lock };
+  };
+
+  const getPostJoiningStage = () => {
+     if (onboardingStage === 'ACTIVE') return { status: 'Completed', color: 'green', icon: CheckCircle }; // Or In Progress if we had granular tracking
+     if (onboardingStage === 'POST_JOINING') return { status: 'In Progress', color: 'blue', icon: Clock };
+     return { status: 'Locked', color: 'gray', icon: Lock };
+  };
+
+  const basicInfo = getBasicInfoStage();
+  const preJoining = getPreJoiningStage();
+  const postJoining = getPostJoiningStage();
+
+  const handleCardClick = (path, isLocked) => {
+      if (!isLocked) navigate(path);
+  }
+
   return (
     <DashboardLayout>
       <header className="mb-8">
@@ -17,7 +80,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-end mb-4">
                 <div>
                     <h2 className="text-lg font-bold text-(--color-secondary)">Onboarding Progress</h2>
-                    <p className="text-sm text-gray-500">2 of 8 steps completed</p>
+                    <p className="text-sm text-gray-500">Your journey to becoming an official team member.</p>
                 </div>
                 <span className="text-2xl font-bold text-(--color-primary)">{progress}%</span>
             </div>
@@ -28,47 +91,73 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
            {/* Steps Cards */}
-           <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-green-500 opacity-20"><CheckCircle size={40} /></div>
+           <div 
+                onClick={() => handleCardClick('/employee/basic-info', false)}
+                className={`bg-white p-6 rounded-xl shadow-sm border-l-4 border-${basicInfo.color}-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}
+            >
+                <div className={`absolute top-4 right-4 text-${basicInfo.color}-500 opacity-20`}><basicInfo.icon size={40} /></div>
                 <h3 className="font-bold text-lg mb-2 text-gray-800">1. Basic Details</h3>
                 <p className="text-sm text-gray-500 mb-4">Personal information and contact details.</p>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded">
-                    <CheckCircle size={12} /> Completed
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold text-${basicInfo.color}-600 bg-${basicInfo.color}-50 px-2 py-1 rounded`}>
+                    <basicInfo.icon size={12} /> {basicInfo.status}
                 </span>
            </div>
 
-           <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-blue-500 opacity-20"><Clock size={40} /></div>
+           <div 
+                onClick={() => handleCardClick('/employee/pre-joining', preJoining.status === 'Locked')}
+                className={`bg-white p-6 rounded-xl shadow-sm border-l-4 border-${preJoining.color}-500 relative overflow-hidden ${preJoining.status === 'Locked' ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'} transition-all`}
+            >
+                <div className={`absolute top-4 right-4 text-${preJoining.color}-500 opacity-20`}><preJoining.icon size={40} /></div>
                 <h3 className="font-bold text-lg mb-2 text-gray-800">2. Pre-Joining Forms</h3>
                 <p className="text-sm text-gray-500 mb-4">Documents required before your first day.</p>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                    <Clock size={12} /> In Progress
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold text-${preJoining.color}-600 bg-${preJoining.color}-50 px-2 py-1 rounded`}>
+                    <preJoining.icon size={12} /> {preJoining.status}
                 </span>
            </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-gray-300 relative overflow-hidden opacity-75">
-                <div className="absolute top-4 right-4 text-gray-400 opacity-20"><LayoutList size={40} /></div>
+            <div 
+                onClick={() => handleCardClick('/employee/post-joining', postJoining.status === 'Locked')}
+                className={`bg-white p-6 rounded-xl shadow-sm border-l-4 border-${postJoining.color}-300 relative overflow-hidden ${postJoining.status === 'Locked' ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'} transition-all`}
+            >
+                <div className={`absolute top-4 right-4 text-${postJoining.color}-400 opacity-20`}><postJoining.icon size={40} /></div>
                 <h3 className="font-bold text-lg mb-2 text-gray-600">3. Post-Joining Forms</h3>
                 <p className="text-sm text-gray-500 mb-4">Paperwork to be done on your joining date.</p>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    Locked
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold text-${postJoining.color}-500 bg-${postJoining.color}-100 px-2 py-1 rounded`}>
+                    <postJoining.icon size={12} /> {postJoining.status}
                 </span>
            </div>
       </div>
       
       {/* Notifications / Next Steps */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 flex items-start gap-4">
-        <div className="text-blue-500 mt-1">
-            <AlertCircle size={24} />
+      {nextAction && (
+        <div className={`border rounded-xl p-6 flex flex-col md:flex-row items-start gap-4 ${
+            nextAction.type === 'urgent' ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100'
+        }`}>
+            <div className={`mt-1 ${nextAction.type === 'urgent' ? 'text-red-500' : 'text-blue-500'}`}>
+                <AlertCircle size={24} />
+            </div>
+            <div className="flex-1">
+                <h4 className={`font-bold mb-1 ${nextAction.type === 'urgent' ? 'text-red-800' : 'text-blue-800'}`}>
+                    {nextAction.title}
+                </h4>
+                <p className={`text-sm ${nextAction.type === 'urgent' ? 'text-red-700' : 'text-blue-700'}`}>
+                    {nextAction.description}
+                </p>
+                {nextAction.link && (
+                    <button 
+                        onClick={() => navigate(nextAction.link)}
+                        className={`mt-4 px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+                            nextAction.type === 'urgent' 
+                            ? 'bg-red-600 text-white hover:bg-red-700' 
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                    >
+                        Go to Action <ArrowRight size={16} />
+                    </button>
+                )}
+            </div>
         </div>
-        <div>
-            <h4 className="font-bold text-blue-800 mb-1">Action Required</h4>
-            <p className="text-blue-700 text-sm">Please complete your <strong>Pre-Joining Forms</strong>. Your assigned HR Admin will review them shortly.</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                Go to Forms
-            </button>
-        </div>
-      </div>
+      )}
 
     </DashboardLayout>
   );

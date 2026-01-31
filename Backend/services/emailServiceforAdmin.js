@@ -1,3 +1,5 @@
+/// Done
+
 // Short HR Admin  Email
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -111,5 +113,5 @@ const sendHRAdminAssignmentEmail = async (
     }
   };
   
-  module.exports = { sendHRAdminAssignmentEmail };
+module.exports = { sendHRAdminAssignmentEmail };
   

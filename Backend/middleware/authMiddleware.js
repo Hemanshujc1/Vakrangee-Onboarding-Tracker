@@ -1,3 +1,4 @@
+/// Done
 const jwt = require('jsonwebtoken');
 const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
@@ -8,7 +9,11 @@ const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
   jwt.verify(token, secretKey, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid token.' });
+    if (err) {
+        console.error('Token Verification Failed:', err.message);
+        return res.status(403).json({ message: 'Invalid token.' });
+    }
+    // console.log('User Authenticated:', user.id);
     req.user = user;
     next();
   });

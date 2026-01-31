@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Briefcase, Building , Award } from 'lucide-react';
+import { User, Mail, Phone, Building , Award } from 'lucide-react';
 import axios from 'axios';
 import DashboardLayout from '../../Components/Layout/DashboardLayout';
 

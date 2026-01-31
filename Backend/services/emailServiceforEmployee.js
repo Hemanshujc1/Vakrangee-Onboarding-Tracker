@@ -1,4 +1,5 @@
-// Email Services for the Add employee module
+/// Done
+// Email Services for the Add employee module 
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const path = require('path');
@@ -13,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 
 
-const sendWelcomeEmail = async (to, firstName, email, password, role, startDate, location, hrName, hrDesignation, cc) => {
+const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startDate, location, hrName, hrDesignation, cc) => {
     const subject = 'Letter of Selection from Vakrangee Ltd.';
     
     // Date Formatting Helper (e.g., January 12th, 2026)
@@ -48,7 +49,7 @@ const sendWelcomeEmail = async (to, firstName, email, password, role, startDate,
             <strong>Congratulations!</strong> Further to your application for
             employment dated <strong>${joiningDate}</strong>, with us and subsequent selection process, we are delighted to offer
             you the position as
-            <strong>"${role}"</strong> with Vakrangee Ltd. Your base location would be <strong>${loc}</strong>, which can be revised from time to time as per the requirement of the company.
+            <strong>"${jobTitle}"</strong> with Vakrangee Ltd. Your base location would be <strong>${loc}</strong>, which can be revised from time to time as per the requirement of the company.
           </p>
   
           <p>

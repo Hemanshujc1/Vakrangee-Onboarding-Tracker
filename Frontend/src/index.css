@@ -1,19 +1,55 @@
 @import "tailwindcss";
 
-:root {
-  /* Color Scheme from ColorCodes.md */
-  --color-primary: #2C9DE6;       /* Bright Blue */
-  --color-secondary: #205081;     /* Dark Blue */
-  --color-text-dark: #4E4E4E;     /* Dark Grey */
-  --color-bg-light: #EFEFEF;      /* Light Grey */
-  
-  /* Accents */
-  --color-accent-orange: #E06A4E; /* Derived from conflict RGB */
-  --color-accent-gold: #DEB853;   /* Gold */
-  --color-accent-beige: #E2D9A2; /* Beige */
-  --color-accent-sage: #789F8A;   /* Sage Green */
-  --color-accent-green: #0A373A;  /* Dark Green */
+@theme {
+  /* Brand Colors from ColorCodes.md */
+  --color-primary: #2c9de6;
+  --color-secondary: #205081;
 
+  /* Text & Background */
+  --color-text-dark: #4e4e4e;
+  --color-bg-light: #efefef;
+
+  /* Accents */
+  --color-accent-orange: #e06a4e;
+  --color-accent-gold: #deb853;
+  --color-accent-beige: #e2d9a2;
+  --color-accent-sage: #789f8a;
+  --color-accent-green: #0a373a;
+
+  /* Overrides to enforce theme across existing Tailwind classes */
+  /* Blue - Primary Action Color */
+  --color-blue-500: #2c9de6;
+  --color-blue-600: #2c9de6;
+  --color-blue-700: #205081;
+  --color-blue-800: #205081;
+  --color-blue-900: #0a373a; /* Using Dark Green for deepest blue/black alternatives if needed, or stick to secondary */
+
+  /* Gray - Backgrounds & Text */
+  --color-gray-50: #efefef;
+  --color-gray-100: #efefef;
+  --color-gray-200: #e2d9a2; /* Using Beige for slightly darker bg/borders? Or stick to Light Gray */
+  --color-gray-300: #e2d9a2;
+  --color-gray-400: #789f8a; /* Sage for disabled/borders? */
+  --color-gray-500: #789f8a;
+  --color-gray-600: #4e4e4e;
+  --color-gray-700: #4e4e4e;
+  --color-gray-800: #4e4e4e;
+  --color-gray-900: #0a373a; /* Dark Green as almost black */
+
+  /* Red - Danger/Alert (Mapped to Accent Orange) */
+  --color-red-500: #e06a4e;
+  --color-red-600: #e06a4e;
+
+  /* Green - Success (Mapped to Sage & Dark Green) */
+  --color-green-500: #789f8a;
+  --color-green-600: #0a373a;
+
+  /* Yellow - Warning (Mapped to Gold) */
+  --color-yellow-500: #deb853;
+  --color-yellow-600: #deb853;
+}
+
+:root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -63,4 +99,19 @@ body,
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
+}
+
+.ruled-textarea {
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  font-size: 12px;
+  line-height: 32px; /* distance between lines */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    #000 32px
+  );
+  background-size: 100% 32px;
 }

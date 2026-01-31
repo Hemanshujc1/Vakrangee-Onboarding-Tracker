@@ -1,18 +1,11 @@
-/*{ Required fields: 
-firstName, lastName,
-Company Email (which is used as the username for the portal), Password (bydefault set to admin@123), 
-Role (HR_ADMIN by default), job_title, department_name (HR by default but can be change),work_location,
-
-On clicking on the Add amdin button the admin will be added to the database and an email will be sent to the added admin with his login credentials (company email and password) and portal link. 
-}*/
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
-import Input from "../UI/Input";
+import { useAlert } from "../../context/AlertContext";
 
 const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
+  const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -55,9 +48,54 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     });
   };
 
+  const [hrDetails, setHrDetails] = useState({ name: "", designation: "" });
+
+  useEffect(() => {
+    if (isOpen) {
+        fetchCurrentUserDetails();
+    }
+  }, [isOpen]);
+
+  const fetchCurrentUserDetails = async () => {
+    try {
+        let token = null;
+        let user = null;
+
+        const userInfo = localStorage.getItem("userInfo");
+        const storedUser = localStorage.getItem("user");
+        const storedToken = localStorage.getItem("token");
+
+        if (userInfo) {
+            const parsed = JSON.parse(userInfo);
+            token = parsed.token;
+            user = parsed.user;
+        } else if (storedUser && storedToken) {
+            token = storedToken;
+            user = JSON.parse(storedUser);
+        }
+        
+        if (!token || !user || !user.employeeId) {
+            console.error("Missing user info or employeeId", { user });
+            return;
+        }
+
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const { data } = await axios.get(`/api/employees/${user.employeeId}`, config);
+        
+        if (data) {
+            setHrDetails({
+                name: `${data.firstName} ${data.lastName}`,
+                designation: data.jobTitle || data.role || "HR Admin"
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching current user details:", error);
+    }
+  };
+
   const handleSendEmail = async () => {
     if (!formData.email || !formData.firstName) {
-      alert("Please fill in First Name and Email before sending Admin welcome email.");
+      await showAlert("Please fill in First Name and Email before sending Admin welcome email.", { type: 'warning' });
       return;
     }
 
@@ -67,21 +105,20 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       const token = userInfo ? JSON.parse(userInfo).token : null;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const hrName = "System Admin";
-      const hrDesignation = "Administration";
-
       await axios.post("/api/email/send-admin-welcome", {
         email: formData.email,
         firstName: formData.firstName,
         password: formData.password,
         cc: formData.cc,
-        portalUrl: window.location.origin // Dynamic portal URL
+        portalUrl: window.location.origin,
+        hrName: hrDetails.name,
+        hrDesignation: hrDetails.designation
       }, config);
 
-      alert("Admin welcome email sent successfully!");
+      await showAlert("Admin welcome email sent successfully!", { type: 'success' });
     } catch (error) {
       console.error("Error sending email:", error);
-      alert(error.response?.data?.message || "Failed to send Admin Welocome email.");
+      await showAlert(error.response?.data?.message || "Failed to send Admin Welocome email.", { type: 'error' });
     } finally {
       setSendingEmail(false);
     }
@@ -111,7 +148,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   First Name
@@ -142,7 +179,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Company Email
@@ -173,7 +210,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
             </div>
 
-             <div className="grid grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   CC (Optional)
@@ -217,28 +254,28 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
 
 
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
               <button
                  type="button"
                  onClick={handleSendEmail}
                  disabled={sendingEmail}
-                 className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer"
+                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                   <Mail className="w-4 h-4" />
                   {sendingEmail ? "Sending..." : "Send Email"}
               </button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
                 >
                   <Plus className="w-4 h-4" />
                   Add Admin

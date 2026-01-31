@@ -1,263 +1,316 @@
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import React, { useState, useEffect } from 'react';
-import {Search, Filter, Eye, Trash2 } from 'lucide-react';
-import Pagination from '../../Components/UI/Pagination';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Search, Download, Filter } from "lucide-react";
+import Pagination from "../../Components/UI/Pagination";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import {
+  getEmployeeStatus,
+  getStatusColor,
+  getUniqueOptions,
+} from "../../utils/employeeUtils";
+import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
+import StatusBadge from "../../Components/Shared/StatusBadge";
+import PageHeader from "../../Components/Shared/PageHeader";
+import EmployeeTable from "../../Components/Shared/EmployeeTable";
+import ExportModal from "../../Components/Shared/ExportModal";
+import { useAlert } from "../../context/AlertContext";
 
 const ManageAssignedEmployees = () => {
-    const navigate = useNavigate();
-      const [employees, setEmployees] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [currentPage, setCurrentPage] = useState(1);
-      const [searchTerm, setSearchTerm] = useState("");
-      const itemsPerPage = 5;
+  const navigate = useNavigate();
+  const { showAlert, showConfirm } = useAlert();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterJobTitle, setFilterJobTitle] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const itemsPerPage = 5;
 
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
-    useEffect(() => {
-        fetchEmployees();
-      }, []);
-    
-      const fetchEmployees = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const userStr = localStorage.getItem('user');
-          const config = { headers: { Authorization: `Bearer ${token}` } };
-    
-          const { data } = await axios.get("/api/employees", config);
-          
-          let userId = null;
-          if (userStr) {
-              const parsedUser = JSON.parse(userStr);
-              userId = parsedUser.id; 
-          }
-          
-          const strictEmployees = data.filter(emp => {
-              const isEmployeeRole = emp.role === 'EMPLOYEE';
-              const hrId = emp.onboardingHrId;
-              
-              const isAssignedToMe = hrId == userId; 
-              
-              return isEmployeeRole && isAssignedToMe;
-          });
-          
-          setEmployees(strictEmployees);
-        } catch (error) {
-          console.error("Error fetching employees:", error);
-        } finally {
-            setLoading(false);
-        }
-      };
-  const filteredEmployees = employees.filter(
-    (emp) =>
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      const { data } = await axios.get("/api/employees", config);
+
+      let userId = null;
+      if (userStr) {
+        const parsedUser = JSON.parse(userStr);
+        userId = parsedUser.id;
+      }
+
+      const strictEmployees = data.filter((emp) => {
+        const isEmployeeRole = emp.role === "EMPLOYEE";
+        const hrId = emp.onboardingHrId;
+
+        // Assuming hrId is string or number
+        const isAssignedToMe = hrId == userId;
+
+        return isEmployeeRole && isAssignedToMe;
+      });
+
+      setEmployees(strictEmployees);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Extract Unique Options
+  const departments = getUniqueOptions(employees, "department");
+  const jobTitles = getUniqueOptions(employees, "jobTitle");
+  const locations = getUniqueOptions(employees, "location");
+  const statuses = [
+    "Login Pending",
+    "Profile Pending",
+    "In Progress",
+    "Ready to Join",
+    "Joining Formalities",
+    "Completed",
+    "Not Joined",
+  ];
+
+  const filteredEmployees = employees.filter((emp) => {
+    const statusText = getEmployeeStatus(emp);
+    const matchesSearch =
       emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = filterStatus ? statusText === filterStatus : true;
+    const matchesDept = filterDepartment
+      ? emp.department === filterDepartment
+      : true;
+    const matchesJob = filterJobTitle ? emp.jobTitle === filterJobTitle : true;
+    const matchesLocation = filterLocation
+      ? emp.location === filterLocation
+      : true;
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesDept &&
+      matchesJob &&
+      matchesLocation
+    );
+  });
+
+  // Apply Sorting
+  filteredEmployees.sort((a, b) => {
+      // 1. Primary Sort: "Not Joined" to bottom
+      const statusA = getEmployeeStatus(a);
+      const statusB = getEmployeeStatus(b);
+      
+      if (statusA === 'Not Joined' && statusB !== 'Not Joined') return 1;
+      if (statusA !== 'Not Joined' && statusB === 'Not Joined') return -1;
+
+      // 2. Secondary Sort: User Config
+      if (sortConfig.key) {
+        let aValue, bValue;
+        if (sortConfig.key === "dateOfJoining") {
+            aValue = new Date(a.dateOfJoining || 0);
+            bValue = new Date(b.dateOfJoining || 0);
+        } else {
+            aValue = a[sortConfig.key] || "";
+            bValue = b[sortConfig.key] || "";
+        }
+        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+  });
 
   const totalItems = filteredEmployees.length;
   const currentEmployees = filteredEmployees.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
   return (
     <DashboardLayout>
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-(--color-text-dark)">
-          My Employees
-        </h1>
-        <p className="text-gray-500 mt-2">
-          Track and manage onboarding for employees assigned to you. 
-          {/* Debug Info */}
-          <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">
-             (Your HR ID: {JSON.parse(localStorage.getItem("user"))?.id || '?'})
-          </span>
-        </p>
-      </header>
-
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-4">
-        <div className="flex-1 relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <input
-            type="text"
-            placeholder="Search employees by name, email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-(--color-primary)"
-          />
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">
-          <Filter size={20} />
-          <span>Filters</span>
+      <PageHeader
+        title="My Employees"
+        subtitle={
+          <>
+            Track and manage onboarding for employees assigned to you.
+            <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">
+              (Your HR ID: {JSON.parse(localStorage.getItem("user"))?.id || "?"}
+              )
+            </span>
+          </>
+        }
+      >
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="flex items-center gap-2 bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-all font-medium cursor-pointer shadow-sm"
+        >
+          <Download size={20} />
+          <span>Export</span>
         </button>
-      </div>
+      </PageHeader>
 
-      {loading ? (
-        <div className="text-center py-10 text-gray-500">
-          Loading employees...
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Profile
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Job Title
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Joining Date
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {currentEmployees.length > 0 ? (
-                    currentEmployees.map((emp) => {
-                      let statusText = "Unknown";
-                      let statusColor = "bg-gray-100 text-gray-600";
+      {/* Sidebar Drawer */}
+      <EmployeeFilters
+        filters={{
+          status: filterStatus,
+          setStatus: setFilterStatus,
+          department: filterDepartment,
+          setDepartment: setFilterDepartment,
+          jobTitle: filterJobTitle,
+          setJobTitle: setFilterJobTitle,
+          location: filterLocation,
+          setLocation: setFilterLocation,
+          sortConfig,
+          setSortConfig,
+          resetFilters: () => {
+            setFilterStatus("");
+            setFilterDepartment("");
+            setFilterJobTitle("");
+            setFilterLocation("");
+            setSearchTerm("");
+            setSortConfig({ key: null, direction: "asc" });
+          },
+        }}
+        options={{ statuses, departments, jobTitles, locations }}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
-                      if (!emp.firstLoginAt && !emp.lastLoginAt) {
-                        statusText = "Login Pending";
-                        statusColor = "bg-orange-100 text-orange-600";
-                      } else {
-                        switch (emp.onboarding_stage) {
-                          case "BASIC_INFO":
-                            statusText = "Profile Pending";
-                            statusColor = "bg-yellow-100 text-yellow-600";
-                            break;
-                          case "PRE_JOINING":
-                            statusText = "In Progress";
-                            statusColor = "bg-blue-100 text-blue-600";
-                            break;
-                          case "PRE_JOINING_VERIFIED":
-                            statusText = "Ready to Join";
-                            statusColor = "bg-green-100 text-green-600";
-                            break;
-                          case "POST_JOINING":
-                            statusText = "Joining Formalities";
-                            statusColor = "bg-purple-100 text-purple-600";
-                            break;
-                          case "ACTIVE":
-                            statusText = "Completed";
-                            statusColor = "bg-emerald-100 text-emerald-600";
-                            break;
-                          default:
-                            statusText = emp.onboarding_stage;
-                        }
-                      }
-
-                      return (
-                        <tr
-                          key={emp.id}
-                          onClick={() => navigate(`/hr-admin/employees/${emp.id}`)}
-                          className="hover:bg-gray-50 transition-colors cursor-pointer"
-                        >
-                          <td className="px-6 py-4">
-                            {emp.profilePhoto ? (
-                              <img
-                                src={emp.profilePhoto}
-                                alt={emp.firstName}
-                                className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm uppercase">
-                                {emp.firstName?.[0]}
-                                {emp.lastName?.[0]}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
-                            {emp.firstName} {emp.lastName}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {emp.jobTitle || "-"}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {emp.department || "-"}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {emp.dateOfJoining || "-"}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor}`}
-                            >
-                              {statusText}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.location.href = `/hr-super-admin/employees/${emp.id}`;
-                               }}
-                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="View Details"
-                              >
-                                <Eye size={18} />
-                              </button>
-                              <button
-                               onClick={(e) => {
-                                e.stopPropagation();
-                                //  delete logic 
-                               }}
-                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Delete Employee"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="px-6 py-8 text-center text-gray-500"
-                      >
-                         No employees found assigned to your ID.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+      {/* Main Content */}
+      <div className="w-full">
+        {/* Top Bar */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div className="relative flex-1 w-full sm:w-auto">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Search employees by name, email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-(--color-primary)"
+            />
           </div>
 
-          {totalItems > 0 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={currentPage}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
-        </>
-      )}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="flex items-center gap-2 text-gray-700 font-medium border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 w-full sm:w-auto justify-center transition-colors"
+          >
+            <Filter size={18} />
+            {/* <span>Filters</span> */}
+          </button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-sm text-gray-500 whitespace-nowrap hidden sm:inline">
+              Sort by:
+            </span>
+            <select
+              value={
+                sortConfig.key
+                  ? `${sortConfig.key}-${sortConfig.direction}`
+                  : ""
+              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) {
+                  setSortConfig({ key: null, direction: "asc" });
+                } else {
+                  const [key, direction] = val.split("-");
+                  setSortConfig({ key, direction });
+                }
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-(--color-primary) bg-white w-full sm:w-48 cursor-pointer"
+            >
+              <option value="">Default</option>
+              <option value="dateOfJoining-asc">
+                Joining Date: Oldest First
+              </option>
+              <option value="dateOfJoining-desc">
+                Joining Date: Newest First
+              </option>
+            </select>
+          </div>
+        </div>
+
+        {totalItems > 0 && (
+          <div className="mb-6">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-10 text-gray-500">
+            Loading employees...
+          </div>
+        ) : (
+          <EmployeeTable
+            employees={currentEmployees}
+            onRowClick={(emp) => navigate(`/hr-admin/employees/${emp.id}`)}
+            onDelete={async (emp) => {
+              const isConfirmed = await showConfirm(`Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`, { type: 'warning' });
+              if(isConfirmed) {
+                  try {
+                      const token = localStorage.getItem("token");
+                      const config = { headers: { Authorization: `Bearer ${token}` } };
+                      await axios.delete(`/api/employees/${emp.id}`, config);
+                      
+                      // Optimistic update
+                      setEmployees(prev => prev.map(p => 
+                          p.id === emp.id ? { ...p, onboarding_stage: 'Not_joined', accountStatus: 'Inactive' } : p
+                      ));
+                      await showAlert("Employee removed successfully.", { type: 'success' });
+                  } catch (err) {
+                      console.error("Delete failed", err);
+                      await showAlert("Failed to delete employee", { type: 'error' });
+                  }
+              }
+            }}
+            emptyMessage="No employees found assigned to your ID."
+          />
+        )}
+      </div>
+
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        data={employees.map((emp) => ({
+          ...emp,
+          status: getEmployeeStatus(emp),
+        }))}
+        fileName="My_Assigned_Employees"
+        formatOptions={{
+          firstName: "First Name",
+          lastName: "Last Name",
+          email: "Email",
+          phone: "Phone",
+          department: "Department",
+          jobTitle: "Job Title",
+          location: "Location",
+          dateOfJoining: "Joining Date",
+          status: "Status",
+          role: "Role",
+        }}
+        options={{ statuses }}
+      />
     </DashboardLayout>
   );
 };
