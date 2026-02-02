@@ -51,7 +51,7 @@ const MyHR = () => {
 
                 {hrDetails ? (
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="bg-linear-to-r from-[#2C9DE6] to-[#205081] h-32 relative">
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32 relative">
                             <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
                                 {hrDetails.profilePhoto ? (
                                     <img
@@ -60,7 +60,7 @@ const MyHR = () => {
                                         className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white object-cover"
                                     />
                                 ) : (
-                                    <div className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-4xl font-bold text-[#2C9DE6] uppercase">
+                                    <div className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-4xl font-bold text-blue-600 uppercase">
                                         {hrDetails.name?.[0]}
                                     </div>
                                 )}
@@ -68,46 +68,46 @@ const MyHR = () => {
                         </div>
                         
                         <div className="pt-20 pb-8 px-6 text-center">
-                            <h2 className="text-2xl font-bold text-[#4E4E4E] mb-1">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-1">
                                  {hrDetails.name}
                             </h2>
-                            <div className="flex items-center justify-center gap-2 text-[#2C9DE6] font-medium mb-6">
+                            <div className="flex items-center justify-center gap-2 text-blue-600 font-medium mb-6">
                                 <Award className="w-4 h-4" />
                                 <span>{hrDetails.designation}</span>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-[#2C9DE6]/10 transition-colors">
+                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-blue-600/10 transition-colors">
                                     <div className="p-3 bg-white rounded-full shadow-xs">
-                                        <Mail className="w-5 h-5 text-[#2C9DE6]" />
+                                        <Mail className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Email</p>
-                                        <a href={`mailto:${hrDetails.email}`} className="text-[#4E4E4E] font-medium hover:text-[#2C9DE6] transition-colors break-all">
+                                        <a href={`mailto:${hrDetails.email}`} className="text-gray-800 font-medium hover:text-blue-600 transition-colors break-all">
                                           {hrDetails.email}
                                         </a>
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-[#2C9DE6]/10 transition-colors">
+                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-blue-600/10 transition-colors">
                                     <div className="p-3 bg-white rounded-full shadow-xs">
-                                        <Phone className="w-5 h-5 text-[#2C9DE6]" />
+                                        <Phone className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Phone</p>
-                                        <a href={`tel:${hrDetails.phone}`} className="text-[#4E4E4E] font-medium hover:text-[#2C9DE6] transition-colors">
+                                        <a href={`tel:${hrDetails.phone}`} className="text-gray-800 font-medium hover:text-blue-600 transition-colors">
                                           {hrDetails.phone}
                                         </a>
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-[#2C9DE6]/10 transition-colors">
+                                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-3 hover:bg-blue-600/10 transition-colors">
                                     <div className="p-3 bg-white rounded-full shadow-xs">
-                                        <Building className="w-5 h-5 text-[#2C9DE6]" />
+                                        <Building className="w-5 h-5 text-blue-600" />
                                     </div>
                                     <div className="text-center">
                                         <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Department</p>
-                                        <p className="text-[#4E4E4E] font-medium">
+                                        <p className="text-gray-800 font-medium">
                                            {hrDetails.department}
                                         </p>
                                     </div>

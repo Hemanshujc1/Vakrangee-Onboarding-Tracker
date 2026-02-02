@@ -154,7 +154,7 @@ const CheckList = () => {
                           href={item.teamsLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-purple-600 hover:underline"
+                          className="flex items-center gap-1 text-blue-600 hover:underline"
                         >
                           <MessageSquare className="w-4 h-4" />
                           Teams

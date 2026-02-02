@@ -724,7 +724,7 @@ const EditProfileForm = () => {
                       name="personal_email_id"
                       value={formData.personal_email_id}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all ${
                         errors.personal_email_id
                           ? "border-red-500"
                           : "border-gray-200"

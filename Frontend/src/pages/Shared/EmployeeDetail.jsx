@@ -256,12 +256,12 @@ const EmployeeDetail = () => {
           <div>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-500 hover:text-[#2C9DE6] transition-colors mb-4"
+              className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors mb-4"
             >
               <ArrowLeft size={20} />
               <span>Back to List</span>
             </button>
-            <h1 className="text-3xl font-bold text-[#4E4E4E]">
+            <h1 className="text-3xl font-bold text-gray-800">
               Employee Profile
             </h1>
           </div>
@@ -269,7 +269,7 @@ const EmployeeDetail = () => {
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 bg-[#2C9DE6] text-white px-5 py-2.5 rounded-lg hover:bg-[#205081] transition-all font-medium shadow-sm"
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-800 transition-all font-medium shadow-sm"
             >
               <Pencil size={18} />
               <span>Edit Details</span>
@@ -297,7 +297,7 @@ const EmployeeDetail = () => {
               <button
                 onClick={handleSave}
                 disabled={actionLoading}
-                className="flex items-center gap-2 bg-[#2C9DE6] text-white px-5 py-2.5 rounded-lg hover:bg-[#205081] transition-all font-medium shadow-sm disabled:opacity-70"
+                className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-800 transition-all font-medium shadow-sm disabled:opacity-70"
               >
                 <Save size={18} />
                 <span>{actionLoading ? "Saving..." : "Save Changes"}</span>
@@ -329,7 +329,7 @@ const EmployeeDetail = () => {
         
         {/* Stage Progression Control */}
         {employee.onboardingStage === 'PRE_JOINING' && (
-             <div className="bg-white p-6 rounded-xl shadow-sm border border-orange-100 flex justify-between items-center">
+             <div className="bg-white p-6 rounded-xl shadow-sm border border-yellow-100 flex justify-between items-center">
                  <div>
                      <h3 className="text-lg font-bold text-gray-800">Onboarding Progression</h3>
                      <p className="text-sm text-gray-500">Employee is currently in Pre-Joining stage.</p>
@@ -337,7 +337,7 @@ const EmployeeDetail = () => {
                  <button 
                     onClick={() => handleAdvanceStage('POST_JOINING')}
                     disabled={actionLoading}
-                    className="bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors shadow-sm disabled:opacity-50"
+                    className="bg-yellow-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-yellow-700 transition-colors shadow-sm disabled:opacity-50"
                  >
                     Advance to Post-Joining
                  </button>

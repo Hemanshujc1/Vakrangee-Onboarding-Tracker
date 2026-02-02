@@ -182,13 +182,13 @@ const AdminDetail = () => {
         <div>
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-500 hover:text-[#2C9DE6] transition-colors mb-4"
+            className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors mb-4"
           >
             <ArrowLeft size={20} />
             <span>Back to Admins</span>
           </button>
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-[#4E4E4E]">Admin Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Admin Profile</h1>
             {/* Account Status Badge */}
             <div
               className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
@@ -206,7 +206,7 @@ const AdminDetail = () => {
 
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="h-32 bg-linear-to-r from-[#2C9DE6] to-[#205081]"></div>
+          <div className="h-32 bg-gradient-to-r from-blue-600 to-blue-800"></div>
           <div className="px-4 md:px-8 pb-8">
             <div className="relative flex md:flex-row justify-between items-center md:items-end -mt-12 mb-6 gap-4">
               <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 w-full md:w-auto">
@@ -218,16 +218,16 @@ const AdminDetail = () => {
                       className="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover bg-white"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-4xl font-bold text-[#2C9DE6]">
+                    <div className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-4xl font-bold text-blue-600">
                       {admin.firstName?.[0]}
                     </div>
                   )}
                 </div>
                 <div className="mb-2 text-center md:text-left">
-                  <h2 className="text-2xl font-bold text-[#4E4E4E]">
+                  <h2 className="text-2xl font-bold text-gray-800">
                     {admin.firstName} {admin.lastName}
                   </h2>
-                  <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2">
+                  <div className="text-blue-600 font-medium flex items-center justify-center md:justify-start gap-2">
                     <Briefcase size={16} />
                     {isEditing ? (
                       <input
@@ -236,7 +236,7 @@ const AdminDetail = () => {
                         onChange={(e) =>
                           setEditForm({ ...editForm, jobTitle: e.target.value })
                         }
-                        className="border border-blue-200 rounded px-2 py-1 text-sm text-[#2C9DE6] font-medium focus:outline-none focus:border-[#2C9DE6] w-full"
+                        className="border border-blue-200 rounded px-2 py-1 text-sm text-blue-600 font-medium focus:outline-none focus:border-blue-600 w-full"
                       />
                     ) : (
                       <span>{admin.jobTitle || admin.role}</span>

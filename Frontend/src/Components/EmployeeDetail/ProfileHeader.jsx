@@ -7,7 +7,7 @@ const ProfileHeader = ({ employee, isEditing, editForm, setEditForm, children })
         // Check if user has logged in at least once
         if (stage === 'BASIC_INFO' && !employee.firstLoginAt) {
              return (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm w-fit text-orange-600 bg-orange-100">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm w-fit text-red-600 bg-red-100">
                     <Clock size={18} />
                     <span>Login Pending</span>
                 </div>
@@ -18,8 +18,8 @@ const ProfileHeader = ({ employee, isEditing, editForm, setEditForm, children })
             'BASIC_INFO': { label: 'Profile Pending', color: 'text-yellow-600 bg-yellow-100', icon: UserCheck },
             'PRE_JOINING': { label: 'In Progress', color: 'text-blue-600 bg-blue-100', icon: Clock },
             'PRE_JOINING_VERIFIED': { label: 'Ready to Join', color: 'text-green-600 bg-green-100', icon: ShieldCheck },
-            'POST_JOINING': { label: 'Joining Formalities', color: 'text-purple-600 bg-purple-100', icon: Building },
-            'ACTIVE': { label: 'Completed', color: 'text-emerald-600 bg-emerald-100', icon: CheckCircle }
+            'POST_JOINING': { label: 'Joining Formalities', color: 'text-yellow-600 bg-yellow-100', icon: Building },
+            'ACTIVE': { label: 'Completed', color: 'text-green-600 bg-green-100', icon: CheckCircle }
         };
 
         const status = stages[stage] || { label: stage || 'Unknown', color: 'text-gray-600 bg-gray-100', icon: Clock };
