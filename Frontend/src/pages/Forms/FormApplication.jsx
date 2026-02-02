@@ -37,31 +37,19 @@ const FormApplication = () => {
 
   const validationSchema = Yup.object().shape({
     // Personal Info
-    firstname: commonSchemas.nameString.max(15, "Maximum 15 characters allowed"),
-    lastname: commonSchemas.nameString.max(15, "Maximum 15 characters allowed"),
-    middlename: Yup.string()
-    .min(3, "Minimum 3 characters required")
-    .max(15, "Maximum 15 characters allowed")
-    .matches(/^[a-zA-Z\s]+$/, "Only letters allowed"),
-    Maidenname: Yup.string()
-    .min(3, "Minimum 3 characters required")
-    .max(15, "Maximum 15 characters allowed")
-    .matches(/^[a-zA-Z\s]+$/, "Only letters allowed"),  
-    currentAddress: Yup.string()
-      .min(10, "Address must be at least 10 characters")
-      .required("Required"),
-    permanentAddress: Yup.string()
-      .min(10, "Address must be at least 10 characters")
-      .required("Required"),
+    firstname: commonSchemas.nameString.label("First Name"),
+    lastname: commonSchemas.nameString.label("Last Name"),
+    middlename: commonSchemas.nameStringOptional.label("Middle Name"),
+    Maidenname: commonSchemas.nameStringOptional.label("Maiden Name"),
+    currentAddress: commonSchemas.addressString.label("Current Address"),
+    permanentAddress: commonSchemas.addressString.label("Permanent Address"),
+    
     mobileNo: commonSchemas.mobile,
     alternateNo: commonSchemas.mobile,
     email: commonSchemas.email,
     emergencyNo: commonSchemas.mobile,
     gender: commonSchemas.stringRequired,
-    dob: Yup.date()
-         .min(1900, "Enter a valid year")
-         .max(new Date().getFullYear(), "Enter a valid year")
-         .required("Required"),
+    dob: commonSchemas.datePast,
     
     // Conditional Documents
     hasPan: Yup.string().oneOf(["Yes", "No"]),
@@ -74,60 +62,52 @@ const FormApplication = () => {
     hasLicense: Yup.string().oneOf(["Yes", "No"]),
     licenseNo: Yup.string().when("hasLicense", {
       is: "Yes",
-      then: (schema) => commonSchemas.license.required("License Number is required"),
+      then: (schema) => commonSchemas.license.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
     licenseIssueDate: Yup.date().nullable().when("hasLicense", {
         is: "Yes",
-        then: (schema) => schema.max(new Date(), "Date cannot be in future").required("Required"),
+        then: (schema) => commonSchemas.datePast.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
     licenseExpiryDate: Yup.date().nullable().when("hasLicense", {
         is: "Yes",
-        then: (schema) => schema.min(new Date(), "License has expired").required("Required"),
+        then: (schema) => commonSchemas.dateFuture.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
     
     hasPassport: Yup.string().oneOf(["Yes", "No"]),
     passportNo: Yup.string().when("hasPassport", {
       is: "Yes",
-      then: (schema) => commonSchemas.passport.required("Passport Number is required"),
+      then: (schema) => commonSchemas.passport.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
     passportIssueDate: Yup.date().nullable().when("hasPassport", {
         is: "Yes",
-        then: (schema) => schema.max(new Date(), "Date cannot be in future").required("Required"),
+        then: (schema) => commonSchemas.datePast.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
     passportExpiryDate: Yup.date().nullable().when("hasPassport", {
         is: "Yes",
-        then: (schema) => schema.min(new Date(), "Passport has expired").required("Required"),
+        then: (schema) => commonSchemas.dateFuture.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
 
     // Arrays
     education: Yup.array()
       .min(1, "At least one education entry is required")
-      .max(5, "You can add a maximum of 5 education entries")
+      .max(5, "Max 5 entries")
       .of(
         Yup.object().shape({
-          qualification: Yup.string().required("Required"),
-          institute: Yup.string().required("Required"),
-          year: Yup.number()
-            .typeError("Year must be a number")
-            .min(1900, "Enter a valid year")
-            .max(new Date().getFullYear(), "Enter a valid year")
-            .required("Required"),
-          percentage: Yup.number()
-            .typeError("Must be a number")
-            .min(0, "Min 0")
-            .max(100, "Max 100")
-            .required("Required"),
+          qualification: commonSchemas.stringRequired,
+          institute: commonSchemas.stringRequired,
+          year: Yup.number().min(1900).max(new Date().getFullYear()).required("Required"),
+          percentage: Yup.number().min(0).max(100).required("Required"),
           location: Yup.string(),
         })
       ),
 
-    otherTraining: Yup.array().max(4, "Maximum 4 entries allowed").of(
+    otherTraining: Yup.array().max(4).of(
         Yup.object().shape({
             institute: Yup.string(),
             location: Yup.string(),
@@ -136,84 +116,60 @@ const FormApplication = () => {
         })
     ),
 
-    achievements: Yup.array().max(4, "Maximum 4 entries allowed").of(
-        Yup.object()
-        .shape({
-            year: Yup.number()
-            .typeError("Year must be a number")
-            .min(1900, "Enter a valid year")
-            .max(new Date().getFullYear(), "Cannot be in future"),
+    achievements: Yup.array().max(4).of(
+        Yup.object().shape({
+            year: Yup.number().min(1900).max(new Date().getFullYear()),
             details: Yup.string(),
         })
     ),
   
-    employmentHistory: Yup.array()
-      .max(5, "Maximum 5 entries allowed")
-      .of(
+    employmentHistory: Yup.array().max(5).of(
         Yup.object().shape({
-          employer: Yup.string().required("Required"),
-          designation: Yup.string().required("Required"),
-          fromDate: Yup.date()
-          .nullable()
-          .transform((v, o) => o === "" ? null : v)
-          .min(1900, "Enter a valid year")
-          .max(new Date().getFullYear(), "Enter a valid year")
-          .required("Required"),
-          toDate: Yup.date()
-          .nullable()
-          .transform((v, o) => o === "" ? null : v)
-          .min(1900, "Enter a valid year")
-          .max(new Date().getFullYear(), "Enter a valid year")  
-          .required("Required"),
-          ctc: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v),
+          employer: commonSchemas.stringRequired,
+          designation: commonSchemas.stringRequired,
+          fromDate: commonSchemas.datePast,
+          toDate: commonSchemas.datePast,
+          ctc: commonSchemas.currency,
           reportingOfficer: Yup.string(),
         })
       ),
 
     workExperience: Yup.array().of(
       Yup.object().shape({
-        employer: Yup.string().required("Required"),
-        designation: Yup.string().required("Required"),
-        turnover: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v),
-        noOfEmployees: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v),
-        joiningCTC: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v).required("Required"),
-        currentCTC: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v).required("Required"),
-        expectedSalary: Yup.number().typeError("Must be number").nullable().transform((v, o) => o === "" ? null : v).required("Required"),
-        noticePeriod: Yup.number().typeError("Days (number)").nullable().transform((v, o) => o === "" ? null : v),
-        joiningDate: Yup.date().nullable().transform((v, o) => o === "" ? null : v)
-        .min(1900, "Enter a valid year")
-        .max(new Date(), "Cannot be in future").required("Required"),
+        employer: commonSchemas.stringRequired,
+        designation: commonSchemas.stringRequired,
+        turnover: commonSchemas.currency,
+        noOfEmployees: Yup.number().nullable(),
+        joiningCTC: commonSchemas.currency.required("Required"),
+        currentCTC: commonSchemas.currency.required("Required"),
+        expectedSalary: commonSchemas.currency.required("Required"),
+        noticePeriod: Yup.number().nullable(),
+        joiningDate: commonSchemas.dateFuture.required("Required"),
       })
     ),
 
-    references: Yup.array()
-      .max(2, "Maximum 2 references needed")
-      .of(
+    references: Yup.array().max(2).of(
         Yup.object().shape({
-          name: Yup.string().required("Required"),
-          company: Yup.string().required("Required"),
-          contact: Yup.string().required("Required"),
+          name: commonSchemas.nameString,
+          company: commonSchemas.stringRequired,
+          contact: commonSchemas.mobile, 
           position: Yup.string(),
-          address: Yup.string(),
+          address: commonSchemas.addressStringOptional,
         })
       ),
       
     family: Yup.array().of(
         Yup.object().shape({
-            name: Yup.string().required("Required"),
-            relationship: Yup.string().required("Required"),
-            age: Yup.number()
-            .min(0,"Minium age value is 0")
-            .max(120,"Max Age value can't exceed 120")
-            .typeError("Age must be a number")
-            .positive().integer().required("Required"),
+            name: commonSchemas.nameString,
+            relationship: commonSchemas.stringRequired,
+            age: commonSchemas.age.required("Required"),
             occupation: Yup.string(),
         })
     ),
     
-    languages: Yup.array().max(4, "Maximum 4 entries allowed").of(
+    languages: Yup.array().max(4).of(
         Yup.object().shape({
-            language: Yup.string().required("Required"),
+            language: commonSchemas.stringRequired,
             speak: Yup.boolean(),
             read: Yup.boolean(),
             write: Yup.boolean(),

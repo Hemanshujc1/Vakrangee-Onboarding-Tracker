@@ -51,39 +51,27 @@ const FormInformation = () => {
         designation: commonSchemas.stringRequired,
 
         // Personal Details
-        first_name: commonSchemas.nameString,
-        middle_name: Yup.string()
-        .min(3, "Minimum 3 characters required")
-        .max(30, "Maximum 30 characters are allowed")
-        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'")
-        .nullable().optional(),
-        last_name: commonSchemas.nameString,
-        father_name: Yup.string()
-        .min(3, "Minimum 3 characters required")
-        .max(30, "Maximum 30 characters are allowed")
-        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
-        father_middle_name: Yup.string().min(3, "Minimum 3 characters required")
-        .max(30, "Maximum 30 characters are allowed")
-        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
-        father_last_name: Yup.string().min(3, "Minimum 3 characters required")
-        .max(30, "Maximum 30 characters are allowed")
-        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
+        first_name: commonSchemas.nameString.label("First Name"),
+        middle_name: commonSchemas.nameStringOptional.label("Middle Name"),
+        last_name: commonSchemas.nameString.label("Last Name"),
+        father_name: commonSchemas.nameStringOptional.label("Father's Name"),
+        father_middle_name: commonSchemas.nameStringOptional.label("Father's Middle Name"),
+        father_last_name: commonSchemas.nameStringOptional.label("Father's Last Name"),
         date_of_birth: commonSchemas.datePast,
         birth_city: commonSchemas.stringRequired,
         birth_state: commonSchemas.stringRequired,
-        country: commonSchemas.stringRequired,
+        country: commonSchemas.country,
         blood_group: Yup.string().required("Required"),
         gender: Yup.string().required("Required"),
         marital_status: Yup.string().required("Required"),
 
         // IDs (Optional but validated if present)
-        passport_number: commonSchemas.passportNo.nullable().optional(),
-        passport_date_of_issue: Yup.string().nullable().optional(),
-        passport_expiry_date: Yup.string().nullable().optional(),
+        passport_number: commonSchemas.passport.nullable().optional(),
+        passport_date_of_issue: commonSchemas.datePast.nullable().optional(),
+        passport_expiry_date: commonSchemas.dateFuture.nullable().optional(),
 
-        pan_number: commonSchemas.panNo.required("Required"),
-
-        aadhar_number: commonSchemas.aadhaarNo.required("Required"),
+        pan_number: commonSchemas.pan.required("Required"),
+        aadhar_number: commonSchemas.aadhaar.required("Required"),
 
         // Contacts
         std_code: Yup.string().nullable().optional(),
@@ -94,9 +82,7 @@ const FormInformation = () => {
 
         // Address - Current
         current_residence_type: Yup.string().required("Required"),
-        current_landlord_name: Yup.string().min(3, "Minimum 3 characters required")
-        .max(30, "Maximum 30 characters are allowed")
-        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
+        current_landlord_name: commonSchemas.nameStringOptional,
         current_building_name: Yup.string().required("Required"),
         current_flat_house_no: Yup.string().required("Required"),
         current_block_street_no: Yup.string().required("Required"),
@@ -124,11 +110,11 @@ const FormInformation = () => {
             course: Yup.string().required("Required"),
             degree: Yup.string().required("Required"),
             institute: Yup.string().required("Required"),
-            address: Yup.string().required("Required"),
+            address: commonSchemas.addressString.label("Address"),
             state: Yup.string().required("Required"),
             pin: commonSchemas.pincode,
             university: Yup.string().required("Required"),
-            universityAddress: Yup.string().optional(),
+            universityAddress: commonSchemas.addressStringOptional.label("University Address"),
             universitystate: Yup.string().optional(),
             universitypin: Yup.string()
               .optional()
@@ -136,9 +122,9 @@ const FormInformation = () => {
               .test("len", "Must be 6 digits", (v) => !v || v.length === 6),
             startDate: commonSchemas.dateRequired,
             endDate: Yup.date()
-            .min(1900,"Enter a valid date")
-            .max(3000,"Enter a vlaid date")
-            .required("Required"),
+              .min(1900,"Enter a valid date")
+              .max(3000,"Enter a vlaid date")
+              .required("Required"),
             status: Yup.string().required("Required"),
             marks: Yup.number()
             .min(0,"Enter a valid number")
@@ -157,70 +143,50 @@ const FormInformation = () => {
         employment_details: Yup.array().of(
           Yup.object().shape({
             companyName: Yup.string()
-            .min(2, "Minimum 2 characters required")
-            .max(30, "Maximum 30 characters are allowed")
+            .min(2, "Min 2 chars")
+            .max(30, "Max 30 chars")
             .nullable().optional(),
-            address: Yup.string().min(5,"Minimum 5 characters required").max(200,"Max 200 characters").nullable().optional(),
+            address: commonSchemas.addressStringOptional.label("Address"),
             empType: Yup.string().nullable().optional(),
             empCode: Yup.string().optional(),
             startDate: Yup.string().nullable().optional(),
             endDate: Yup.string().nullable().optional(),
             position: Yup.string()
-            .min(2,"Minimum 2 characters required").max(30,"Max 30 characters").nullable().optional(),
-            compensation: Yup.number()
-              .typeError("Must be number")
-              .nullable().optional(),
-            city: Yup.string().min(3,"Minimum 3 characters required").max(40,"Max 40 characters").nullable().optional(),
+            .min(2,"Min 2 chars").max(30,"Max 30 chars").nullable().optional(),
+            compensation: commonSchemas.currency.optional(),
+            city: Yup.string().min(3,"Min 3 chars").max(40,"Max 40 chars").nullable().optional(),
 
-            hrRep: Yup.string()
-            .min(3, "Minimum 3 characters required")
-            .max(30, "Maximum 30 characters are allowed")
-            .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'")
-            .nullable().optional(),
-            hrTel: Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            hrMob: Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            hrEmail:  Yup.string().email("Invalid email").optional(),
+            hrRep: commonSchemas.nameStringOptional,
+            hrTel: commonSchemas.mobile.optional(),
+            hrMob: commonSchemas.mobile.optional(),
+            hrEmail:  commonSchemas.email.optional(),
 
-            supervisorName: Yup.string()
-            .min(3, "Minimum 3 characters required")
-            .max(30, "Maximum 30 characters are allowed").nullable().optional(),
-            supTel: Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            supMob: Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            supEmail:Yup.string().email("Invalid email").optional(),
+            supervisorName: commonSchemas.nameStringOptional,
+            supTel: commonSchemas.mobile.optional(),
+            supMob: commonSchemas.mobile.optional(),
+            supEmail: commonSchemas.email.optional(),
             designation: Yup.string()
-            .min(2,"Minimum 2 characters required").max(30,"Max 30 characters").nullable().optional(),
-            reportStartDate: Yup.date() 
-            .min(1900, "Enter a valid year")
-            .max(new Date(), "Date cannot be in the future").nullable().optional(),
+            .min(2,"Min 2 chars").max(30,"Max 30 chars").nullable().optional(),
+            reportStartDate: commonSchemas.datePast.nullable().optional(),
             reportEndDate: Yup.date() 
             .min(1900, "Enter a valid date")
             .max(3000, "Enter a  valid date").nullable().optional(),
 
-            supervisorName2: Yup.string()
-            .min(3, "Minimum 3 characters required")
-            .max(30, "Maximum 30 characters are allowed").nullable().optional(),
-            supTel2:  Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            supMob2:  Yup.string()
-            .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-            supEmail2: Yup.string().email("Invalid email").optional(),
+            supervisorName2: commonSchemas.nameStringOptional,
+            supTel2: commonSchemas.mobile.optional(),
+            supMob2: commonSchemas.mobile.optional(),
+            supEmail2: commonSchemas.email.optional(),
             designation2: Yup.string()
-            .min(2,"Minimum 2 characters required")
-            .max(30,"Max 30 characters").nullable().optional(),
-            reportStartDate2: Yup.date() 
-            .min(1900, "Enter a valid year")
-            .max(new Date(), "Date cannot be in the future").nullable().optional(),
+            .min(2,"Min 2 chars")
+            .max(30,"Max 30 chars").nullable().optional(),
+            reportStartDate2: commonSchemas.datePast.nullable().optional(),
             reportEndDate2:  Yup.date() 
             .min(1900, "Enter a valid date")
             .max(3000, "Enter a  valid date").nullable().optional(),
 
-            duties: Yup.string().max(400,"Maximum 400 characters are allowed").nullable().optional(),
+            duties: Yup.string().max(400,"Max 400 chars").nullable().optional(),
             reasonLeaving: Yup.string()
-            .max(300,"Maximum 300 characters are allowed").nullable().optional(),
+            .max(300,"Max 300 chars").nullable().optional(),
           })
         ),
 
@@ -230,19 +196,17 @@ const FormInformation = () => {
           .of(
             Yup.object().shape({
               name: Yup.string()
-              .min(3, "Minimum 3 characters required")
-              .max(30, "Maximum 30 characters are allowed")
-              .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'")
+              .min(3, "Min 3 chars")
+              .max(30, "Max 30 chars")
+              .matches(/^[a-zA-Z\s]+$/, "Only letters allowed")
               .optional(),
-              address: Yup.string().min(5,"Minimum 5 characters required").max(200,"Max 200 characters").nullable().optional(),
-              tel: Yup.string()
-              .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-              mob: Yup.string()
-              .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits").optional(),
-              email: Yup.string().email("Invalid email").optional(),
+              address: commonSchemas.addressStringOptional.label("Address"),
+              tel: commonSchemas.mobile.optional(),
+              mob: commonSchemas.mobile.optional(),
+              email: commonSchemas.email.optional(),
               designation: Yup.string()
-              .min(2,"Minimum 2 characters required")
-              .max(30,"Max 30 characters").nullable().optional(),
+              .min(2,"Min 2 chars")
+              .max(30,"Max 30 chars").nullable().optional(),
             })
           ),
 

@@ -37,12 +37,13 @@ const FormNDA = () => {
   );
 
   // Validation Schema
+  // Validation Schema
   const validationSchema = useMemo(() => Yup.object().shape({
         isDraft: Yup.boolean(),
-        employee_full_name: commonSchemas.nameString,
-        address_line1: Yup.string().required("Required"),
-        address_line2: Yup.string().optional(),
-        post_office: Yup.string().required("Required"),
+        employee_full_name: commonSchemas.nameString.label("Full Name"),
+        address_line1: commonSchemas.addressString.label("Address Line 1"),
+        address_line2: commonSchemas.addressStringOptional.label("Address Line 2"),
+        post_office: commonSchemas.stringRequired.label("Post Office"),
         city: commonSchemas.stringRequired,
         district: commonSchemas.stringRequired,
         state: commonSchemas.stringRequired,

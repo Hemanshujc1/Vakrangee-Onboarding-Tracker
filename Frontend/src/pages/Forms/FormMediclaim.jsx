@@ -67,13 +67,14 @@ const FormMediclaim = () => {
   }, [isLocked, autoFillData, navigate]);
 
   const validationSchema = React.useMemo(() => Yup.object({
-    employee_full_name: commonSchemas.nameString,
+    employee_full_name: commonSchemas.nameString.label("Full Name"),
     date_of_birth: commonSchemas.dateRequired,
     gender: commonSchemas.stringRequired,
     marital_status: commonSchemas.stringRequired,
     mobile_number: commonSchemas.mobile,
-    address_line1: Yup.string().min(7, "Minimum 7 characters").required("Required"),
-    address_line2: Yup.string().min(7, "Minimum 7 characters").required("Required"),
+    address_line1: commonSchemas.addressString.label("Address Line 1"),
+    address_line2: commonSchemas.addressString.label("Address Line 2"),
+    landmark: commonSchemas.landmark,
     post_office: commonSchemas.stringRequired,
     city: commonSchemas.stringRequired,
     state: commonSchemas.stringRequired,
@@ -83,18 +84,10 @@ const FormMediclaim = () => {
       then: (schema) =>
         schema.of(
           Yup.object().shape({
-            name: commonSchemas.nameString,
+            name: commonSchemas.nameString.label("Name"),
             relationship: commonSchemas.stringRequired,
-            age: Yup.number()
-                .min(0,"Minium age value is 0")
-                .max(120,"Max Age value can't exceed 120")
-                .typeError("Age must be a number")
-                .positive().integer().required("Required"),
-            dob: Yup.date()
-              .min(1900, "Enter a valid year")
-              .max(new Date().getFullYear(), "Enter a valid year")
-              .typeError("Invalid Date")
-              .required("DOB is required"),
+            age: commonSchemas.age.required("Required"),
+            dob: commonSchemas.datePast.required("DOB is required"),
           })
         ),
       otherwise: (schema) => schema.notRequired().nullable(),

@@ -59,18 +59,17 @@ const FormGratuity = () => {
   const validationSchema = React.useMemo(() => Yup.object({
     isDraft: Yup.boolean(),
     // Personal
-    firstname: commonSchemas.nameString,
-    lastname: commonSchemas.nameString,
-    middlename: Yup.string().optional(),
+    firstname: commonSchemas.nameString.label("First Name"),
+    lastname: commonSchemas.nameString.label("Last Name"),
+    middlename: commonSchemas.nameStringOptional.label("Middle Name"),
     
     // Details
     religion: commonSchemas.stringRequired,
     marital_status: commonSchemas.stringRequired,
     gender: commonSchemas.stringRequired,
     department: commonSchemas.stringRequired,
-    ticket_no: Yup.string() 
-    .optional(), 
-    date_of_appointment: Yup.string().nullable().optional(),
+    ticket_no: Yup.string().optional(), 
+    date_of_appointment: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
     
     // Address
     city: commonSchemas.stringRequired,
@@ -84,17 +83,11 @@ const FormGratuity = () => {
     nominees: Yup.array().of(
       Yup.object().shape({
         name: commonSchemas.nameString,
-        address: Yup.string().min(3, "Minimum 3 characters required")
-        .max(200, "Maximum 200 characters are allowed").required("Required"),
+        address: commonSchemas.addressString.label("Address"),
         relationship: commonSchemas.stringRequired,
-       age: Yup.number()
-                   .min(0,"Minium age value is 0")
-                   .max(120,"Max Age value can't exceed 120")
-                   .typeError("Age must be a number")
-                   .positive().integer().required("Required"),
+        age: commonSchemas.age.required("Required"),
         share: Yup.number()
-         .min(0,"Minium age value is 0")
-         .max(100,"Max Age value can't exceed 10")
+         .min(0,"Min 0").max(100,"Max 100")
          .typeError("Must be a number")
          .positive().integer().required("Required"),
       })
@@ -104,21 +97,18 @@ const FormGratuity = () => {
     witnesses: Yup.array().of(
         Yup.object().shape({
             name: commonSchemas.nameString,
-            address: Yup.string()
-            .min(3, "Minimum 3 characters required")
-            .max(200, "Maximum 200 characters are allowed")
-            .required("Required"),
+            address: commonSchemas.addressString.label("Address"),
         })
     ),
     
     witnesses_place: Yup.string().when('isDraft', {
         is: false,
-        then: (schema) => schema.required("Required"),
+        then: (schema) => commonSchemas.stringRequired,
         otherwise: (schema) => schema.optional()
     }),
-    witnesses_date: Yup.string().max(new Date(), "Date cannot be in the future").when('isDraft', {
+    witnesses_date: Yup.date().max(new Date(), "Date cannot be in the future").when('isDraft', {
         is: false,
-        then: (schema) => schema.required("Required"),
+        then: (schema) => commonSchemas.datePast.required("Required"),
         otherwise: (schema) => schema.optional()
     }),
     
@@ -460,27 +450,27 @@ const FormGratuity = () => {
                     <>
                          <td className="border border-gray-300 p-1 align-top">
                            <TableInput
-                                register={register(`nominees.${index}.name`)}
+                                register={register(`nominees.\${index}.name`)}
                                 placeholder="Full Name"
                                 error={errors.nominees?.[index]?.name}
                                 required
                             />
                             <textarea
-                                {...register(`nominees.${index}.address`)}
+                                {...register(`nominees.\${index}.address`)}
                                 placeholder="Full Address"
-                                className={`w-full border border-gray-200 outline-none p-1 text-xs h-16 resize-none mt-1 ${errors.nominees?.[index]?.address ? 'bg-red-50' : ''}`}
+                                className={`w-full border border-gray-200 outline-none p-1 text-xs h-16 resize-none mt-1 \${errors.nominees?.[index]?.address ? 'bg-red-50' : ''}`}
                             />
                             {errors.nominees?.[index]?.address && <span className="text-red-500 text-xs block px-1">{errors.nominees[index].address.message}</span>}
                          </td>
                          <TableInput
-                            register={register(`nominees.${index}.relationship`)}
+                            register={register(`nominees.\${index}.relationship`)}
                             placeholder="e.g. Spouse"
                             error={errors.nominees?.[index]?.relationship}
                             required
                         />
                         <TableInput
                             type="number"
-                            register={register(`nominees.${index}.age`)}
+                            register={register(`nominees.\${index}.age`)}
                             placeholder="Age"
                             error={errors.nominees?.[index]?.age}
                             required
@@ -489,9 +479,9 @@ const FormGratuity = () => {
                             <div className="flex items-center gap-1">
                                 <input
                                     type="number"
-                                    {...register(`nominees.${index}.share`)}
+                                    {...register(`nominees.\${index}.share`)}
                                     placeholder="%"
-                                    className={`w-full outline-none p-1 bg-transparent ${errors.nominees?.[index]?.share ? 'bg-red-50' : ''}`}
+                                    className={`w-full outline-none p-1 bg-transparent \${errors.nominees?.[index]?.share ? 'bg-red-50' : ''}`}
                                 />
                                 <span>%</span>
                             </div>
@@ -609,7 +599,7 @@ const FormGratuity = () => {
                       <h4 className="font-bold underline">Witness {index + 1}</h4>
                       <div>
                         <input
-                          {...register(`witnesses.${index}.name`)}
+                          {...register(`witnesses.\${index}.name`)}
                           placeholder="Name in full"
                           className="w-full border-b border-gray-300 py-1 outline-none"
                         />
@@ -617,7 +607,7 @@ const FormGratuity = () => {
                       </div>
                       <div>
                         <textarea
-                          {...register(`witnesses.${index}.address`)}
+                          {...register(`witnesses.\${index}.address`)}
                           placeholder="Full Address"
                           className="w-full border border-gray-300 p-2 text-xs resize-none h-20 outline-none"
                         />
@@ -671,7 +661,7 @@ const FormGratuity = () => {
           </div>
           <div className="flex flex-col items-end gap-8 w-[35%]">
             <div className="text-left">
-              <p className="border-t border-black pt-1">
+              <p className="border-t pt-1 border-black ">
                 Signature of the employer/Officer authorised
               </p>
               <p>Designation</p>
@@ -679,7 +669,7 @@ const FormGratuity = () => {
             <div className="text-left">
               <p className="border-t border-black pt-1">
                 Name and address of the establishment or rubber stamp thereof.
-              </p>
+              </p>3
             </div>
           </div>
           </div>

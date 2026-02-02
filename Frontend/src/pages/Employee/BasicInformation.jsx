@@ -5,6 +5,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { commonSchemas } from "../../utils/validationSchemas";
 
 // Imported Sub-Components
 import BasicInfoHeader from "../../Components/Employee/BasicInfo/BasicInfoHeader";
@@ -29,62 +30,44 @@ const BasicInformation = () => {
 
   // Validation Schema
   const validationSchema = Yup.object().shape({
-    firstname: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("Required"),
-    lastname: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("Required"),
-    email: Yup.string().email("Invalid email").nullable(),
-    personal_email_id: Yup.string().email("Invalid email").nullable(),
-    phone: Yup.string()
-      .matches(/^[0-9]{10}$/, "Mobile Number must be 10 digits")
-      .required("Mobile Number is Required"),
-    date_of_birth: Yup.date()
-      .max(new Date(), "Date cannot be in future")
-      .nullable()
-      .transform((v, o) => (o === "" ? null : v)),
+    firstname: commonSchemas.nameString.label("First Name"),
+    lastname: commonSchemas.nameString.label("Last Name"),
+    email: commonSchemas.email.nullable(),
+    personal_email_id: commonSchemas.email.nullable(),
+    phone: commonSchemas.mobile,
+    date_of_birth: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
     gender: Yup.string().required("Gender is required"),
 
     // Address
-    address_line1: Yup.string().min(5, "Min 5 characters").max(60, "Max 60 characters").required("Required"),
-    address_line2: Yup.string().min(5, "Min 5 characters").max(60, "Max 60 characters").required("Required"),
-    landmark: Yup.string().max(20, "Max 20 characters").nullable(),
-    post_office: Yup.string().max(20, "Max 20 characters").nullable(),
-    pincode: Yup.string()
-      .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
-      .nullable()
-      .transform((v, o) => (o === "" ? null : v)),
-    city: Yup.string().max(30, "Max 30 characters").required("City is Required"),
-    district: Yup.string().max(20, "Max 20 characters").required("District is Required"),
-    state: Yup.string().max(30, "Max 30 characters").required("State is Required"),
-    country: Yup.string().max(20, "Max 20 characters").required("Country is Required"),
+    address_line1: commonSchemas.addressString.label("Address Line 1"),
+    address_line2: commonSchemas.addressString.label("Address Line 2"),
+    landmark: commonSchemas.landmark,
+    post_office: commonSchemas.stringOptional.label("Post Office"),
+    pincode: commonSchemas.pincode.nullable().transform((v, o) => (o === "" ? null : v)),
+    city: commonSchemas.stringRequired,
+    district: commonSchemas.stringRequired,
+    state: commonSchemas.stringRequired,
+    country: commonSchemas.country,
 
     // Education & IDs
     tenth_percentage: Yup.number()
       .typeError("Must be a number")
-      .min(0)
-      .max(100)
+      .min(0, "Min 0")
+      .max(100, "Max 100")
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
       ),
     twelfth_percentage: Yup.number()
       .typeError("Must be a number")
-      .min(0)
-      .max(100)
+      .min(0, "Min 0")
+      .max(100, "Max 100")
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
       ),
-    adhar_number: Yup.string()
-      .matches(/^[0-9]{12}$/, "Aadhaar must be 12 digits")
-      .required("Required"),
-    pan_number: Yup.string()
-      .matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN Number")
-      .required("Required"),
+    adhar_number: commonSchemas.aadhaar,
+    pan_number: commonSchemas.pan,
   });
 
   const {

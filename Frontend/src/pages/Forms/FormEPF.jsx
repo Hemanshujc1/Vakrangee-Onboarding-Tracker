@@ -66,7 +66,7 @@ const FormEPF = () => {
           then: (schema) => commonSchemas.nameString.required("Spouse's Name Required"),
         }),
         email: commonSchemas.email,
-        mobile: commonSchemas.mobileNumber,
+        mobile: commonSchemas.mobile,
 
         uan_number: Yup.string().when(["prev_epf_member", "prev_eps_member"], {
           is: (epf, eps) => epf === "Yes" || eps === "Yes",
@@ -74,9 +74,8 @@ const FormEPF = () => {
           otherwise: (schema) => schema.notRequired().nullable(),
         }),
         prev_pf_number: Yup.string().nullable().optional(),
-        date_of_exit_prev: commonSchemas.dateRequired
+        date_of_exit_prev: commonSchemas.datePast
           .nullable()
-          .optional()
           .transform((v, o) => (o === "" ? null : v)),
         scheme_cert_no: Yup.string().nullable().optional(),
         ppo_no: Yup.string().nullable().optional(),
@@ -84,38 +83,37 @@ const FormEPF = () => {
         international_worker: Yup.string().required("Required"),
         country_of_origin: Yup.string().when("international_worker", {
           is: "Yes",
-          then: (schema) => schema.required("Country Required"),
+          then: (schema) => commonSchemas.stringRequired.label("Country").required("Country Required"),
         }),
         passport_no: Yup.string().when("international_worker", {
           is: "Yes",
           then: (schema) =>
-            commonSchemas.passportNo.required("Passport Required"),
+            commonSchemas.passport.required("Passport Required"),
         }),
         passport_valid_from: Yup.date()
           .nullable()
-          .optional()
+          .when("international_worker", {
+              is: "Yes",
+              then: (schema) => commonSchemas.datePast.required("Required"),
+          })
           .transform((v, o) => (o === "" ? null : v)),
         passport_valid_to: Yup.date()
           .nullable()
-          .optional()
+          .when("international_worker", {
+              is: "Yes",
+              then: (schema) => commonSchemas.dateFuture.required("Required"),
+          })
           .transform((v, o) => (o === "" ? null : v)),
 
         // KYC
-        bank_account_no: Yup.string()
-          .min(9, "Min 9 digits")
-          .max(18, "Max 18 digits")
-          .required("Required"),
-        ifsc_code: commonSchemas.ifscCode.required("Required"),
-        aadhaar_no: commonSchemas.aadhaarNo.required("Required"),
-        pan_no: commonSchemas.panNo.required("Required"),
+        bank_account_no: commonSchemas.bankAccount,
+        ifsc_code: commonSchemas.ifsc,
+        aadhaar_no: commonSchemas.aadhaar,
+        pan_no: commonSchemas.pan,
         
         // PF History
-        first_epf_enrolled_date:commonSchemas.dateRequired,
-        first_epf_wages: Yup.number()
-        .transform((value) => (isNaN(value) ? null : value))
-        .nullable()
-        .optional()
-        .min(0, "Min 0"),
+        first_epf_enrolled_date: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
+        first_epf_wages: commonSchemas.currency,
         pre_2014_member: Yup.string().nullable().optional(),
         withdrawn_epf: Yup.string().nullable().optional(),
         withdrawn_eps: Yup.string().nullable().optional(),
@@ -125,13 +123,9 @@ const FormEPF = () => {
         prev_epf_member: Yup.string().required("Required"),
         prev_eps_member: Yup.string().required("Required"),
 
-  
-    
-
         place: Yup.string().required("Required"),
-        present_joining_date: Yup.date()
+        present_joining_date: commonSchemas.datePast
           .nullable()
-          .optional()
           .transform((v, o) => (o === "" ? null : v)),
         present_pf_number: Yup.string().nullable().optional(),
         present_kyc_status: Yup.string().nullable().optional(),

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Camera } from "lucide-react";
 import * as Yup from "yup"; // Import Yup
+import { commonSchemas } from "../../utils/validationSchemas";
 
 const EditProfileForm = () => {
   const [loading, setLoading] = useState(true);
@@ -40,42 +41,24 @@ const EditProfileForm = () => {
 
   // Validation Schema
   const validationSchema = Yup.object().shape({
-    firstname: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("First Name is required")
-      .matches(/^[a-zA-Z\s]+$/, "Only letters allowed"),
-    lastname: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("Last Name is required")
-      .matches(/^[a-zA-Z\s]+$/, "Only letters allowed"),
-    department_name: Yup.string().required("Department is required"),
-    job_title: Yup.string().max(15, "Maximum 15 characters allowed").required("Job Title is required"),
-    work_location: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("Work location is required"),
-    phone: Yup.string()
-      .required("Phone Number is required")
-      .matches(/^[0-9]{10}$/, "Phone must be exactly 10 digits"),
-    personal_email_id: Yup.string()
-      .email("Invalid email format")
-      .required("Email is required"),
-    date_of_birth: Yup.date()
-      .max(new Date(), "Date of birth cannot be in future")
-      .required("Date of Birth is required"),
+    firstname: commonSchemas.nameString.label("First Name"),
+    lastname: commonSchemas.nameString.label("Last Name"),
+    department_name: commonSchemas.stringRequired.label("Department"),
+    job_title: commonSchemas.stringRequired.label("Job Title"),
+    work_location: commonSchemas.stringRequired.label("Work Location"),
+    phone: commonSchemas.mobile,
+    personal_email_id: commonSchemas.email,
+    date_of_birth: commonSchemas.datePast,
     gender: Yup.string().required("Gender is required"),
-    address_line1: Yup.string()
-    .min(5, "Min 5 characters")
-    .required("Required"),
-    address_line2: Yup.string()
-    .min(5, "Min 5 characters")
-    .required("Required"),
-    pincode: Yup.string()
-      .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
-      .nullable()
-      .transform((v, o) => (o === "" ? null : v)),
+    address_line1: commonSchemas.addressString.label("Address Line 1"),
+    address_line2: commonSchemas.addressString.label("Address Line 2"),
+    landmark: commonSchemas.landmark,
+    post_office: commonSchemas.stringOptional.label("Post Office"),
+    pincode: commonSchemas.pincode,
+    city: commonSchemas.stringRequired.label("City"),
+    district: commonSchemas.stringRequired.label("District"),
+    state: commonSchemas.stringRequired.label("State"),
+    country: commonSchemas.country,
   });
 
   useEffect(() => {

@@ -73,10 +73,10 @@ const FormDeclaration = () => {
       Yup.object({
         isDraft: Yup.boolean(),
         title: Yup.string().required("Required"),
-        employee_full_name: commonSchemas.nameString,
-        previous_company_name: Yup.string().required("Company Name Required"),
-        previous_job_title: Yup.string().required("Designation Required"),
-        current_job_title: Yup.string().required("Current Designation Required"),
+        employee_full_name: commonSchemas.nameString.label("Full Name"),
+        previous_company_name: commonSchemas.stringRequired.label("Company Name"),
+        previous_job_title: commonSchemas.stringRequired.label("Designation"),
+        current_job_title: commonSchemas.stringRequired.label("Current Designation"),
         signature: Yup.mixed().when('isDraft', {
             is: true,
             then: (schema) => Yup.mixed().nullable().optional(),
