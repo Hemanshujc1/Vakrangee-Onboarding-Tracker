@@ -20,6 +20,11 @@ export const commonSchemas = {
     .min(2, "Minimum 2 characters required")
     .max(50, "Maximum 50 characters allowed")
     .required("Required"),
+
+    stringOptional: Yup.string()
+    .min(2, "Minimum 2 characters required")
+    .max(50, "Maximum 50 characters allowed")
+    .optional(),
   
   nameString: Yup.string()
     .min(2, "Minimum 2 characters required")
@@ -85,6 +90,10 @@ export const commonSchemas = {
   mobile: Yup.string()
     .matches(commonPatterns.mobile, "Mobile number must be 10 digits")
     .required("Required"),
+
+    mobileOptional: Yup.string()
+    .matches(commonPatterns.mobile, "Mobile number must be 10 digits")
+    .optional(),
   
   pincode: Yup.string()
     .matches(commonPatterns.pincode, "Pincode must be 6 digits")
@@ -107,12 +116,25 @@ export const commonSchemas = {
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
     .required("Required"),
+    
+    dateOptional: Yup.date()
+    .min(new Date("1900-01-01"), "Invalid Date")
+    .max(new Date(), "Date cannot be in the future")
+    .typeError("Invalid Date")
+    .optional(),
   
   datePast: Yup.date()
     .min(new Date("1900-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
     .required("Required"),
+
+      
+  datePastOptional: Yup.date()
+  .min(new Date("1900-01-01"), "Invalid Date")
+  .max(new Date(), "Date cannot be in the future")
+  .typeError("Invalid Date")
+  .required("Required"),
 
   dateFuture: Yup.date()
     .min(new Date(), "Date must be in the future")

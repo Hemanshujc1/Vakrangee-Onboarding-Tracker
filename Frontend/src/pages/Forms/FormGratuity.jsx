@@ -96,8 +96,8 @@ const FormGratuity = () => {
     // Witnesses - New Array Structure
     witnesses: Yup.array().of(
         Yup.object().shape({
-            name: commonSchemas.nameString,
-            address: commonSchemas.addressString.label("Address"),
+            name: commonSchemas.nameStringOptional,
+            address: commonSchemas.addressStringOptional.label("Address"),
         })
     ),
     

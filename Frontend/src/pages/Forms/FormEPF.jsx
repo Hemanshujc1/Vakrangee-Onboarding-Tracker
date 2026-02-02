@@ -57,13 +57,14 @@ const FormEPF = () => {
         gender: Yup.string().required("Required"),
         marital_status: Yup.string().required("Required"),
         relationship_type: Yup.string().required("Required"),
+
         father_name: Yup.string().when("relationship_type", {
           is: "Father",
-          then: (schema) => commonSchemas.nameString.required("Father's Name Required"),
+          then: (schema) => commonSchemas.nameStringOptional.required("Father's Name Required"),
         }),
         spouse_name: Yup.string().when("relationship_type", {
           is: "Spouse",
-          then: (schema) => commonSchemas.nameString.required("Spouse's Name Required"),
+          then: (schema) => commonSchemas.nameStringOptional.required("Spouse's Name Required"),
         }),
         email: commonSchemas.email,
         mobile: commonSchemas.mobile,
@@ -74,7 +75,7 @@ const FormEPF = () => {
           otherwise: (schema) => schema.notRequired().nullable(),
         }),
         prev_pf_number: Yup.string().nullable().optional(),
-        date_of_exit_prev: commonSchemas.datePast
+        date_of_exit_prev: commonSchemas.datePastOptional
           .nullable()
           .transform((v, o) => (o === "" ? null : v)),
         scheme_cert_no: Yup.string().nullable().optional(),
@@ -120,11 +121,11 @@ const FormEPF = () => {
         post_2014_eps_withdrawn: Yup.string().nullable().optional(),
 
         // Previous Employment
-        prev_epf_member: Yup.string().required("Required"),
-        prev_eps_member: Yup.string().required("Required"),
+        prev_epf_member: Yup.string().optional(),
+        prev_eps_member: Yup.string().optional(),
 
         place: Yup.string().required("Required"),
-        present_joining_date: commonSchemas.datePast
+        present_joining_date: commonSchemas.datePastOptional
           .nullable()
           .transform((v, o) => (o === "" ? null : v)),
         present_pf_number: Yup.string().nullable().optional(),

@@ -192,14 +192,10 @@ const FormInformation = () => {
 
         // References - Min 2
         references: Yup.array()
-          .min(2, "At least 2 references are required")
+          .max(2, "At Max 2 references are required")
           .of(
             Yup.object().shape({
-              name: Yup.string()
-              .min(3, "Min 3 chars")
-              .max(30, "Max 30 chars")
-              .matches(/^[a-zA-Z\s]+$/, "Only letters allowed")
-              .optional(),
+              name:commonSchemas.nameStringOptional,
               address: commonSchemas.addressStringOptional.label("Address"),
               tel: commonSchemas.mobile.optional(),
               mob: commonSchemas.mobile.optional(),

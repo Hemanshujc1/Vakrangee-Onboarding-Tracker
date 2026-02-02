@@ -19,7 +19,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
               <tbody>
                 <tr className="border-b border-black">
                   <td className=" font-semibold p-2 w-[20%] border-r border-black">
-                    Current Employer <span className="text-red-500">*</span>
+                    Current Employer
                   </td>
                   <td className="p-0 w-[30%] border-r border-black relative">
                     <input
@@ -76,7 +76,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                 </tr>
                 <tr className="border-b border-black">
                   <td className=" font-semibold p-2 border-r border-black">
-                    Joining Designation <span className="text-red-500">*</span>
+                    Joining Designation
                   </td>
                   <td className="p-0 border-r border-black relative">
                     <input
@@ -85,7 +85,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                     />
                   </td>
                   <td className=" font-semibold p-2 border-r border-black">
-                    Joining CTC <span className="text-red-500">*</span>
+                    Joining CTC
                   </td>
                   <td className="p-0 relative">
                     <input
@@ -111,7 +111,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                     />
                   </td>
                   <td className=" font-bold p-2 border-r border-black">
-                    Joining Date <span className="text-red-500">*</span>
+                    Joining Date
                   </td>
                   <td className="p-0 relative">
                     <input
@@ -128,7 +128,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                 </tr>
                 <tr className="border-b border-black">
                   <td className=" font-semibold p-2 border-r border-black">
-                    Current Designation <span className="text-red-500">*</span>
+                    Current Designation
                   </td>
                   <td className="p-0 border-r border-black relative">
                     <input
@@ -137,7 +137,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                     />
                   </td>
                   <td className=" font-bold p-2 border-r border-black">
-                    Current CTC <span className="text-red-500">*</span>
+                    Current CTC
                   </td>
                   <td className="p-0 relative">
                     <input
@@ -154,7 +154,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
                 </tr>
                 <tr className="border-b border-black">
                   <td className=" font-semibold p-2 border-r border-black">
-                    Expected Salary <span className="text-red-500">*</span>
+                    Expected Salary
                   </td>
                   <td className="p-0 border-r border-black relative">
                     <input

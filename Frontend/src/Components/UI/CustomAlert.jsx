@@ -28,7 +28,7 @@ const CustomAlert = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         className={`bg-white rounded-lg shadow-2xl w-full max-w-md transform transition-all scale-100 opacity-100 overflow-hidden ${getBorderColor()}`}
         role="alert"

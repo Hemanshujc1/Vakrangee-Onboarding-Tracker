@@ -29,7 +29,7 @@ const PersonalDetailsSection = ({ register, errors, isEditing, formData, formatD
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
             />
             ) : (
-            <p className="font-medium text-gray-800 bg-gray-50 px-1 py-2">
+            <p className="font-medium text-gray-800 bg-gray-50 px-2 py-2 rounded-md">
                 {formData.id || "Not Assigned"}
             </p>
             )}

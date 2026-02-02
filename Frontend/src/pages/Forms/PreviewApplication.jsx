@@ -207,6 +207,18 @@ const PreviewApplication = () => {
             
             <DocumentHeader title="Employment Application Form" className="bg-black" />
 
+            {/* Profile Photo */}
+            {autoFillData?.profilePhoto && (
+                <div className="absolute top-8 right-8 w-24 h-32 border border-black bg-white p-1 z-10">
+                    <img 
+                        src={`http://localhost:3001/uploads/profilepic/${autoFillData.profilePhoto}`} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => e.target.style.display = 'none'}
+                    />
+                </div>
+            )}
+
             {/* Personal Info */}
             <div className="mb-2 mt-4">
               <span className="font-bold underline text-sm">Personal Information: -</span>

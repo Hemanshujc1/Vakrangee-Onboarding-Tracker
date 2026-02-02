@@ -75,10 +75,10 @@ const FormTDS = () => {
         .nullable(),
      financial_year: Yup.string()
         .matches(/^\d{4}-\d{2}$/, "Invalid Financial Year (YYYY-YY)")
-        .required("Required"),
+        .optional(),
      assessment_year: Yup.string()
         .matches(/^\d{4}-\d{2}$/, "Invalid Assessment Year (YYYY-YY)")
-        .required("Required"),
+        .optional(),
 
      // Signature
      signature: Yup.mixed().when('isDraft', {

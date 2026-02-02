@@ -172,31 +172,27 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
             "Contact Details",
           ]}
           fields={referenceFields}
-          onRemove={removeRef}
           renderRow={(item, index) => (
             <>
               <TableInput
                 register={register(`references.${index}.name`)}
                 error={errors.references?.[index]?.name}
-                required
               />
               <TableInput register={register(`references.${index}.position`)} />
               <TableInput
                 register={register(`references.${index}.company`)}
                 error={errors.references?.[index]?.company}
-                required
               />
               <TableInput register={register(`references.${index}.address`)} />
               <TableInput
                 register={register(`references.${index}.contact`)}
                 error={errors.references?.[index]?.contact}
-                required
               />
             </>
           )}
         />
         <p className="text-xs text-gray-500 mt-2">
-          * Please list two professional references other than relatives.
+           *Please list two professional references other than relatives.
         </p>
       </FormSection>
 

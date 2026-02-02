@@ -7,18 +7,20 @@ export const DynamicTable = ({ headers, fields = [], onRemove, renderRow, colWid
             <thead>
                 <tr className="bg-gray-100">
                     {headers.map((h, i) => <th key={i} className="border border-gray-300 p-2 text-left" style={{ width: colWidths?.[i] }}>{h}</th>)}
-                    <th className="border border-gray-300 p-2 w-[5%]"></th>
+                    {onRemove && <th className="border border-gray-300 p-2 w-[5%]"></th>}
                 </tr>
             </thead>
             <tbody>
                 {fields.map((item, index) => (
                     <tr key={item.id}>
                         {renderRow(item, index)}
-                        <td className="border border-gray-300 p-2 text-center align-middle">
-                            <button type="button" onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
-                                <Trash2 size={16} />
-                            </button>
-                        </td>
+                        {onRemove && (
+                            <td className="border border-gray-300 p-2 text-center align-middle">
+                                <button type="button" onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700">
+                                    <Trash2 size={16} />
+                                </button>
+                            </td>
+                        )}
                     </tr>
                 ))}
             </tbody>

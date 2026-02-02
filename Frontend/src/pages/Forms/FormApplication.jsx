@@ -125,10 +125,10 @@ const FormApplication = () => {
   
     employmentHistory: Yup.array().max(5).of(
         Yup.object().shape({
-          employer: commonSchemas.stringRequired,
-          designation: commonSchemas.stringRequired,
-          fromDate: commonSchemas.datePast,
-          toDate: commonSchemas.datePast,
+          employer: commonSchemas.stringOptional,
+          designation: commonSchemas.stringOptional,
+          fromDate: commonSchemas.datePastOptional,
+          toDate: commonSchemas.datePastOptional,
           ctc: commonSchemas.currency,
           reportingOfficer: Yup.string(),
         })
@@ -136,23 +136,23 @@ const FormApplication = () => {
 
     workExperience: Yup.array().of(
       Yup.object().shape({
-        employer: commonSchemas.stringRequired,
-        designation: commonSchemas.stringRequired,
+        employer: commonSchemas.stringOptional,
+        designation: commonSchemas.stringOptional,
         turnover: commonSchemas.currency,
         noOfEmployees: Yup.number().nullable(),
-        joiningCTC: commonSchemas.currency.required("Required"),
-        currentCTC: commonSchemas.currency.required("Required"),
-        expectedSalary: commonSchemas.currency.required("Required"),
+        joiningCTC: commonSchemas.currency.optional(),
+        currentCTC: commonSchemas.currency.optional(),
+        expectedSalary: commonSchemas.currency.optional(),
         noticePeriod: Yup.number().nullable(),
-        joiningDate: commonSchemas.dateFuture.required("Required"),
+        joiningDate: commonSchemas.dateOptional,
       })
     ),
 
     references: Yup.array().max(2).of(
         Yup.object().shape({
-          name: commonSchemas.nameString,
-          company: commonSchemas.stringRequired,
-          contact: commonSchemas.mobile, 
+          name: commonSchemas.nameStringOptional,
+          company: commonSchemas.stringOptional,
+          contact: commonSchemas.mobileOptional, 
           position: Yup.string(),
           address: commonSchemas.addressStringOptional,
         })
@@ -160,16 +160,16 @@ const FormApplication = () => {
       
     family: Yup.array().of(
         Yup.object().shape({
-            name: commonSchemas.nameString,
-            relationship: commonSchemas.stringRequired,
-            age: commonSchemas.age.required("Required"),
+            name: commonSchemas.nameStringOptional,
+            relationship: commonSchemas.stringOptional,
+            age: commonSchemas.age.optional(),
             occupation: Yup.string(),
         })
     ),
     
     languages: Yup.array().max(4).of(
         Yup.object().shape({
-            language: commonSchemas.stringRequired,
+            language: commonSchemas.stringOptional,
             speak: Yup.boolean(),
             read: Yup.boolean(),
             write: Yup.boolean(),
