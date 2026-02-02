@@ -126,7 +126,7 @@ const PreviewInformation = () => {
       {/* Header */}
       <div className="text-center mb-6 relative">
         <img
-          src="/Vakrangee Logo.svg"
+          src={`${import.meta.env.BASE_URL}vakrangee Logo.svg`}
           alt="Vakrangee"
           className="h-20 mx-auto mb-2"
         />

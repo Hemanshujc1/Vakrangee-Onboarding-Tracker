@@ -378,7 +378,7 @@ const FormEPF = () => {
       <div className="relative mb-6">
         <div className="flex justify-between items-start">
           <img
-            src="/epf form logo.webp"
+            src={`${import.meta.env.BASE_URL}epf form logo.webp`}
             alt="EPF Logo"
             className="w-20"
             onError={(e) => (e.target.style.display = "none")} // Fallback

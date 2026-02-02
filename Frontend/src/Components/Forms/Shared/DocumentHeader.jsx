@@ -4,7 +4,7 @@ const DocumentHeader = ({ title = "Information Form" }) => {
   return (
     <div className="flex flex-col justify-center items-center text-center pb-0 mb-3.5">
       <img
-        src="/Vakrangee Logo.svg"
+        src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
         alt="Vakrangee Logo"
         className="h-24 w-auto mb-1"
       />

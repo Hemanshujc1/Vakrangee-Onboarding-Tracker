@@ -6,7 +6,6 @@ import { formatDateForAPI } from "../../utils/formUtils";
 import useAutoFill from "../../hooks/useAutoFill";
 import { useAlert } from "../../context/AlertContext";
 
-
 const PreviewEPF = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
@@ -51,7 +50,8 @@ const PreviewEPF = () => {
   const targetId = stateEmployeeId || user.employeeId;
 
   // 2. Fetch backend data (fallback/robustness)
-  const { data: autoFillData, loading: autoFillLoading } = useAutoFill(targetId);
+  const { data: autoFillData, loading: autoFillLoading } =
+    useAutoFill(targetId);
 
   // 3. Derive status: prefer state, fallback to backend
   const derivedStatus = stateStatus || autoFillData?.epfStatus;
@@ -100,9 +100,13 @@ const PreviewEPF = () => {
     const isYes = val === "Yes" || val === true;
     return (
       <div className="flex justify-center items-center gap-1">
-        <span className={isYes ? "font-bold" : ""}>Yes{isYes ? " \u2713" : ""}</span>
+        <span className={isYes ? "font-bold" : ""}>
+          Yes{isYes ? " \u2713" : ""}
+        </span>
         <span>/</span>
-        <span className={!isYes ? "font-bold" : ""}>No{!isYes ? " \u2713" : ""}</span>
+        <span className={!isYes ? "font-bold" : ""}>
+          No{!isYes ? " \u2713" : ""}
+        </span>
       </div>
     );
   };
@@ -135,19 +139,21 @@ const PreviewEPF = () => {
           key !== "isDraft"
         ) {
           if (epf[key] !== null && epf[key] !== undefined) {
-             let value = epf[key];
-             // Format dates if they are Date objects
-             if ([
-               "dob", 
-               "present_joining_date", 
-               "date_of_exit_prev", 
-               "passport_valid_from", 
-               "passport_valid_to", 
-               "first_epf_enrolled_date"
-             ].includes(key)) {
-               value = formatDateForAPI(value);
-             }
-             payload.append(key, value);
+            let value = epf[key];
+            // Format dates if they are Date objects
+            if (
+              [
+                "dob",
+                "present_joining_date",
+                "date_of_exit_prev",
+                "passport_valid_from",
+                "passport_valid_to",
+                "first_epf_enrolled_date",
+              ].includes(key)
+            ) {
+              value = formatDateForAPI(value);
+            }
+            payload.append(key, value);
           }
         }
       });
@@ -163,11 +169,14 @@ const PreviewEPF = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      await showAlert("EPF Form Submitted Successfully!", { type: 'success' });
+      await showAlert("EPF Form Submitted Successfully!", { type: "success" });
       navigate("/employee/post-joining");
     } catch (e) {
       console.error("Error submitting form:", e);
-      await showAlert(`Submission failed: ${e.response?.data?.message || e.message}`, { type: 'error' });
+      await showAlert(
+        `Submission failed: ${e.response?.data?.message || e.message}`,
+        { type: "error" }
+      );
     } finally {
       setActionLoading(false);
     }
@@ -202,12 +211,12 @@ const PreviewEPF = () => {
         `Form ${
           newStatus === "VERIFIED" ? "Approved" : "Rejected"
         } Successfully!`,
-        { type: 'success' }
+        { type: "success" }
       );
       navigate(-1);
     } catch (error) {
       console.error("Verification Error:", error);
-      await showAlert("Failed to update status.", { type: 'error' });
+      await showAlert("Failed to update status.", { type: "error" });
     } finally {
       setActionLoading(false);
     }
@@ -228,16 +237,22 @@ const PreviewEPF = () => {
       <div className="max-w-[210mm] mx-auto bg-white p-4 min-h-[297mm] flex flex-col print:w-full print:max-w-full print:min-h-0 print:m-0 print:p-0">
         {/* Actions for Web View */}
         <div className="print-hidden mb-6">
-          {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.epfRejectionReason))) && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
-                  <div className="font-bold flex items-center gap-2 mb-1">
-                      Form Rejected
-                  </div>
-                  <p className="text-sm">
-                      <span className="font-semibold">Reason:</span> {stateRejectionReason || data.epfRejectionReason}
-                  </p>
-                  <p className="text-xs mt-2 text-red-600">Please review the reason and click "Edit & Resubmit" to make necessary changes.</p>
+          {(derivedStatus === "REJECTED" ||
+            (derivedStatus === "DRAFT" &&
+              (stateRejectionReason || autoFillData?.epfRejectionReason))) && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
+              <div className="font-bold flex items-center gap-2 mb-1">
+                Form Rejected
               </div>
+              <p className="text-sm">
+                <span className="font-semibold">Reason:</span>{" "}
+                {stateRejectionReason || data.epfRejectionReason}
+              </p>
+              <p className="text-xs mt-2 text-red-600">
+                Please review the reason and click "Edit & Resubmit" to make
+                necessary changes.
+              </p>
+            </div>
           )}
 
           <PreviewActions
@@ -279,7 +294,7 @@ const PreviewEPF = () => {
             <div className="relative mb-2">
               <div className="w-24 shrink-0 absolute top-4 left-0">
                 <img
-                  src="/epf form logo.webp"
+                  src={`${import.meta.env.BASE_URL}epf form logo.webp`}
                   alt="EPF Logo"
                   className="w-16 h-auto"
                   onError={(e) => (e.target.style.display = "none")}
@@ -543,9 +558,9 @@ const PreviewEPF = () => {
                 <td className="border border-black p-1 pl-2 font-bold">
                   {getValue("passport_valid_from") &&
                   getValue("passport_valid_to")
-                    ? `${formatDate(getValue("passport_valid_from"))} to ${formatDate(getValue(
-                        "passport_valid_to"
-                      ))}`
+                    ? `${formatDate(
+                        getValue("passport_valid_from")
+                      )} to ${formatDate(getValue("passport_valid_to"))}`
                     : ""}
                 </td>
               </tr>
@@ -653,7 +668,10 @@ const PreviewEPF = () => {
             </tbody>
           </table>
 
-          <div className="flex flex-col mt-4" style={{ pageBreakBefore: 'always' }}>
+          <div
+            className="flex flex-col mt-4"
+            style={{ pageBreakBefore: "always" }}
+          >
             {/* Undertaking */}
             <div className="text-sm leading-tight">
               <h3 className="font-semibold underline underline-offset-2 mb-1 uppercase text-lg text-center">

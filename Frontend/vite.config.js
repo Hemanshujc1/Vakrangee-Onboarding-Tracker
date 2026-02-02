@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       react()
     ],
-    base:'vakrangee-onboarding-portal',
+    base:'/vakrangee-onboarding-portal/',
     server: {
       proxy: {
         '/api': {
