@@ -1,133 +1,97 @@
-# Vakrangee Onboarding Portal Created by Hemanshu Jagdish Choudhary
+# Vakrangee Onboarding Portal - Frontend
 
-A comprehensive web application designed to streamline the onboarding process for new hires at Vakrangee. The portal provides distinct interfaces for Administrators (HR/Managers) and New Employees to manage tasks, documents, and progress efficiently.
+This is the frontend for the **Vakrangee Onboarding Portal**, a comprehensive web application designed to streamline the employee onboarding process. It features role-based access for Employees, HR Admins, and Super Admins, enabling seamless form submissions, document verification, and progress tracking.
 
+## 🚀 Technologies Used
 
-## 🚀 Features
+- **Framework**: [React](https://react.dev/) (v19) with [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (v4)
+- **Routing**: [React Router](https://reactrouter.com/) (v7)
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/)
+- **Validation**: [Yup](https://github.com/jquense/yup)
+- **State Management**: Context API
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **PDF Generation**: [jsPDF](https://github.com/parallax/jsPDF)
+- **HTTP Client**: [Axios](https://axios-http.com/)
 
-### Implemented Features
+## ✨ Key Features
 
-#### 👨‍💼 Admin Portal
+- **Role-Based Access Control (RBAC)**: Secure dashboards for Employees, HR Admins, and HR Super Admins.
+- **Dynamic Onboarding Forms**:
+  - Employment Application
+  - Basic Information (Personal, Contact, Education, etc.)
+  - Pre-Joining Forms: Application, Mediclaim, Gratuity, Information
+  - Post-Joining Forms: NDA, Declaration, TDS, EPF
+- **Form Validation**: Robust client-side validation using schemas.
+- **Document Management**: Upload and view employee documents (PAN, Aadhaar, Passport, etc.).
+- **Progress Tracking**: Visual progress bars and stage indicators for onboarding status.
+- **Responsive Design**: Optimized for desktop and mobile devices.
 
-- **Dashboard**: Real-time statistics on new hires (Total, Inactive, Onboarding, Completed).
-- **Employee Management**:
-  - Add new employees (defaults to 'Inactive' status).
-  - View comprehensive employee profiles.
-  - Edit employee details and delete records.
-  - Track individual onboarding progress (ProgressBar).
-- **Task Management**:
-  - Create and manage Task Templates for standardized onboarding.
-  - Assign tasks to employees (individually or via templates).
-  - Verify submitted tasks.
-  - Distinguish between "Resource" files (Admin uploaded) and "Submission" files (Employee uploaded).
-  - "Back to Dashboard" navigation returns to the specific Employee Profile.
+## 🛠️ Installation & Setup
 
-#### 👨‍💻 New Employee Portal
+1.  **Clone the repository**:
 
-- **Dashboard**: Personalized view of pending and completed tasks.
-- **Task Execution**:
-  - View task details and admin-provided resources.
-  - Submit work via file upload or URL.
-  - Status updates automatically from "In Progress" -> "Submitted" -> "Completed" (after Admin verification).
-- **Profile**: View and edit personal details and profile photo.
-- **Lifecycle**:
-  - **Inactive**: Initial state upon creation.
-  - **Active**: Updates automatically upon first login.
-  - **Completed**: Updates automatically when all assigned tasks are verified.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React.js, Tailwind CSS, Framer Motion, Lucide React (Icons).
-- **Backend**: Node.js, Express.js.
-- **Database**: MySQL.
-- **Authentication**: JWT (JSON Web Tokens).
-
----
-
-## 🔌 API Documentation
-
-### Base URL: `/api`
-
-### 1. Authentication (`/auth`)
-
-| Method | Endpoint                | Description                                                                 | Access  |
-| :----- | :---------------------- | :-------------------------------------------------------------------------- | :------ |
-| `POST` | `/login`                | Authenticate user and get token. Updates status to 'Active' on first login. | Public  |
-| `POST` | `/register`             | Register a new user (Self-registration).                                    | Public  |
-| `POST` | `/register-admin`       | Register a new admin (Setup only).                                          | Public  |
-| `POST` | `/logout`               | Clear logic/cookie.                                                         | Private |
-| `GET`  | `/me`                   | Get current user details.                                                   | Private |
-| `POST` | `/forgotpassword`       | Initiate password reset.                                                    | Public  |
-| `PUT`  | `/resetpassword/:token` | Reset password with token.                                                  | Public  |
-
-### 2. Employee Management (`/employees`)
-
-| Method   | Endpoint | Description                    | Access  |
-| :------- | :------- | :----------------------------- | :------ |
-| `GET`    | `/`      | Get all employees.             | Admin   |
-| `POST`   | `/`      | Create a new employee.         | Admin   |
-| `GET`    | `/:id`   | Get specific employee details. | Private |
-| `PUT`    | `/:id`   | Update employee details.       | Private |
-| `DELETE` | `/:id`   | Delete an employee.            | Admin   |
-
-### 3. Task Management (`/tasks`)
-
-| Method   | Endpoint        | Description                                                    | Access  |
-| :------- | :-------------- | :------------------------------------------------------------- | :------ |
-| `POST`   | `/assign`       | Assign a new task to an employee.                              | Admin   |
-| `GET`    | `/:id`          | Get task details (including attachments).                      | Private |
-| `PUT`    | `/:id`          | Update task (status, submissions). Preserves attachment roles. | Private |
-| `DELETE` | `/:id`          | Delete a task.                                                 | Admin   |
-| `GET`    | `/employee/:id` | Get all tasks for a specific employee.                         | Private |
-
-### 4. Task Templates (`/templates`)
-
-| Method   | Endpoint         | Description                                       | Access |
-| :------- | :--------------- | :------------------------------------------------ | :----- |
-| `GET`    | `/`              | Get all templates.                                | Admin  |
-| `POST`   | `/`              | Create a new template.                            | Admin  |
-| `GET`    | `/:id`           | Get template details.                             | Admin  |
-| `PUT`    | `/:id`           | Update template metadata.                         | Admin  |
-| `DELETE` | `/:id`           | Delete a template.                                | Admin  |
-| `GET`    | `/tasks/:taskId` | Get details of a specific task within a template. | Admin  |
-| `PUT`    | `/tasks/:taskId` | Update a specific task within a template.         | Admin  |
-
-### 5. File Uploads (`/upload`)
-
-| Method | Endpoint | Description                        | Access  |
-| :----- | :------- | :--------------------------------- | :------ |
-| `POST` | `/`      | Upload a file (Returns file path). | Private |
-
----
-
-## 🏃‍♂️ Installation & Setup
-
-1.  **Clone the Repository**
-2.  **Database Setup**
-    - Import the provided SQL schema to your MySQL instance.
-    - Configure `.env` in `Backend/` with DB credentials.
-3.  **Backend Setup**
     ```bash
-    cd Backend
-    npm install
-    npm start
-    ```
-4.  **Frontend Setup**
-    ```bash
+    git clone <repository-url>
     cd Frontend
+    ```
+
+2.  **Install dependencies**:
+
+    ```bash
     npm install
+    ```
+
+3.  **Configure Environment**:
+    - Create a `.env` file in the root directory (if not present).
+    - Add necessary environment variables (e.g., API base URL).
+
+4.  **Run Development Server**:
+
+    ```bash
     npm run dev
     ```
-R
 
+    The app will be available at `http://localhost:5173`.
 
+5.  **Build for Production**:
+    ```bash
+    npm run build
+    ```
 
+## 📂 Project Structure
 
-  <span className={`px-3 py-1 text-xs font-medium rounded-full 
-                                ${getEmployeeStatus(employee) === 'Completed' ? 'bg-green-100 text-green-800' : 
-                                  getEmployeeStatus(employee) === 'Not Joined' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                 {getEmployeeStatus(employee)}
-                                 <StatusBadge status={statusText} />
-                            </span>
+```
+Frontend/
+├── public/              # Static assets
+├── src/
+│   ├── assets/          # Images and global styles
+│   ├── Components/      # Reusable UI components
+│   │   ├── Auth/        # Login/Register forms
+│   │   ├── Forms/       # Shared form inputs and layouts
+│   │   ├── Layout/      # Sidebar, Header, Protected Routes
+│   │   └── ...
+│   ├── context/         # React Context (Auth, Alerts)
+│   ├── hooks/           # Custom React Hooks
+│   ├── pages/           # Page components
+│   │   ├── Auth/        # Authentication pages
+│   │   ├── Employee/    # Employee dashboard and views
+│   │   ├── Forms/       # Onboarding form pages
+│   │   ├── HRAdmin/     # HR Admin dashboard
+│   │   └── HRSuperAdmin/# Super Admin dashboard
+│   ├── utils/           # Helper functions and validation schemas
+│   ├── App.jsx          # Main application component
+│   └── main.jsx         # Entry point
+├── index.html           # HTML template
+└── package.json         # Project dependencies
+```
+
+## 📝 Validations
+
+All forms use centralized validation schemas located in `src/utils/validationSchemas.js`. This ensures consistency across the application for fields like:
+
+- **Names**: Custom regex for alphabetic characters.
+- **Documents**: Pattern matching for PAN, Aadhaar, Passport, etc.
+- **Dates**: Past/Future date validations for DOB, expiry dates, etc.
+
+---

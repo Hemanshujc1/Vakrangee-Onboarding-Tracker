@@ -8,7 +8,6 @@ import AdminDetail from "./pages/HRSuperAdmin/AdminDetail";
 import EmployeeDetail from "./pages/Shared/EmployeeDetail";
 import MyProfile from "./pages/HRSuperAdmin/MyProfile";
 import MyEmployees from "./pages/HRSuperAdmin/MyEmployees";
-import Temp from "./pages/temp";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
 // HR Admin Pages
@@ -59,7 +58,6 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/temp" element={<Temp />} />
 
         {/* HR Super Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["HR_SUPER_ADMIN"]} />}>
