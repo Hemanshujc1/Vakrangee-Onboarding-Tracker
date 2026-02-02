@@ -1,55 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import { UserPlus, Search, Eye, Trash2, Download, Filter } from "lucide-react";
+import { UserPlus, Search, Download, Filter } from "lucide-react";
 import AddEmployeeModal from "../../Components/Admin/AddEmployeeModal";
 import Pagination from "../../Components/UI/Pagination";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { getEmployeeStatus, getUniqueOptions } from "../../utils/employeeUtils";
+import { getEmployeeStatus } from "../../utils/employeeUtils";
 import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import PageHeader from "../../Components/Shared/PageHeader";
 import EmployeeTable from "../../Components/Shared/EmployeeTable";
 import ExportModal from "../../Components/Shared/ExportModal";
+import useEmployeeList from "../../hooks/useEmployeeList";
+import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 
 const ManageEmployees = () => {
   const navigate = useNavigate();
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert } = useAlert();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState("");
-  const [filterJobTitle, setFilterJobTitle] = useState("");
-  const [filterLocation, setFilterLocation] = useState("");
-  const [filterAssignedHR, setFilterAssignedHR] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const itemsPerPage = 5;
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
-    try {
-      const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      const { data } = await axios.get("/api/employees", config);
-      const strictEmployees = data.filter((emp) => emp.role === "EMPLOYEE");
-
-      setEmployees(strictEmployees);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+      employees, // All employees, for export
+      currentEmployees,
+      totalItems,
+      loading,
+      options,
+      searchTerm,
+      setSearchTerm,
+      currentPage,
+      setCurrentPage,
+      sortConfig,
+      setSortConfig,
+      filters,
+      updateFilter,
+      resetFilters,
+      fetchEmployees,
+      handleActivate,
+      handleDelete
+  } = useEmployeeList({
+      filterPredicate: (emp) => emp.role === "EMPLOYEE",
+      itemsPerPage: 5
+  });
 
   const handleAddEmployee = async (formData) => {
     try {
@@ -75,104 +67,12 @@ const ManageEmployees = () => {
       await showAlert("Employee added successfully!", { type: 'success' });
 
       setIsModalOpen(false);
-      fetchEmployees();
+      fetchEmployees(); // Refresh employee list after adding
     } catch (error) {
       console.error("Error adding employee:", error);
       await showAlert(error.response?.data?.message || "Failed to add employee.", { type: 'error' });
     }
   };
-
-  // Extract Unique Options
-  const departments = getUniqueOptions(employees, "department");
-  const jobTitles = getUniqueOptions(employees, "jobTitle");
-  const locations = getUniqueOptions(employees, "location");
-  const uniqueHRs = [
-    ...new Set(
-      employees
-        .map((emp) => emp.assignedHRName)
-        .filter((name) => name && name !== "-")
-    ),
-  ].sort();
-  const hasUnassigned = employees.some(
-    (emp) => !emp.assignedHRName || emp.assignedHRName === "-"
-  );
-  const hrOptions = hasUnassigned ? ["Not Assigned", ...uniqueHRs] : uniqueHRs;
-  const statuses = [
-    "Login Pending",
-    "Profile Pending",
-    "In Progress",
-    "Ready to Join",
-    "Joining Formalities",
-    "Completed",
-    "Not Joined"
-  ];
-
-  // Filter & Pagination
-  let filteredEmployees = employees.filter((emp) => {
-    const statusText = getEmployeeStatus(emp);
-    const matchesSearch =
-      emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = filterStatus ? statusText === filterStatus : true;
-    const matchesDept = filterDepartment
-      ? emp.department === filterDepartment
-      : true;
-    const matchesJob = filterJobTitle ? emp.jobTitle === filterJobTitle : true;
-    const matchesLocation = filterLocation
-      ? emp.location === filterLocation
-      : true;
-
-    let matchesHR = true;
-    if (filterAssignedHR) {
-      if (filterAssignedHR === "Not Assigned") {
-        matchesHR = !emp.assignedHRName || emp.assignedHRName === "-";
-      } else {
-        matchesHR = emp.assignedHRName === filterAssignedHR;
-      }
-    }
-
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesDept &&
-      matchesJob &&
-      matchesLocation &&
-      matchesHR
-    );
-  });
-
-  // Apply Sorting
-  filteredEmployees.sort((a, b) => {
-      // 1. Primary Sort: "Not Joined" to bottom
-      const statusA = getEmployeeStatus(a);
-      const statusB = getEmployeeStatus(b);
-      
-      if (statusA === 'Not Joined' && statusB !== 'Not Joined') return 1;
-      if (statusA !== 'Not Joined' && statusB === 'Not Joined') return -1;
-
-      // 2. Secondary Sort: User Config
-      if (sortConfig.key) {
-        let aValue, bValue;
-        if (sortConfig.key === "dateOfJoining") {
-            aValue = new Date(a.dateOfJoining || 0);
-            bValue = new Date(b.dateOfJoining || 0);
-        } else {
-            aValue = a[sortConfig.key] || "";
-            bValue = b[sortConfig.key] || "";
-        }
-        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-  });
-
-  const totalItems = filteredEmployees.length;
-  const currentEmployees = filteredEmployees.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   return (
     <DashboardLayout>
@@ -195,27 +95,19 @@ const ManageEmployees = () => {
       {/* Sidebar Drawer */}
       <EmployeeFilters
         filters={{
-          status: filterStatus,
-          setStatus: setFilterStatus,
-          department: filterDepartment,
-          setDepartment: setFilterDepartment,
-          jobTitle: filterJobTitle,
-          setJobTitle: setFilterJobTitle,
-          location: filterLocation,
-          setLocation: setFilterLocation,
-          assignedHR: filterAssignedHR,
-          setAssignedHR: setFilterAssignedHR,
-          resetFilters: () => {
-            setFilterStatus("");
-            setFilterDepartment("");
-            setFilterJobTitle("");
-            setFilterLocation("");
-            setFilterAssignedHR("");
-            setSearchTerm("");
-            setSortConfig({ key: null, direction: "asc" });
-          },
+          status: filters.status,
+          setStatus: (val) => updateFilter('status', val),
+          department: filters.department,
+          setDepartment: (val) => updateFilter('department', val),
+          jobTitle: filters.jobTitle,
+          setJobTitle: (val) => updateFilter('jobTitle', val),
+          location: filters.location,
+          setLocation: (val) => updateFilter('location', val),
+          assignedHR: filters.assignedHR,
+          setAssignedHR: (val) => updateFilter('assignedHR', val),
+          resetFilters: resetFilters,
         }}
-        options={{ statuses, departments, jobTitles, locations, hrOptions }}
+        options={options}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
@@ -282,7 +174,7 @@ const ManageEmployees = () => {
             <Pagination
               currentPage={currentPage}
               totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
+              itemsPerPage={5}
               onPageChange={setCurrentPage}
             />
           </div>
@@ -298,26 +190,9 @@ const ManageEmployees = () => {
             onRowClick={(emp) =>
               navigate(`/hr-super-admin/employees/${emp.id}`)
             }
-            onDelete={async (emp) => {
-                const isConfirmed = await showConfirm(`Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`, { type: 'warning' });
-                if(isConfirmed) {
-                    try {
-                        const userInfo = localStorage.getItem("userInfo");
-                        const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
-                        const config = { headers: { Authorization: `Bearer ${token}` } };
-                        await axios.delete(`/api/employees/${emp.id}`, config);
-                        
-                        // Optimistic update
-                        setEmployees(prev => prev.map(p => 
-                            p.id === emp.id ? { ...p, onboarding_stage: 'Not_joined', accountStatus: 'Inactive' } : p
-                        ));
-                        await showAlert("Employee removed successfully.", { type: 'success' });
-                    } catch (err) {
-                        console.error("Delete failed", err);
-                        await showAlert("Failed to delete employee", { type: 'error' });
-                    }
-                }
-            }}
+            onActivate={handleActivate}
+            onDelete={handleDelete}
+            emptyMessage="No employees found."
           />
         )}
       </div>
@@ -332,7 +207,7 @@ const ManageEmployees = () => {
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        data={employees.map((emp) => ({
+        data={employees.map((emp) => ({ // Use 'employees' (all employees) for export
           ...emp,
           status: getEmployeeStatus(emp),
         }))}
@@ -350,10 +225,11 @@ const ManageEmployees = () => {
           // role: "Role",
           assignedHRName: "HR Assigned",
         }}
-        options={{ hrOptions, statuses }}
+        options={options}
       />
     </DashboardLayout>
   );
 };
+
 
 export default ManageEmployees;

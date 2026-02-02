@@ -52,11 +52,22 @@ const FormInformation = () => {
 
         // Personal Details
         first_name: commonSchemas.nameString,
-        middle_name: Yup.string().nullable().optional(),
+        middle_name: Yup.string()
+        .min(3, "Minimum 3 characters required")
+        .max(30, "Maximum 30 characters are allowed")
+        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'")
+        .nullable().optional(),
         last_name: commonSchemas.nameString,
-        father_name: Yup.string().nullable().optional(),
-        father_middle_name: Yup.string().nullable().optional(),
-        father_last_name: Yup.string().nullable().optional(),
+        father_name: Yup.string()
+        .min(3, "Minimum 3 characters required")
+        .max(30, "Maximum 30 characters are allowed")
+        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
+        father_middle_name: Yup.string().min(3, "Minimum 3 characters required")
+        .max(30, "Maximum 30 characters are allowed")
+        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
+        father_last_name: Yup.string().min(3, "Minimum 3 characters required")
+        .max(30, "Maximum 30 characters are allowed")
+        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
         date_of_birth: commonSchemas.datePast,
         birth_city: commonSchemas.stringRequired,
         birth_state: commonSchemas.stringRequired,
@@ -83,7 +94,9 @@ const FormInformation = () => {
 
         // Address - Current
         current_residence_type: Yup.string().required("Required"),
-        current_landlord_name: Yup.string().nullable().optional(),
+        current_landlord_name: Yup.string().min(3, "Minimum 3 characters required")
+        .max(30, "Maximum 30 characters are allowed")
+        .matches(/^[a-zA-Z\s]+$/, "Only letters allowed'").nullable().optional(),
         current_building_name: Yup.string().required("Required"),
         current_flat_house_no: Yup.string().required("Required"),
         current_block_street_no: Yup.string().required("Required"),
@@ -143,13 +156,17 @@ const FormInformation = () => {
         // Employment Details
         employment_details: Yup.array().of(
           Yup.object().shape({
-            companyName: Yup.string().nullable().optional(),
+            companyName: Yup.string()
+            .min(2, "Minimum 2 characters required")
+            .max(30, "Maximum 30 characters are allowed")
+            .nullable().optional(),
             address: Yup.string().min(5,"Minimum 5 characters required").max(200,"Max 200 characters").nullable().optional(),
             empType: Yup.string().nullable().optional(),
             empCode: Yup.string().optional(),
             startDate: Yup.string().nullable().optional(),
             endDate: Yup.string().nullable().optional(),
-            position: Yup.string().min(2,"Minimum 2 characters required").max(30,"Max 30 characters").nullable().optional(),
+            position: Yup.string()
+            .min(2,"Minimum 2 characters required").max(30,"Max 30 characters").nullable().optional(),
             compensation: Yup.number()
               .typeError("Must be number")
               .nullable().optional(),
@@ -429,8 +446,7 @@ const FormInformation = () => {
       const base = autoFillData; // Fallback to base user data
 
       reset({
-        designation: saved.designation || "",
-
+        designation: saved.designation || base.designation ||"",
         first_name: saved.first_name || base.firstname || "",
         middle_name: saved.middle_name || base.middlename || "",
         last_name: saved.last_name || base.lastname || "",

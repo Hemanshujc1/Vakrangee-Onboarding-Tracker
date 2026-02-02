@@ -51,7 +51,7 @@ const EditProfileForm = () => {
       .required("Last Name is required")
       .matches(/^[a-zA-Z\s]+$/, "Only letters allowed"),
     department_name: Yup.string().required("Department is required"),
-    job_title: Yup.string().required("Job Title is required"),
+    job_title: Yup.string().max(15, "Maximum 15 characters allowed").required("Job Title is required"),
     work_location: Yup.string()
       .min(3, "Minimum 3 characters required")
       .max(15, "Maximum 15 characters allowed")

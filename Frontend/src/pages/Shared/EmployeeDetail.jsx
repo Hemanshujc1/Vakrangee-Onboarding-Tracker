@@ -4,8 +4,6 @@ import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import { ArrowLeft, Pencil, Save, X, Briefcase } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
-
-// Import New Components
 import ProfileHeader from "../../Components/EmployeeDetail/ProfileHeader";
 import PersonalInfoGrid from "../../Components/EmployeeDetail/PersonalInfoGrid";
 import AddressCard from "../../Components/EmployeeDetail/AddressCard";
@@ -21,7 +19,6 @@ const EmployeeDetail = () => {
   const { showAlert, showConfirm } = useAlert();
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [isEditing, setIsEditing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [hrAdmins, setHrAdmins] = useState([]);

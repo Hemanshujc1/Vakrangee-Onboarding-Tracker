@@ -557,6 +557,10 @@ exports.updateEmployeeDetails = async (req, res) => {
       personalEmail,
       onboardingHrId,
       email,
+      accountStatus,
+      onboarding_stage,
+      firstLoginAt,
+      lastLoginAt
     } = req.body;
 
     const employee = await EmployeeMaster.findOne({
@@ -591,7 +595,9 @@ exports.updateEmployeeDetails = async (req, res) => {
 
     await record.save();
 
-    // Update Master Data (Email)
+    // Update Master Data
+    let masterChanged = false;
+
     if (email !== undefined) {
       employee.company_email_id = email;
       // Sync with User table (username is the email)
@@ -599,7 +605,28 @@ exports.updateEmployeeDetails = async (req, res) => {
         { username: email },
         { where: { id: employee.employee_id } },
       );
-      await employee.save();
+      masterChanged = true;
+    }
+
+    if (accountStatus !== undefined) {
+        employee.account_status = accountStatus;
+        masterChanged = true;
+    }
+    if (onboarding_stage !== undefined) {
+        employee.onboarding_stage = onboarding_stage;
+        masterChanged = true;
+    }
+    if (firstLoginAt !== undefined) {
+        employee.first_login_at = firstLoginAt; // Pass null to reset
+        masterChanged = true;
+    }
+    if (lastLoginAt !== undefined) {
+        employee.last_login_at = lastLoginAt; // Pass null to reset
+        masterChanged = true;
+    }
+
+    if (masterChanged) {
+        await employee.save();
     }
 
     res.json({ message: "Details updated successfully", record });

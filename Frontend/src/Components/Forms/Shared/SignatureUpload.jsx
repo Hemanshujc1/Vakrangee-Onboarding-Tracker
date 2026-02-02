@@ -53,11 +53,7 @@ const SignatureUpload = ({
           {error.message}
         </div>
       )}
-      
-      {/* Optional: Show preview here if needed, but usually it's passed or handled externally. 
-          For now, since FormMediclaim shows preview elsewhere (in FormLayout), we keep it minimal.
-          But wait, FormMediclaim has file input separate from FormLayout preview.
-      */}
+
     </div>
   );
 };

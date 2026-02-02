@@ -14,7 +14,6 @@ const PreviewInformation = () => {
   const { showAlert, showConfirm } = useAlert();
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Get logged-in user ID from localStorage if available, or use id param
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const employeeId = id || user.id;
 

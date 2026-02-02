@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import useAutoFill from "../../hooks/useAutoFill";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import { FileText, Edit, CheckCircle, ChevronRight } from "lucide-react";
+import FormCard from "../../Components/Employee/Shared/FormCard";
 
 const PreJoiningForms = () => {
   const navigate = useNavigate();
@@ -124,64 +124,20 @@ const PreJoiningForms = () => {
     }).filter(f => !f.isDisabled);
   }, [autoFillData]);
 
-  const renderActionButton = (form) => {
-    // Use custom preview path if available, else default
-    const navigateToPreview = () => {
-      navigate(form.previewPath || `${form.path}/preview`, {
-        state: {
-          formData: form.formData,
-          status: form.rawStatus,
-          rejectionReason: form.rejectionReason,
-        },
-      });
-    };
-
-    if (form.status === "Approved") {
-      // VERIFIED
-      return (
-        <button
-          onClick={navigateToPreview}
-          className="w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 bg-green-50 text-green-600 hover:bg-green-100 border border-green-200 transition-all"
-        >
-          <CheckCircle size={16} /> View Approved
-        </button>
-      );
+  const handleCardClick = (form) => {
+    if (["Approved", "Submitted", "Rejected"].includes(form.status)) {
+        navigate(form.previewPath || `${form.path}/preview`, {
+            state: {
+                formData: form.formData,
+                status: form.rawStatus,
+                rejectionReason: form.rejectionReason,
+            },
+        });
+    } else {
+        navigate(form.path);
     }
-
-    if (form.status === "Submitted") {
-      // SUBMITTED
-      return (
-        <button
-          onClick={navigateToPreview}
-          className="w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-all"
-        >
-          View Submitted
-        </button>
-      );
-    }
-
-    if (form.status === "Rejected") {
-      // REJECTED
-      return (
-        <button
-          onClick={navigateToPreview}
-          className="w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all"
-        >
-          <Edit size={16} /> View Rejection Details
-        </button>
-      );
-    }
-
-    // Default / Pending
-    return (
-      <button
-        onClick={() => navigate(form.path)}
-        className="w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 bg-(--color-primary) text-white hover:brightness-110 shadow-sm transition-all"
-      >
-        Start Filling <ChevronRight size={16} />
-      </button>
-    );
   };
+
 
   return (
     <DashboardLayout>
@@ -196,68 +152,11 @@ const PreJoiningForms = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {forms.map((form) => (
-          <div
-            key={form.id}
-            className={`p-6 rounded-xl shadow-sm border transition-all group ${
-              form.status === "Rejected"
-                ? "bg-red-50 border-red-200"
-                : "bg-white border-gray-100 hover:border-blue-200"
-            }`}
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div
-                className={`p-3 rounded-lg ${
-                  form.status === "Approved"
-                    ? "bg-green-100 text-green-600"
-                    : form.status === "Rejected"
-                    ? "bg-red-100 text-red-600"
-                    : form.status === "Submitted"
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-blue-50 text-(--color-primary)"
-                }`}
-              >
-                <FileText size={24} />
-              </div>
-
-              {/* Status Badge */}
-              <div className="flex flex-col gap-2 text-center">
-              <span
-                className={`text-xs font-semibold px-1 py-1 rounded ${
-                  form.status === "Approved"
-                    ? "bg-green-100 text-green-700"
-                    : form.status === "Rejected"
-                    ? "bg-red-100 text-red-700"
-                    : form.status === "Submitted"
-                    ? "bg-blue-50 text-blue-700"
-                    : "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {form.status === "Submitted"
-                  ? "Submitted for Verification"
-                  : form.status === "Approved"
-                  ? "Verified"
-                  : form.status === "Rejected"
-                  ? "Returned"
-                  : `~ ${form.time}`}
-              </span>
-              
-              {form.status === "Approved" && form.verifiedByName && (
-                  <div className="text-[10px] text-gray-500 font-medium mt-1 text-right">
-                    Verified by: {form.verifiedByName}
-                  </div>
-              )}
-              </div>
-            </div>
-
-            <h3 className="font-bold text-lg text-gray-800 mb-1">
-              {form.name}
-            </h3>
-            <p className="text-sm text-gray-500 mb-6 min-h-10">
-              {form.description}
-            </p>
-
-            {renderActionButton(form)}
-          </div>
+          <FormCard 
+            key={form.id} 
+            form={form} 
+            onClick={() => handleCardClick(form)} 
+          />
         ))}
       </div>
     </DashboardLayout>

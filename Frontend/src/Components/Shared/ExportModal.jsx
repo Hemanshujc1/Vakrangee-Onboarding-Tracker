@@ -133,7 +133,6 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
     const tableRows = filteredData.map(item => {
         const row = {};
         selectedFields.forEach(field => {
-            // Ensure value is a string and handle null/undefined
             let val = item[field];
             if (val === null || val === undefined) val = "-";
             row[field] = String(val);
@@ -150,7 +149,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
         body: tableRows,
         theme: 'grid',
         styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [63, 81, 181] } // Matches typical primary color
+        headStyles: { fillColor: [63, 81, 181] } 
     });
 
     doc.save(`${fileName}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -194,7 +193,6 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                 <div className={`bg-gray-50 border border-gray-200 rounded-xl transition-all duration-300 overflow-hidden ${isFiltersOpen ? 'p-4' : 'max-h-0 border-0'}`}>
                    {isFiltersOpen && (
                        <>
-                        {/* Reuse EmployeeFilters component but we need to inject our local state */}
                         <div className="mb-4">
                             <input 
                                 type="text" 

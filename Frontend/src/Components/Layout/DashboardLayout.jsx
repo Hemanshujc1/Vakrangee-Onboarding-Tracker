@@ -7,7 +7,6 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-(--color-bg-light)">
-      {/* Mobile Header for Hamburger */}
       <div className="lg:hidden p-4 bg-(--color-secondary) text-white flex items-center shadow-md sticky top-0 z-40">
         <button onClick={() => setIsSidebarOpen(true)} className="p-1 hover:bg-white/10 rounded-lg transition-colors cursor-pointer">
           <Menu size={24} />

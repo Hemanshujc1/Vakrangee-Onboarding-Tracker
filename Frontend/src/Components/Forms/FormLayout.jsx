@@ -49,7 +49,6 @@ const  FormLayout = ({
         {isLocked && <InstructionBlock>Form Locked.</InstructionBlock>}
 
         {/* Form Content */}
-        {/* If onSubmit is provided, wrap in form, otherwise just div (for backward compat if needed, though we plan to refactor all) */}
         {onSubmit ? (
             <form onSubmit={onSubmit} className="space-y-8 font-serif text-sm">
                 <fieldset disabled={isLocked} className="space-y-8 disabled:opacity-75">
@@ -72,7 +71,7 @@ const  FormLayout = ({
                        <SignatureUpload {...signature} />
                     )}
                     
-                    {/* Read-only Signature view (Legacy/Preview mode without form logic) */}
+                    {/* Read-only Signature view  */}
                     {showSignature && !signature && (
                         <div className="mt-12 pt-8 border-t flex justify-end">
                             <div className="text-center">
@@ -97,7 +96,7 @@ const  FormLayout = ({
         ) : (
             <div className="min-h-125">
                 {children}
-                {/* Footer Signature (Legacy logic for Preview/non-form usage) */}
+                {/* Footer Signature  */}
                 {showSignature && (
                     <div className="mt-12 pt-8 border-t flex justify-end">
                         <div className="text-center">

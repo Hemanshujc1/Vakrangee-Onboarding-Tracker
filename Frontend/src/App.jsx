@@ -48,119 +48,130 @@ import PreviewInformation from "./pages/Forms/PreviewInformation";
 import { AlertProvider } from "./context/AlertContext";
 import CustomAlert from "./components/UI/CustomAlert";
 
-
 const App = () => {
   return (
     <AlertProvider>
       <CustomAlert />
       <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/verify-otp" element={<VerifyOTP />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/temp" element={<Temp />} />
+        {/* Public Routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/temp" element={<Temp />} />
 
-      {/* HR Super Admin Routes */}
-      <Route element={<ProtectedRoute allowedRoles={["HR_SUPER_ADMIN"]} />}>
-        <Route path="/hr-super-admin" element={<Dashboard />} />
-        <Route path="/hr-super-admin/employees" element={<ManageEmployees />} />
-        <Route path="/hr-super-admin/admins" element={<ManageAdmins />} />
-        <Route path="/hr-super-admin/admins/:id" element={<AdminDetail />} />
-        <Route
-          path="/hr-super-admin/employees/:id"
-          element={<EmployeeDetail />}
-        />
-        <Route path="/hr-super-admin/profile" element={<MyProfile />} />
-        <Route path="/hr-super-admin/myemployees" element={<MyEmployees />} />
-      </Route>
-
-      {/* HR Admin Routes */}
-      <Route element={<ProtectedRoute allowedRoles={["HR_ADMIN"]} />}>
-        <Route path="/hr-admin" element={<HRAdminDashboard />} />
-        <Route path="/hr-admin/other-employees" element={<OtherEmployees />} />
-        <Route path="/hr-admin/employees" element={<HRAdminEmployees />} />
-        <Route path="/hr-admin/employees/:id" element={<EmployeeDetail />} />
-        <Route path="/hr-admin/profile" element={<HRAdminProfile />} />
-      </Route>
-
-      {/* Employee Routes */}
-      <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
-        <Route path="/employee" element={<EmployeeDashboard />} />
-        <Route path="/employee/basic-info" element={<BasicInformation />} />
-        <Route path="/employee/documents" element={<Documents />} />
-        <Route path="/employee/pre-joining" element={<PreJoiningForms />} />
-        <Route path="/employee/post-joining" element={<PostJoiningForms />} />
-        <Route path="/employee/myHr" element={<MyHR />} />
-        <Route
-          path="/employee/company-overview"
-          element={<CompanyOverview />}
-        />
-        <Route path="/employee/check-list" element={<CheckList />} />
-
-        {/* Forms accessible by Employee - Some might be shared but generally edited by employee */}
-        <Route path="/forms/employment-info" element={<FormInformation />} />
-        <Route path="/forms/mediclaim" element={<FormMediclaim />} />
-        <Route path="/forms/non-disclosure-agreement" element={<FormNDA />} />
-        <Route path="/forms/declaration-form" element={<FormDeclaration />} />
-        <Route path="/forms/gratuity-form" element={<FormGratuity />} />
-        <Route path="/forms/employees-provident-fund/:employeeId?" element={<FormEPF />} />
-        <Route path="/forms/tds-form" element={<FormTDS />} />
-        <Route
-          path="/forms/employment-application"
-          element={<FormApplication />}
-        />
-      </Route>
-
-      {/* Shared/Universal Protected Routes - Viewable by involved parties */}
-      <Route
-        element={
-          <ProtectedRoute
-            allowedRoles={["EMPLOYEE", "HR_ADMIN", "HR_SUPER_ADMIN"]}
+        {/* HR Super Admin Routes */}
+        <Route element={<ProtectedRoute allowedRoles={["HR_SUPER_ADMIN"]} />}>
+          <Route path="/hr-super-admin" element={<Dashboard />} />
+          <Route
+            path="/hr-super-admin/employees"
+            element={<ManageEmployees />}
           />
-        }
-      >
+          <Route path="/hr-super-admin/admins" element={<ManageAdmins />} />
+          <Route path="/hr-super-admin/admins/:id" element={<AdminDetail />} />
+          <Route
+            path="/hr-super-admin/employees/:id"
+            element={<EmployeeDetail />}
+          />
+          <Route path="/hr-super-admin/profile" element={<MyProfile />} />
+          <Route path="/hr-super-admin/myemployees" element={<MyEmployees />} />
+        </Route>
+
+        {/* HR Admin Routes */}
+        <Route element={<ProtectedRoute allowedRoles={["HR_ADMIN"]} />}>
+          <Route path="/hr-admin" element={<HRAdminDashboard />} />
+          <Route
+            path="/hr-admin/other-employees"
+            element={<OtherEmployees />}
+          />
+          <Route path="/hr-admin/employees" element={<HRAdminEmployees />} />
+          <Route path="/hr-admin/employees/:id" element={<EmployeeDetail />} />
+          <Route path="/hr-admin/profile" element={<HRAdminProfile />} />
+        </Route>
+
+        {/* Employee Routes */}
+        <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
+          <Route path="/employee" element={<EmployeeDashboard />} />
+          <Route path="/employee/basic-info" element={<BasicInformation />} />
+          <Route path="/employee/documents" element={<Documents />} />
+          <Route path="/employee/pre-joining" element={<PreJoiningForms />} />
+          <Route path="/employee/post-joining" element={<PostJoiningForms />} />
+          <Route path="/employee/myHr" element={<MyHR />} />
+          <Route
+            path="/employee/company-overview"
+            element={<CompanyOverview />}
+          />
+          <Route path="/employee/check-list" element={<CheckList />} />
+
+          {/* Forms accessible by Employee - Some might be shared but generally edited by employee */}
+          <Route path="/forms/employment-info" element={<FormInformation />} />
+          <Route path="/forms/mediclaim" element={<FormMediclaim />} />
+          <Route path="/forms/non-disclosure-agreement" element={<FormNDA />} />
+          <Route path="/forms/declaration-form" element={<FormDeclaration />} />
+          <Route path="/forms/gratuity-form" element={<FormGratuity />} />
+          <Route
+            path="/forms/employees-provident-fund/:employeeId?"
+            element={<FormEPF />}
+          />
+          <Route path="/forms/tds-form" element={<FormTDS />} />
+          <Route
+            path="/forms/employment-application"
+            element={<FormApplication />}
+          />
+        </Route>
+
+        {/* Shared/Universal Protected Routes - Viewable by involved parties */}
         <Route
-          path="/forms/information/preview"
-          element={<PreviewInformation />}
-        />
-        <Route
-          path="/forms/information/preview/:id"
-          element={<PreviewInformation />}
-        />
-        <Route path="/forms/mediclaim/preview" element={<PreviewMediclaim />} />
-        <Route
-          path="/forms/non-disclosure-agreement/preview"
-          element={<PreviewNDA />}
-        />
-        <Route
-          path="/forms/declaration-form/preview"
-          element={<PreviewDeclaration />}
-        />
-        <Route
-          path="/forms/gratuity-form/preview"
-          element={<PreviewGratuity />}
-        />
-        <Route
-          path="/forms/gratuity-form/preview"
-          element={<PreviewGratuity />}
-        />
-        <Route path="/forms/tds-form/preview" element={<PreviewTDS />} />
-        <Route
-          path="/forms/application/preview"
-          element={<PreviewApplication />}
-        />
-        <Route
-          path="/forms/application/preview/:employeeId"
-          element={<PreviewApplication />}
-        />
-        <Route
-          path="/forms/employees-provident-fund/preview/:employeeId"
-          element={<PreviewEPF />}
-        />
-      </Route>
-    </Routes>
+          element={
+            <ProtectedRoute
+              allowedRoles={["EMPLOYEE", "HR_ADMIN", "HR_SUPER_ADMIN"]}
+            />
+          }
+        >
+          <Route
+            path="/forms/information/preview"
+            element={<PreviewInformation />}
+          />
+          <Route
+            path="/forms/information/preview/:id"
+            element={<PreviewInformation />}
+          />
+          <Route
+            path="/forms/mediclaim/preview"
+            element={<PreviewMediclaim />}
+          />
+          <Route
+            path="/forms/non-disclosure-agreement/preview"
+            element={<PreviewNDA />}
+          />
+          <Route
+            path="/forms/declaration-form/preview"
+            element={<PreviewDeclaration />}
+          />
+          <Route
+            path="/forms/gratuity-form/preview"
+            element={<PreviewGratuity />}
+          />
+          <Route
+            path="/forms/gratuity-form/preview"
+            element={<PreviewGratuity />}
+          />
+          <Route path="/forms/tds-form/preview" element={<PreviewTDS />} />
+          <Route
+            path="/forms/application/preview"
+            element={<PreviewApplication />}
+          />
+          <Route
+            path="/forms/application/preview/:employeeId"
+            element={<PreviewApplication />}
+          />
+          <Route
+            path="/forms/employees-provident-fund/preview/:employeeId"
+            element={<PreviewEPF />}
+          />
+        </Route>
+      </Routes>
     </AlertProvider>
   );
 };

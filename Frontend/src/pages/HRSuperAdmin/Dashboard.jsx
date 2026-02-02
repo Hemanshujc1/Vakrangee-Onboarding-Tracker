@@ -1,118 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import {
   User,
   Users,
-  CheckCircle,
+  UserRoundCheck,
   Activity,
   UserPlus,
   Shield,
   UserCog,
 } from "lucide-react";
-import axios from "axios";
-import { getEmployeeStatus } from "../../utils/employeeUtils";
 import { useNavigate } from "react-router-dom";
+import { getEmployeeStatus } from "../../utils/employeeUtils";
 import StatusBadge from "../../Components/Shared/StatusBadge";
-
-const StatCard = ({ title, value, icon: Icon, colorVar }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-(--color-text-dark)">{value}</h3>
-      </div>
-      <div
-        className="p-3 rounded-full opacity-20"
-        style={{
-          backgroundColor: `var(${colorVar})`,
-          color: `var(${colorVar})`,
-        }}
-      >
-        <Icon size={24} style={{ opacity: 1, color: `var(${colorVar})` }} />
-      </div>
-    </div>
-    <div
-      className="absolute top-6 right-6 p-3 rounded-full"
-      style={{ backgroundColor: `var(${colorVar})`, opacity: 0.1 }}
-    ></div>
-    <div className="absolute top-6 right-6 p-3 rounded-full text-transparent">
-      <Icon
-        size={24}
-        style={{ fill: `var(${colorVar})`, stroke: `var(${colorVar})` }}
-      />
-    </div>
-  </div>
-);
+import StatCard from "../../Components/Shared/StatCard";
+import useDashboardStats from "../../hooks/useDashboardStats";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalEmployees: 0,
-    totalAdmins: 0,
-    onboardingActive: 0,
-    completed: 0,
-    profilePending: 0,
-  });
-  const [recentJoiners, setRecentJoiners] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo
-        ? JSON.parse(userInfo).token
-        : localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      const { data } = await axios.get("/api/employees", config);
-
-      const employees = data.filter((e) => e.role === "EMPLOYEE");
-      const admins = data.filter((e) =>
-        ["HR_ADMIN", "HR_SUPER_ADMIN", "ADMIN"].includes(e.role)
-      );
-
-      // Calculate stats
-      const activeOnboarding = employees.filter((e) => {
-        const status = getEmployeeStatus(e);
-        return !["Completed", "Not Joined"].includes(status);
-      }).length;
-
-      const completedCount = employees.filter(
-        (e) => getEmployeeStatus(e) === "Completed"
-      ).length;
-
-      const pendingProfile = employees.filter(
-        (e) => getEmployeeStatus(e) === "Profile Pending"
-      ).length;
-
-      setStats({
-        totalEmployees: employees.length,
-        totalAdmins: admins.length,
-        onboardingActive: activeOnboarding,
-        completed: completedCount,
-        profilePending: pendingProfile,
-      });
-
-      // Recent joiners (filter employees, sort by creation date or id if no date, take top 5)
-      // Assuming higher ID or later created_at means newer. Using ID for simplicity if created_at lacking, but startDate is better if exists.
-      // Let's us createdAt if available, else ID reverse.
-      const sortedEmployees = [...employees]
-        .sort((a, b) => {
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-        })
-        .slice(0, 5);
-
-      setRecentJoiners(sortedEmployees);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { stats, recentEmployees, loading } = useDashboardStats({ role: 'HR_SUPER_ADMIN' });
 
   return (
     <DashboardLayout>
@@ -126,65 +31,30 @@ const Dashboard = () => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-(--color-primary) hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">
-                Total Employees
-              </p>
-              <h3 className="text-3xl font-bold mt-2 text-(--color-secondary)">
-                {loading ? "-" : stats.totalEmployees}
-              </h3>
-            </div>
-            <div className="p-2 bg-blue-50 rounded-lg text-(--color-primary)">
-              <Users size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-(--color-accent-orange) hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">
-                Active Onboarding
-              </p>
-              <h3 className="text-3xl font-bold mt-2 text-(--color-secondary)">
-                {loading ? "-" : stats.onboardingActive}
-              </h3>
-            </div>
-            <div className="p-2 bg-orange-50 rounded-lg text-(--color-accent-orange)">
-              <Activity size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-(--color-accent-sage) hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Completed</p>
-              <h3 className="text-3xl font-bold mt-2 text-(--color-secondary)">
-                {loading ? "-" : stats.completed}
-              </h3>
-            </div>
-            <div className="p-2 bg-green-50 rounded-lg text-(--color-accent-sage)">
-              <CheckCircle size={24} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-(--color-accent-green) hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Admins</p>
-              <h3 className="text-3xl font-bold mt-2 text-(--color-secondary)">
-                {loading ? "-" : stats.totalAdmins}
-              </h3>
-            </div>
-            <div className="p-2 bg-emerald-50 rounded-lg text-(--color-accent-green)">
-              <Shield size={24} />
-            </div>
-          </div>
-        </div>
+        <StatCard 
+            title="Total Employees"
+            value={loading ? "-" : stats.totalEmployees}
+            icon={Users}
+            colorVar="--color-primary"
+        />
+        <StatCard 
+            title="Active Onboarding"
+            value={loading ? "-" : stats.onboardingActive}
+            icon={Activity}
+            colorVar="--color-accent-orange"
+        />
+        <StatCard 
+            title="Completed"
+            value={loading ? "-" : stats.completed}
+            icon={UserRoundCheck}
+            colorVar="--color-accent-sage"
+        />
+        <StatCard 
+            title="Admins"
+            value={loading ? "-" : stats.totalAdmins}
+            icon={Shield}
+            colorVar="--color-accent-green"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -206,8 +76,8 @@ const Dashboard = () => {
               <p className="text-gray-400 text-sm text-center py-4">
                 Loading...
               </p>
-            ) : recentJoiners.length > 0 ? (
-              recentJoiners.map((employee) => (
+            ) : recentEmployees.length > 0 ? (
+              recentEmployees.map((employee) => (
                 <div
                   key={employee.id}
                   onClick={() =>
@@ -258,7 +128,7 @@ const Dashboard = () => {
             <button
               onClick={() =>
                 navigate("/hr-super-admin/employees")
-              } /* Ideally open add modal directly if we could pass state, but nav is safe */
+              } 
               className="p-4 border border-dashed border-gray-300 rounded-xl hover:border-(--color-text-dark) hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-(--color-primary)"
             >
               <UserPlus size={24} />

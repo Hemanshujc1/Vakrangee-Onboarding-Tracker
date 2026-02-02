@@ -19,7 +19,6 @@ const FormApplication = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { employeeId } = user.id ? { employeeId: user.id } : { employeeId: null };
-  // The original has: const user = JSON.parse(localStorage.getItem("user") || "{}"); const employeeId = user.id;
 
   const { showAlert } = useAlert();
   
@@ -363,7 +362,6 @@ const FormApplication = () => {
   useEffect(() => {
     if (autoFillData) {
       const saved = autoFillData.applicationData || {};
-      // Combine logic to prefer saved draft data > auto-fill data > empty
       reset({
         firstname: saved.firstname || autoFillData.firstname || "",
         lastname: saved.lastname || autoFillData.lastname || "",
@@ -387,7 +385,6 @@ const FormApplication = () => {
         panNo: saved.panNo || autoFillData.panNo || "",
         hasPan: saved.hasPan || autoFillData.hasPan || "No",
 
-        // Load other fields if they exist in saved draft
         ...saved,
 
         // Ensure arrays have at least one row if empty and required

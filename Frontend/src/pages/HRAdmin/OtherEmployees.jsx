@@ -1,205 +1,126 @@
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import {Search, Filter } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import Pagination from "../../Components/UI/Pagination";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { getEmployeeStatus, getUniqueOptions } from "../../utils/employeeUtils";
 import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import PageHeader from "../../Components/Shared/PageHeader";
 import EmployeeTable from "../../Components/Shared/EmployeeTable";
+import useEmployeeList from "../../hooks/useEmployeeList";
 
 const OtherEmployees = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState("");
-  const [filterJobTitle, setFilterJobTitle] = useState("");
-  const [filterLocation, setFilterLocation] = useState("");
-  const [filterAssignedHR, setFilterAssignedHR] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentUserLocation, setCurrentUserLocation] = useState(null);
-  const itemsPerPage = 5;
+  const [isLocationLoading, setIsLocationLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
-    try {
-      const userInfoStr = localStorage.getItem("userInfo");
-      const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-      const user = userInfo?.user || JSON.parse(localStorage.getItem("user"));
-      const token = userInfo?.token || localStorage.getItem("token");
-
-      if (!user || !user.employeeId) {
-        console.error("User ID missing");
-        setLoading(false);
-        return;
-      }
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const myProfileRes = await axios.get(
-        `/api/employees/${user.employeeId}`,
-        config
-      );
-      const myLocation = myProfileRes.data.location;
-      setCurrentUserLocation(myLocation);
-      const { data } = await axios.get("/api/employees", config);
-
-      const filteredByLocation = data.filter((emp) => {
+  // Hook initialization
+  const {
+      currentEmployees,
+      totalItems,
+      loading: hookLoading,
+      options,
+      searchTerm,
+      setSearchTerm,
+      currentPage,
+      setCurrentPage,
+      sortConfig,
+      setSortConfig,
+      filters,
+      updateFilter,
+      resetFilters,
+      fetchEmployees
+  } = useEmployeeList({
+      filterPredicate: (emp, user) => {
+        if (!currentUserLocation) return false;
+        
         const isEmployee = emp.role === "EMPLOYEE";
-
-        if (!myLocation) return false;
-        const matchesLocation = emp.assignedHRLocation === myLocation;
+        // Logic from original file: 
+        // matchesLocation = emp.assignedHRLocation === myLocation
+        // isNotAssignedToMe = emp.onboardingHrId !== user.id
+        
+        const matchesLocation = emp.assignedHRLocation === currentUserLocation;
+        // User id is available in the 'user' object passed to predicate (fetched from regex/localStorage inside hook)
+        // But hook passes 'user' object which is { ... } from localStorage.
+        // Let's assume user.id is correct.
         const isNotAssignedToMe = emp.onboardingHrId !== user.id;
 
         return isEmployee && matchesLocation && isNotAssignedToMe;
-      });
-
-      setEmployees(filteredByLocation);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Extract Unique Options
-  const departments = getUniqueOptions(employees, "department");
-  const jobTitles = getUniqueOptions(employees, "jobTitle");
-  const locations = getUniqueOptions(employees, "location");
-  
-  const uniqueHRs = [
-    ...new Set(
-      employees
-        .map((emp) => emp.assignedHRName)
-        .filter((name) => name && name !== "-")
-    ),
-  ].sort();
-  const hasUnassigned = employees.some(
-    (emp) => !emp.assignedHRName || emp.assignedHRName === "-"
-  );
-  const hrOptions = hasUnassigned ? ["Not Assigned", ...uniqueHRs] : uniqueHRs;
-
-  const statuses = [
-    "Login Pending",
-    "Profile Pending",
-    "In Progress",
-    "Ready to Join",
-    "Joining Formalities",
-    "Completed",
-    "Not Joined",
-  ];
-
-  // Filter & Pagination
-  let filteredEmployees = employees.filter((emp) => {
-    const statusText = getEmployeeStatus(emp);
-    const matchesSearch =
-      emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = filterStatus ? statusText === filterStatus : true;
-    const matchesDept = filterDepartment
-      ? emp.department === filterDepartment
-      : true;
-    const matchesJob = filterJobTitle ? emp.jobTitle === filterJobTitle : true;
-    const matchesLocation = filterLocation
-      ? emp.location === filterLocation
-      : true;
-
-    let matchesHR = true;
-    if (filterAssignedHR) {
-      if (filterAssignedHR === "Not Assigned") {
-        matchesHR = !emp.assignedHRName || emp.assignedHRName === "-";
-      } else {
-        matchesHR = emp.assignedHRName === filterAssignedHR;
-      }
-    }
-
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesDept &&
-      matchesJob &&
-      matchesLocation &&
-      matchesHR
-    );
+      },
+      itemsPerPage: 5
   });
 
-  // Apply Sorting
-  filteredEmployees.sort((a, b) => {
-      // 1. Primary Sort: "Not Joined" to bottom
-      const statusA = getEmployeeStatus(a);
-      const statusB = getEmployeeStatus(b);
-      
-      if (statusA === 'Not Joined' && statusB !== 'Not Joined') return 1;
-      if (statusA !== 'Not Joined' && statusB === 'Not Joined') return -1;
+  // Fetch Current User Location
+  useEffect(() => {
+      const fetchLocation = async () => {
+          try {
+              const userInfoStr = localStorage.getItem("userInfo");
+              const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+              const token = userInfo?.token || localStorage.getItem("token");
+              const user = userInfo?.user || JSON.parse(localStorage.getItem("user"));
+              
+              if (!user || !user.employeeId) {
+                  console.error("User ID missing");
+                  setIsLocationLoading(false);
+                  return;
+              }
 
-      // 2. Secondary Sort: User Config
-      if (sortConfig.key) {
-        let aValue, bValue;
-        if (sortConfig.key === "dateOfJoining") {
-            aValue = new Date(a.dateOfJoining || 0);
-            bValue = new Date(b.dateOfJoining || 0);
-        } else {
-            aValue = a[sortConfig.key] || "";
-            bValue = b[sortConfig.key] || "";
-        }
-        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+              const config = { headers: { Authorization: `Bearer ${token}` } };
+              const myProfileRes = await axios.get(
+                  `/api/employees/${user.employeeId}`,
+                  config
+              );
+              setCurrentUserLocation(myProfileRes.data.location);
+          } catch (error) {
+              console.error("Error fetching user location:", error);
+          } finally {
+              setIsLocationLoading(false);
+          }
+      };
+
+      fetchLocation();
+  }, []);
+
+  // Re-fetch employees when location is available
+  useEffect(() => {
+      if (currentUserLocation) {
+          fetchEmployees();
       }
-      return 0;
-  });
+  }, [currentUserLocation]);
 
-  const totalItems = filteredEmployees.length;
-  const currentEmployees = filteredEmployees.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const loading = isLocationLoading || hookLoading;
 
   return (
     <DashboardLayout>
       <PageHeader
         title="Other Employees"
-        subtitle="View and manage other employees in the system."      >
-      </PageHeader>
+        subtitle="View employees in your location managed by other HRs."
+      />
 
       {/* Sidebar Drawer */}
       <EmployeeFilters
-        filters={{
-          status: filterStatus,
-          setStatus: setFilterStatus,
-          department: filterDepartment,
-          setDepartment: setFilterDepartment,
-          jobTitle: filterJobTitle,
-          setJobTitle: setFilterJobTitle,
-          location: filterLocation,
-          setLocation: setFilterLocation,
-          assignedHR: filterAssignedHR,
-          setAssignedHR: setFilterAssignedHR,
-          resetFilters: () => {
-            setFilterStatus("");
-            setFilterDepartment("");
-            setFilterJobTitle("");
-            setFilterLocation("");
-            setFilterAssignedHR("");
-            setSearchTerm("");
-            setSortConfig({ key: null, direction: "asc" });
-          },
+         filters={{
+          status: filters.status,
+          setStatus: (val) => updateFilter('status', val),
+          department: filters.department,
+          setDepartment: (val) => updateFilter('department', val),
+          jobTitle: filters.jobTitle,
+          setJobTitle: (val) => updateFilter('jobTitle', val),
+          location: filters.location,
+          setLocation: (val) => updateFilter('location', val),
+          assignedHR: filters.assignedHR,
+          setAssignedHR: (val) => updateFilter('assignedHR', val),
+          resetFilters: resetFilters,
         }}
-        options={{ statuses, departments, jobTitles, locations, hrOptions }}
+        options={options}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* Main Content */}
       <div className="w-full">
-        {/* Top Bar: Search & Sort */}
+        {/* Top Bar */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
           <div className="relative flex-1 w-full sm:w-auto">
             <Search
@@ -220,8 +141,8 @@ const OtherEmployees = () => {
             className="flex items-center gap-2 text-gray-700 font-medium border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 w-full sm:w-auto justify-center transition-colors"
           >
             <Filter size={18} />
-            {/* <span>Filters</span> */}
           </button>
+
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="text-sm text-gray-500 whitespace-nowrap hidden sm:inline">
               Sort by:
@@ -259,7 +180,7 @@ const OtherEmployees = () => {
             <Pagination
               currentPage={currentPage}
               totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
+              itemsPerPage={5} // inherited from hook default or explicit
               onPageChange={setCurrentPage}
             />
           </div>
@@ -267,7 +188,7 @@ const OtherEmployees = () => {
 
         {loading ? (
           <div className="text-center py-10 text-gray-500">
-            Loading employees...
+            Loading...
           </div>
         ) : (
           <EmployeeTable
@@ -275,12 +196,11 @@ const OtherEmployees = () => {
             onRowClick={(emp) =>
               navigate(`/hr-admin/employees/${emp.id}`)
             }
+            emptyMessage="No other employees found in your location."
+            // No actions for Other Employees
           />
         )}
       </div>
-
-  
-
     </DashboardLayout>
   );
 };

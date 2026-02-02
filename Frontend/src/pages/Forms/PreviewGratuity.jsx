@@ -132,8 +132,7 @@ const PreviewGratuity = () => {
       // Re-construct FormData from the values passed in state
       Object.keys(formData).forEach((key) => {
         if (key === "nominees" || key === "witnesses") {
-          // Ensure we don't double-stringify if it's already a string?
-          // formData in state is likely the raw values object from react-hook-form
+          
           const val = formData[key];
           submitData.append(
             key,

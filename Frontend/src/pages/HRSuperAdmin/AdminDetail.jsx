@@ -11,8 +11,6 @@ import {
   Users,
   CheckCircle,
   Clock,
-  Eye,
-  Trash2,
   Pencil,
   Filter,
   Download,
@@ -82,10 +80,10 @@ const AdminDetail = () => {
       // Re-fetch to get updated data cleanly
       fetchAdminDetails();
       setIsEditing(false);
-      await showAlert("Details updated successfully.", { type: 'success' });
+      await showAlert("Details updated successfully.", { type: "success" });
     } catch (error) {
       console.error("Error updating admin details:", error);
-      await showAlert("Failed to update details.", { type: 'error' });
+      await showAlert("Failed to update details.", { type: "error" });
     }
   };
 
@@ -156,23 +154,25 @@ const AdminDetail = () => {
 
   // Sorting
   filteredEmployees.sort((a, b) => {
-      // 1. Primary Sort: "Not Joined" / Inactive always at bottom
-      const isNotJoinedA = a.onboarding_stage === 'Not_joined' || a.accountStatus === 'Inactive';
-      const isNotJoinedB = b.onboarding_stage === 'Not_joined' || b.accountStatus === 'Inactive';
+    // 1. Primary Sort: "Not Joined" / Inactive always at bottom
+    const isNotJoinedA =
+      a.onboarding_stage === "Not_joined" || a.accountStatus === "Inactive";
+    const isNotJoinedB =
+      b.onboarding_stage === "Not_joined" || b.accountStatus === "Inactive";
 
-      if (isNotJoinedA && !isNotJoinedB) return 1;
-      if (!isNotJoinedA && isNotJoinedB) return -1;
+    if (isNotJoinedA && !isNotJoinedB) return 1;
+    if (!isNotJoinedA && isNotJoinedB) return -1;
 
-      // 2. Secondary Sort: User Selection
-      if (sortConfig.key) {
-          let valA = a[sortConfig.key] || "";
-          let valB = b[sortConfig.key] || "";
+    // 2. Secondary Sort: User Selection
+    if (sortConfig.key) {
+      let valA = a[sortConfig.key] || "";
+      let valB = b[sortConfig.key] || "";
 
-          // Date handling if needed, though mostly strings
-          if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-          if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
+      // Date handling if needed, though mostly strings
+      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    }
+    return 0;
   });
 
   return (
@@ -188,17 +188,19 @@ const AdminDetail = () => {
             <span>Back to Admins</span>
           </button>
           <div className="flex justify-between items-center">
-             <h1 className="text-3xl font-bold text-[#4E4E4E]">Admin Profile</h1>
-                    {/* Account Status Badge */}
-                    <div className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
-                admin.accountStatus === 'Inactive' 
-                    ? 'bg-red-50 text-red-600 border-red-500' 
-                    : admin.accountStatus === 'INVITED'
-                    ? 'bg-yellow-50 text-yellow-600 border-yellow-500'
-                    : 'bg-green-50 text-green-600 border-green-500'
-             }`}>
-                 {admin.accountStatus || 'ACTIVE'}
-             </div>
+            <h1 className="text-3xl font-bold text-[#4E4E4E]">Admin Profile</h1>
+            {/* Account Status Badge */}
+            <div
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
+                admin.accountStatus === "Inactive"
+                  ? "bg-red-50 text-red-600 border-red-500"
+                  : admin.accountStatus === "INVITED"
+                  ? "bg-yellow-50 text-yellow-600 border-yellow-500"
+                  : "bg-green-50 text-green-600 border-green-500"
+              }`}
+            >
+              {admin.accountStatus || "ACTIVE"}
+            </div>
           </div>
         </div>
 
@@ -403,24 +405,29 @@ const AdminDetail = () => {
         </div>
 
         <EmployeeFilters
-            filters={{
-                department: filterDepartment, setDepartment: setFilterDepartment,
-                jobTitle: filterJobTitle, setJobTitle: setFilterJobTitle,
-                location: filterLocation, setLocation: setFilterLocation,
-                status: filterStatus, setStatus: setFilterStatus,
-                sortConfig, setSortConfig,
-                resetFilters: () => {
-                    setFilterDepartment("");
-                    setFilterJobTitle("");
-                    setFilterLocation("");
-                    setFilterStatus("");
-                    setSearchTerm("");
-                    setSortConfig({ key: null, direction: 'asc' });
-                }
-            }}
-            options={{ departments, jobTitles, locations, statuses }}
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
+          filters={{
+            department: filterDepartment,
+            setDepartment: setFilterDepartment,
+            jobTitle: filterJobTitle,
+            setJobTitle: setFilterJobTitle,
+            location: filterLocation,
+            setLocation: setFilterLocation,
+            status: filterStatus,
+            setStatus: setFilterStatus,
+            sortConfig,
+            setSortConfig,
+            resetFilters: () => {
+              setFilterDepartment("");
+              setFilterJobTitle("");
+              setFilterLocation("");
+              setFilterStatus("");
+              setSearchTerm("");
+              setSortConfig({ key: null, direction: "asc" });
+            },
+          }}
+          options={{ departments, jobTitles, locations, statuses }}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* Assigned Employees List */}
@@ -429,68 +436,141 @@ const AdminDetail = () => {
             <h3 className="text-lg font-bold text-[#4E4E4E]">
               Assigned Employees
             </h3>
-            
+
             <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input 
-                        type="text" 
-                        placeholder="Search employees..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#2C9DE6]"
-                    />
-                </div>
-                
-                <button 
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
-                    title="Filter"
-                >
-                    <Filter size={18} />
-                </button>
-                <button
-                    onClick={() => setIsExportModalOpen(true)}
-                    className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
-                    title="Export"
-                >
-                    <Download size={18} />
-                </button>
+              <div className="relative flex-1 sm:w-64">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  placeholder="Search employees..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#2C9DE6]"
+                />
+              </div>
+
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
+                title="Filter"
+              >
+                <Filter size={18} />
+              </button>
+              <button
+                onClick={() => setIsExportModalOpen(true)}
+                className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
+                title="Export"
+              >
+                <Download size={18} />
+              </button>
             </div>
           </div>
-          
-          <EmployeeTable 
-            employees={filteredEmployees} 
-            onRowClick={(emp) => navigate(`/hr-super-admin/employees/${emp.id}`)}
+
+          <EmployeeTable
+            employees={filteredEmployees}
+            onRowClick={(emp) =>
+              navigate(`/hr-super-admin/employees/${emp.id}`)
+            }
             showAssignedDate={true}
-            emptyMessage={assignedEmployees.length === 0 ? "No employees assigned to this admin yet." : "No employees match your search."}
+            emptyMessage={
+              assignedEmployees.length === 0
+                ? "No employees assigned to this admin yet."
+                : "No employees match your search."
+            }
+            onActivate={async (emp) => {
+              const isConfirmed = await showConfirm(
+                `Are you sure you want to activate ${emp.firstName} ${emp.lastName}?`,
+                { type: "info" }
+              );
+              if (!isConfirmed) return;
+
+              try {
+                const token = localStorage.getItem("token");
+                const config = {
+                  headers: { Authorization: `Bearer ${token}` },
+                };
+
+                await axios.put(
+                  `/api/employees/${emp.id}`,
+                  {
+                    accountStatus: "INVITED",
+                    onboarding_stage: "BASIC_INFO",
+                    firstLoginAt: null,
+                    lastLoginAt: null,
+                  },
+                  config
+                );
+
+                // Optimistic update
+                setAdmin((prev) => ({
+                  ...prev,
+                  assignedEmployees: prev.assignedEmployees.map((p) =>
+                    p.id === emp.id
+                      ? {
+                          ...p,
+                          accountStatus: "INVITED",
+                          onboarding_stage: "BASIC_INFO",
+                          firstLoginAt: null,
+                          lastLoginAt: null,
+                        }
+                      : p
+                  ),
+                }));
+                await showAlert("Employee activated successfully!", {
+                  type: "success",
+                });
+              } catch (err) {
+                console.error("Activation failed", err);
+                await showAlert("Failed to activate employee", {
+                  type: "error",
+                });
+              }
+            }}
             onDelete={async (emp) => {
-                const isConfirmed = await showConfirm(`Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`, { type: 'warning' });
-                if(isConfirmed) {
-                    try {
-                        const token = localStorage.getItem("token");
-                        const config = { headers: { Authorization: `Bearer ${token}` } };
-                        await axios.delete(`/api/employees/${emp.id}`, config);
-                        
-                        // Optimistic update
-                        setAdmin(prev => ({
-                            ...prev,
-                            assignedEmployees: prev.assignedEmployees.map(p => 
-                                p.id === emp.id ? { ...p, onboarding_stage: 'Not_joined', accountStatus: 'Inactive' } : p
-                            ),
-                            // Also update stats nicely if possible
-                            stats: {
-                                ...prev.stats,
-                                notJoined: prev.stats.notJoined + 1
-                            }
-                        }));
-                        await showAlert("Employee removed successfully.", { type: 'success' });
-                    } catch (err) {
-                        console.error("Delete failed", err);
-                        await showAlert("Failed to delete employee", { type: 'error' });
-                    }
+              const isConfirmed = await showConfirm(
+                `Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`,
+                { type: "warning" }
+              );
+              if (isConfirmed) {
+                try {
+                  const token = localStorage.getItem("token");
+                  const config = {
+                    headers: { Authorization: `Bearer ${token}` },
+                  };
+                  await axios.delete(`/api/employees/${emp.id}`, config);
+
+                  // Optimistic update
+                  setAdmin((prev) => ({
+                    ...prev,
+                    assignedEmployees: prev.assignedEmployees.map((p) =>
+                      p.id === emp.id
+                        ? {
+                            ...p,
+                            onboarding_stage: "Not_joined",
+                            accountStatus: "Inactive",
+                          }
+                        : p
+                    ),
+                    // Also update stats nicely if possible
+                    stats: {
+                      ...prev.stats,
+                      notJoined: prev.stats.notJoined + 1,
+                    },
+                  }));
+                  await showAlert("Employee removed successfully.", {
+                    type: "success",
+                  });
+                } catch (err) {
+                  console.error("Delete failed", err);
+                  await showAlert("Failed to delete employee", {
+                    type: "error",
+                  });
                 }
-              }}
+              }
+            }}
           />
         </div>
       </div>
@@ -500,11 +580,15 @@ const AdminDetail = () => {
         onClose={() => setIsExportModalOpen(false)}
         filterProps={{ showStatus: true }}
         options={{ statuses, departments, jobTitles, locations }}
-        data={assignedEmployees.map(emp => ({
-            ...emp,
-            joiningDate: emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString('en-GB') : "-",
-            status: getEmployeeStatus(emp),
-            assignedDate: emp.assignedDate ? new Date(emp.assignedDate).toLocaleDateString('en-GB') : "-"       
+        data={assignedEmployees.map((emp) => ({
+          ...emp,
+          joiningDate: emp.dateOfJoining
+            ? new Date(emp.dateOfJoining).toLocaleDateString("en-GB")
+            : "-",
+          status: getEmployeeStatus(emp),
+          assignedDate: emp.assignedDate
+            ? new Date(emp.assignedDate).toLocaleDateString("en-GB")
+            : "-",
         }))}
         fileName={`Assigned_Employees_${admin.firstName}_${admin.lastName}`}
         formatOptions={{
@@ -515,7 +599,7 @@ const AdminDetail = () => {
           location: "Location",
           joiningDate: "Joining Date",
           status: "Status",
-          assignedDate: "Assigned Date" 
+          assignedDate: "Assigned Date",
         }}
       />
     </DashboardLayout>

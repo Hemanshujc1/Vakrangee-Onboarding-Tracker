@@ -1,9 +1,9 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, RotateCcw } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import { getEmployeeStatus } from '../../utils/employeeUtils';
 
-const EmployeeTable = ({ employees, onRowClick, onDelete, showAssignedDate = false, emptyMessage = "No employees found." }) => {
+const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssignedDate = false, emptyMessage = "No employees found." }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
@@ -19,13 +19,14 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, showAssignedDate = fal
               <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 {showAssignedDate ? "Assigned Date" : "HR Assigned"}
               </th>
-              {onDelete && <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Delete</th>}
+              {(onDelete || onActivate) && <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-xs">
             {employees.length > 0 ? (
               employees.map((emp) => {
                 const statusText = getEmployeeStatus(emp);
+                const isInactive = emp.accountStatus === 'Inactive' || statusText === 'Not Joined';
                 
                 return (
                   <tr
@@ -67,18 +68,35 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, showAssignedDate = fal
                         ? (emp.assignedDate ? new Date(emp.assignedDate).toLocaleDateString('en-GB') : "-")
                         : (emp.assignedHRName || "-")}
                     </td>
-                    {onDelete && (
+                    {(onDelete || onActivate) && (
                     <td className="px-3 py-4 text-center">
-                            <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete(emp);
-                            }}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                            >
-                            <Trash2 size={18} />
-                            </button>
+                            <div className="flex items-center justify-center gap-2">
+                                {(isInactive && onActivate) ? (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onActivate(emp);
+                                        }}
+                                        className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                        title="Activate"
+                                    >
+                                        <RotateCcw size={18} />
+                                    </button>
+                                ) : (
+                                    onDelete && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(emp);
+                                            }}
+                                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )
+                                )}
+                            </div>
                     </td>
                     )}
                   </tr>
@@ -87,7 +105,7 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, showAssignedDate = fal
             ) : (
               <tr>
                 <td
-                  colSpan={onDelete ? "8" : "7"}
+                  colSpan={(onDelete || onActivate) ? "8" : "7"}
                   className="px-6 py-8 text-center text-gray-500"
                 >
                   {emptyMessage}

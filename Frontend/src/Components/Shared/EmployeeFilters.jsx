@@ -9,8 +9,8 @@ const EmployeeFilters = ({
     options,
     showStatus = true,
     showDepartment = true,
-    isOpen, // for mobile visibility control
-    onClose, // for mobile close
+    isOpen, 
+    onClose, 
     variant = 'sidebar'
 }) => {
     const {

@@ -58,7 +58,6 @@ export const LinedTextArea = ({ value = "", minLines = 3, className = "" }) => {
         ))}
       </div>
 
-      {/* Text Content Overlay - Line height matches h-8 (2rem) */}
       <div 
         className="relative z-10 p-0 text-sm leading-8 whitespace-pre-wrap pt-0.5 pl-1"
         style={{ minHeight: `${minLines * 2}rem` }}

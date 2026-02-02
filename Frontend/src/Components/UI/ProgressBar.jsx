@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from './Badge'; // Reuse cn utility if colocated or move utility to separate file
+import { cn } from './Badge'; 
 
 const ProgressBar = ({ value, max = 100, className, colorClass = "bg-blue-600" }) => {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);

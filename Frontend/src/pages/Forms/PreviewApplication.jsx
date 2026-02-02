@@ -14,7 +14,6 @@ const PreviewApplication = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   // 1. Get identifiers from state (fallback to user/params)
-  // Similar logic to PreviewMediclaim for consistency
   const { 
     formData: stateData, 
     status: stateStatus,

@@ -6,6 +6,7 @@ import {
   Trash2,
   Download,
   Filter,
+  RotateCcw,
 } from "lucide-react";
 import AddAdminModal from "../../Components/Admin/AddAdminModal";
 import PageHeader from "../../Components/Shared/PageHeader";
@@ -85,6 +86,53 @@ const ManageAdmins = () => {
     } catch (error) {
       console.error("Error adding admin:", error);
       await showAlert(error.response?.data?.message || "Failed to add admin", { type: 'error' });
+    }
+  };
+
+  const handleActivateAdmin = async (id) => {
+    const isConfirmed = await showConfirm(
+      "Are you sure you want to activate this admin?",
+      { type: 'info' }
+    );
+    if (!isConfirmed) return;
+
+    try {
+      const userInfoStr = localStorage.getItem("userInfo");
+      const token = userInfoStr
+        ? JSON.parse(userInfoStr).token
+        : localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      await axios.put(
+        `/api/employees/${id}`,
+        {
+          accountStatus: "INVITED",
+          onboarding_stage: "BASIC_INFO",
+          firstLoginAt: null,
+          lastLoginAt: null,
+        },
+        config
+      );
+
+      // Optimistic update
+      setAdmins((prev) =>
+        prev.map((admin) =>
+          admin.id === id
+            ? {
+                ...admin,
+                accountStatus: "INVITED",
+                onboarding_stage: "BASIC_INFO",
+                firstLoginAt: null,
+                lastLoginAt: null,
+              }
+            : admin
+        )
+      );
+
+      await showAlert("Admin activated successfully!", { type: 'success' });
+    } catch (error) {
+      console.error("Error activating admin:", error);
+      await showAlert("Failed to activate admin", { type: 'error' });
     }
   };
 
@@ -404,16 +452,31 @@ const ManageAdmins = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteAdmin(admin.id);
-                              }}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Deactivate Admin"
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                            <div className="flex justify-end gap-2">
+                                {(admin.accountStatus === 'Inactive' || admin.accountStatus === 'Not Joined') ? (
+                                <button
+                                    onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleActivateAdmin(admin.id);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                    title="Activate Admin"
+                                >
+                                    <RotateCcw size={18} />
+                                </button>
+                                ) : (
+                                    <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteAdmin(admin.id);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Deactivate Admin"
+                                    >
+                                    <Trash2 size={18} />
+                                    </button>
+                                )}
+                            </div>
                           </td>
                         </tr>
                       ))

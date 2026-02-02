@@ -127,38 +127,6 @@ const Dashboard = () => {
                 </span>
            </div>
       </div>
-      
-      {/* Notifications / Next Steps */}
-      {nextAction && (
-        <div className={`border rounded-xl p-6 flex flex-col md:flex-row items-start gap-4 ${
-            nextAction.type === 'urgent' ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100'
-        }`}>
-            <div className={`mt-1 ${nextAction.type === 'urgent' ? 'text-red-500' : 'text-blue-500'}`}>
-                <AlertCircle size={24} />
-            </div>
-            <div className="flex-1">
-                <h4 className={`font-bold mb-1 ${nextAction.type === 'urgent' ? 'text-red-800' : 'text-blue-800'}`}>
-                    {nextAction.title}
-                </h4>
-                <p className={`text-sm ${nextAction.type === 'urgent' ? 'text-red-700' : 'text-blue-700'}`}>
-                    {nextAction.description}
-                </p>
-                {nextAction.link && (
-                    <button 
-                        onClick={() => navigate(nextAction.link)}
-                        className={`mt-4 px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 ${
-                            nextAction.type === 'urgent' 
-                            ? 'bg-red-600 text-white hover:bg-red-700' 
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
-                    >
-                        Go to Action <ArrowRight size={16} />
-                    </button>
-                )}
-            </div>
-        </div>
-      )}
-
     </DashboardLayout>
   );
 };
