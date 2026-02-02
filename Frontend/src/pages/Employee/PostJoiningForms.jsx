@@ -51,7 +51,7 @@ const PostJoiningForms = () => {
       name: "Employees Provident Fund (EPF) Form",
       description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
-      time: "3 min",
+      time: "5 min",
       path: "/forms/employees-provident-fund",
     },
   ];

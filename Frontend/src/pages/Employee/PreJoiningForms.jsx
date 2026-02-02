@@ -24,7 +24,7 @@ const PreJoiningForms = () => {
       name: "Employment Application Form",
       description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
-      time: "7 min",
+      time: "5 min",
       path: "/forms/employment-application",
     },
     {

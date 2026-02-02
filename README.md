@@ -56,4 +56,3 @@ npm run dev
 
 ---
 
-_Vakrangee Internal Project_
