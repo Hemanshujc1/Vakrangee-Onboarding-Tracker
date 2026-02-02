@@ -610,6 +610,18 @@ exports.updateEmployeeDetails = async (req, res) => {
 
     if (accountStatus !== undefined) {
         employee.account_status = accountStatus;
+        
+        // If reactivating, clear deletion flags
+        if (['ACTIVE', 'INVITED'].includes(accountStatus)) {
+             employee.is_deleted = false;
+             employee.deleted_at = null;
+             employee.deleted_by = null;
+
+             // If stage was cleared to Not_joined, reset to safe start
+             if (employee.onboarding_stage === 'Not_joined') {
+                 employee.onboarding_stage = 'BASIC_INFO';
+             }
+        }
         masterChanged = true;
     }
     if (onboarding_stage !== undefined) {
