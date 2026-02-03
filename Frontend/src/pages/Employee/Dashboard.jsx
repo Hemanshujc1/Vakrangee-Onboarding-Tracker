@@ -121,8 +121,8 @@ const Dashboard = () => {
             >
                 <div className={`absolute top-4 right-4 text-${postJoining.color}-400 opacity-20`}><postJoining.icon size={40} /></div>
                 <h3 className="font-bold text-lg mb-2 text-gray-600">3. Post-Joining Forms</h3>
-                <p className="text-sm text-gray-500 mb-4">Paperwork to be done on your joining date.</p>
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold text-${postJoining.color}-500 bg-${postJoining.color}-100 px-2 py-1 rounded`}>
+                <p className="text-sm text-gray-500 mb-4">Paperwork to be done on joining date.</p>
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold text-${postJoining.color}-600 bg-${postJoining.color}-50 px-2 py-1 rounded`}>
                     <postJoining.icon size={12} /> {postJoining.status}
                 </span>
            </div>
