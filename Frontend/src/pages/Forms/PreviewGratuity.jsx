@@ -11,7 +11,7 @@ const PreviewGratuity = () => {
   const componentRef = useRef();
   const { employeeId: paramEmployeeId } = useParams();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
 
   // Get data passed from the form
   const { 
@@ -105,7 +105,14 @@ const PreviewGratuity = () => {
 
     let reason = null;
     if (verifyStatus === "REJECTED") {
-      reason = prompt("Enter Rejection Reason:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
+      
       if (!reason) return;
     }
 

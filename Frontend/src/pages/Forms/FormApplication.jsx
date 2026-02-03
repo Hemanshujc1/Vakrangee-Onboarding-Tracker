@@ -65,12 +65,12 @@ const FormApplication = () => {
       then: (schema) => commonSchemas.license.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    licenseIssueDate: Yup.date().nullable().when("hasLicense", {
+    licenseIssueDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasLicense", {
         is: "Yes",
         then: (schema) => commonSchemas.datePast.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
-    licenseExpiryDate: Yup.date().nullable().when("hasLicense", {
+    licenseExpiryDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasLicense", {
         is: "Yes",
         then: (schema) => commonSchemas.dateFuture.required("Required"),
         otherwise: (schema) => schema.notRequired()
@@ -82,12 +82,12 @@ const FormApplication = () => {
       then: (schema) => commonSchemas.passport.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    passportIssueDate: Yup.date().nullable().when("hasPassport", {
+    passportIssueDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasPassport", {
         is: "Yes",
         then: (schema) => commonSchemas.datePast.required("Required"),
         otherwise: (schema) => schema.notRequired()
     }),
-    passportExpiryDate: Yup.date().nullable().when("hasPassport", {
+    passportExpiryDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasPassport", {
         is: "Yes",
         then: (schema) => commonSchemas.dateFuture.required("Required"),
         otherwise: (schema) => schema.notRequired()
@@ -101,8 +101,8 @@ const FormApplication = () => {
         Yup.object().shape({
           qualification: commonSchemas.stringRequired,
           institute: commonSchemas.stringRequired,
-          year: Yup.number().min(1900).max(new Date().getFullYear()).required("Required"),
-          percentage: Yup.number().min(0).max(100).required("Required"),
+          year: commonSchemas.numberOptional.min(1900).max(new Date().getFullYear()).required("Required"),
+          percentage: commonSchemas.numberOptional.min(0).max(100).required("Required"),
           location: Yup.string(),
         })
       ),
@@ -118,7 +118,7 @@ const FormApplication = () => {
 
     achievements: Yup.array().max(4).of(
         Yup.object().shape({
-            year: Yup.number().min(1900).max(new Date().getFullYear()),
+            year: commonSchemas.numberOptional.min(1900).max(new Date().getFullYear()),
             details: Yup.string(),
         })
     ),
@@ -139,11 +139,11 @@ const FormApplication = () => {
         employer: commonSchemas.stringOptional,
         designation: commonSchemas.stringOptional,
         turnover: commonSchemas.currency,
-        noOfEmployees: Yup.number().nullable(),
+        noOfEmployees: commonSchemas.numberOptional,
         joiningCTC: commonSchemas.currency.optional(),
         currentCTC: commonSchemas.currency.optional(),
         expectedSalary: commonSchemas.currency.optional(),
-        noticePeriod: Yup.number().nullable(),
+        noticePeriod: commonSchemas.numberOptional,
         joiningDate: commonSchemas.dateOptional,
       })
     ),

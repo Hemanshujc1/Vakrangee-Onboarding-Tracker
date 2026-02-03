@@ -46,13 +46,18 @@ export const commonSchemas = {
 
   // --- Numbers & Currencies ---
   currency: Yup.number()
-    .transform((value) => (isNaN(value) ? null : value))
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .nullable()
     .min(0, "Must be positive")
     .max(9999999999, "Value too large"), // Max 10 digits
 
+  numberOptional: Yup.number()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .optional(),
+
   age: Yup.number()
-    .transform((value) => (isNaN(value) ? null : value))
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .nullable()
     .min(0, "Invalid age")
     .max(120, "Invalid age"),
@@ -121,6 +126,8 @@ export const commonSchemas = {
 
   // --- Dates ---
   dateRequired: Yup.date()
+    .nullable()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(new Date("1900-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
@@ -129,12 +136,14 @@ export const commonSchemas = {
   dateOptional:
      Yup.date()
     .nullable()
-    .transform((value) => (value === "" ? null : value))
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(new Date("1900-01-01"), "Invalid Date")
     .max(new Date("3000-01-01"), "Invalid Date")
     .typeError("Invalid Date"),
   
   datePast: Yup.date()
+    .nullable()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(new Date("1900-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
@@ -142,7 +151,7 @@ export const commonSchemas = {
 
     datePastOptional: Yup.date()
     .nullable()
-    .transform((value) => (value === "" ? null : value))
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(new Date("1900-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date"),
@@ -150,6 +159,8 @@ export const commonSchemas = {
 
 
   dateFuture: Yup.date()
+    .nullable()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
     .min(new Date(), "Date must be in the future")
     .max(new Date("2100-01-01"), "Invalid Date")
     .typeError("Invalid Date")

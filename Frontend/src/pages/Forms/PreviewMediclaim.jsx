@@ -8,7 +8,7 @@ const PreviewMediclaim = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { employeeId: paramEmployeeId } = useParams(); // Get from URL
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Get identifiers from state or user (fallback)
@@ -112,7 +112,13 @@ const PreviewMediclaim = () => {
 
     let reason = null;
     if (status === "REJECTED") {
-      reason = prompt("Enter Rejection Reason:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this mediclaim form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
       if (!reason) return;
     }
 

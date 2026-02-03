@@ -9,7 +9,7 @@ const PreviewTDS = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const componentRef = useRef();
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
   const [actionLoading, setActionLoading] = useState(false);
 
   // Get data passed from the form
@@ -106,7 +106,13 @@ const PreviewTDS = () => {
     if (!isConfirmed) return;
 
     if (newStatus === "REJECTED" && !reason) {
-      reason = prompt("Please enter a reason for rejection:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this TDS form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
       if (!reason) return;
     }
 

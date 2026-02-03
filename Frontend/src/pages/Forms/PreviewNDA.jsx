@@ -9,7 +9,7 @@ import { useAlert } from "../../context/AlertContext";
 const PreviewNDA = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { showAlert, showConfirm } = useAlert();
+    const { showAlert, showConfirm, showPrompt } = useAlert();
     const { employeeId: paramEmployeeId } = useParams();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const { 
@@ -98,13 +98,19 @@ const PreviewNDA = () => {
     };
 
     const handleVerification = async (newStatus, reason = null) => {
-        const isConfirmed = await showConfirm(`Are you sure you want to ${newStatus === 'VERIFIED' ? 'approve' : 'reject'} this form?`);
-        if (!isConfirmed) return;
-
         if (newStatus === 'REJECTED' && !reason) {
-            reason = prompt("Please enter a reason for rejection:");
+            reason = await showPrompt("Please provide a detailed reason for rejecting this NDA form:", {
+                title: "Rejection Reason",
+                type: "warning",
+                placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+                confirmText: "Submit Rejection",
+                cancelText: "Cancel"
+            });
             if (!reason) return; 
         }
+
+        const isConfirmed = await showConfirm(`Are you sure you want to ${newStatus === 'VERIFIED' ? 'approve' : 'reject'} this form?`);
+        if (!isConfirmed) return;
         
         setActionLoading(true);
         try {

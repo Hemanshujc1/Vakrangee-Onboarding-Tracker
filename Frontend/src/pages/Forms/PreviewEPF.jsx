@@ -13,7 +13,7 @@ const PreviewEPF = () => {
   const [data, setData] = useState(null);
   const [isHR, setIsHR] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
   const location = useLocation();
   const {
     formData: stateData,
@@ -191,7 +191,13 @@ const PreviewEPF = () => {
     if (!isConfirmed) return;
 
     if (newStatus === "REJECTED" && !reason) {
-      reason = prompt("Please enter a reason for rejection:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this EPF form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
       if (!reason) return;
     }
 

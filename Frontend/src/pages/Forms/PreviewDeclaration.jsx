@@ -9,7 +9,7 @@ const PreviewDeclaration = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const printRef = useRef();
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
   
   // State for form data and status
   const [formData, setFormData] = useState(null);
@@ -95,7 +95,13 @@ const PreviewDeclaration = () => {
 
     let reason = null;
     if (status === "REJECTED") {
-      reason = prompt("Enter Rejection Reason:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this declaration form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
       if (!reason) return;
     }
 

@@ -86,8 +86,7 @@ const FormGratuity = () => {
         address: commonSchemas.addressString.label("Address"),
         relationship: commonSchemas.stringRequired,
         age: commonSchemas.age.required("Required"),
-        share: Yup.number()
-         .typeError("Must be a number")
+        share: commonSchemas.numberOptional
          .min(1,"Min 1%")
          .max(100,"Max 100%")
          .required("Required"),

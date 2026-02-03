@@ -10,7 +10,7 @@ const PreviewApplication = () => {
   const navigate = useNavigate();
   const componentRef = useRef();
   const location = useLocation();
-  const { showAlert, showConfirm } = useAlert();
+  const { showAlert, showConfirm, showPrompt } = useAlert();
   const [actionLoading, setActionLoading] = useState(false);
 
   // 1. Get identifiers from state (fallback to user/params)
@@ -70,7 +70,13 @@ const PreviewApplication = () => {
     if (!isConfirmed) return;
 
     if (newStatus === "REJECTED" && !reason) {
-      reason = prompt("Please enter a reason for rejection:");
+      reason = await showPrompt("Please provide a detailed reason for rejecting this employment application form:", {
+        title: "Rejection Reason",
+        type: "warning",
+        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
+        confirmText: "Submit Rejection",
+        cancelText: "Cancel"
+      });
       if (!reason) return;
     }
 

@@ -20,7 +20,9 @@ export const AlertProvider = ({ children }) => {
     cancelText: 'Cancel',
     onConfirm: () => {},
     onCancel: () => {},
-    variant: 'alert', // 'alert' | 'confirm'
+    variant: 'alert', // 'alert' | 'confirm' | 'prompt'
+    inputValue: '',
+    placeholder: '',
   });
 
   const showAlert = useCallback((message, options = {}) => {
@@ -33,6 +35,8 @@ export const AlertProvider = ({ children }) => {
         confirmText: options.confirmText || 'OK',
         cancelText: options.cancelText || 'Cancel',
         variant: 'alert',
+        inputValue: '',
+        placeholder: '',
         onConfirm: () => {
           closeAlert();
           resolve(true);
@@ -55,6 +59,8 @@ export const AlertProvider = ({ children }) => {
           confirmText: options.confirmText || 'Yes',
           cancelText: options.cancelText || 'No',
           variant: 'confirm',
+          inputValue: '',
+          placeholder: '',
           onConfirm: () => {
             closeAlert();
             resolve(true);
@@ -65,6 +71,30 @@ export const AlertProvider = ({ children }) => {
           },
         });
       });
+  }, []);
+
+  const showPrompt = useCallback((message, options = {}) => {
+    return new Promise((resolve) => {
+      setAlertState({
+        isOpen: true,
+        message,
+        type: options.type || 'info',
+        title: options.title || 'Input Required',
+        confirmText: options.confirmText || 'Submit',
+        cancelText: options.cancelText || 'Cancel',
+        variant: 'prompt',
+        inputValue: options.defaultValue || '',
+        placeholder: options.placeholder || '',
+        onConfirm: (value) => {
+          closeAlert();
+          resolve(value);
+        },
+        onCancel: () => {
+          closeAlert();
+          resolve(null);
+        },
+      });
+    });
   }, []);
 
   const closeAlert = () => {
@@ -82,7 +112,7 @@ export const AlertProvider = ({ children }) => {
   };
 
   return (
-    <AlertContext.Provider value={{ ...alertState, showAlert, showConfirm, closeAlert }}>
+    <AlertContext.Provider value={{ ...alertState, showAlert, showConfirm, showPrompt, closeAlert }}>
       {children}
     </AlertContext.Provider>
   );

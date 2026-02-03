@@ -66,7 +66,10 @@ const FormInformation = () => {
         marital_status: Yup.string().required("Required"),
 
         // IDs (Optional but validated if present)
-        passport_number: commonSchemas.passport.nullable().optional(),
+        passport_number: commonSchemas.passport
+        .nullable()
+        .transform((value) => (value === "" ? null : value))
+        .optional(),
         passport_date_of_issue: commonSchemas.datePast.nullable().optional(),
         passport_expiry_date: commonSchemas.dateFuture.nullable().optional(),
 
@@ -152,7 +155,9 @@ const FormInformation = () => {
             startDate: Yup.string().nullable().optional(),
             endDate: Yup.string().nullable().optional(),
             position: Yup.string()
-            .min(2,"Min 2 chars").max(30,"Max 30 chars").nullable().optional(),
+            .nullable()
+            .transform((value) => (value === "" ? null : value))
+            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
             compensation: commonSchemas.currency.optional(),
             city: Yup.string().nullable()
             .transform((value) => (value === "" ? null : value))
