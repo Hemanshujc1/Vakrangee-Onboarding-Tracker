@@ -32,9 +32,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const superAdminItems = [
     { name: 'Dashboard', icon: Home, path: '/hr-super-admin' },
+    { name: 'Manage Admins', icon: UserCog, path: '/hr-super-admin/admins' },
     { name: 'Manage Employees', icon: UserPlus, path: '/hr-super-admin/employees' },
     { name: 'My Employees', icon: Users, path: '/hr-super-admin/myemployees' },
-    { name: 'Manage Admins', icon: UserCog, path: '/hr-super-admin/admins' },
     { name: 'My Profile', icon: UserCircle, path: '/hr-super-admin/profile' },
   ];
 
