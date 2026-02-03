@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -154,12 +155,13 @@ const FormTDS = () => {
 
       if (savedData.signature_path || autoFillData.signature) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
+          `/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
         );
       }
     }
   }, [autoFillData, reset]);
 
+  const isPreviewRef = React.useRef(false);
 
   const onFormSubmit = async (values) => {
     // Disabled fields are excluded from 'values', so fetch them manually
@@ -191,15 +193,16 @@ const FormTDS = () => {
       }
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/api/forms/tds", formData, {
+      await axios.post("/api/forms/tds", formData, {
           headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (allValues.isDraft) {
-          await showAlert("Draft Saved Successfully!", { type: 'success' });
+      if (allValues.isDraft && !isPreviewRef.current) {
+          await showAlert("Draft Saved!", { type: 'success' });
       } else {
+          // Navigate to Preview
           const savedData = autoFillData?.tdsData || {};
-          navigate("/forms/tds-form/preview", {
+          navigate(`/forms/tds-form/preview/${targetId}`, {
               state: {
                   formData: {
                     ...allValues,
@@ -207,7 +210,9 @@ const FormTDS = () => {
                   },
                   signaturePreview: signaturePreview,
                   employeeId: targetId,
-                  isHR: false
+                  isHR: false,
+                  status: "DRAFT", // Still Draft
+                  fromPreviewSubmit: true
               }
           });
       }
@@ -220,7 +225,7 @@ const FormTDS = () => {
 
   if (autoFillLoading) return <div>Loading...</div>;
 
-    return (
+  return (
     <FormLayout
         title="TDS Declaration Form"
         employeeData={autoFillData}
@@ -233,9 +238,14 @@ const FormTDS = () => {
             isSubmitting,
             onSaveDraft: () => {
                 setValue("isDraft", true);
+                isPreviewRef.current = false;
                 handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
             },
-            onSubmit: () => setValue("isDraft", false)
+            onSubmit: () => {
+                setValue("isDraft", true); // Save as draft first
+                isPreviewRef.current = true;
+                handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
+            }
         }}
         signature={{
             setValue,
@@ -374,8 +384,6 @@ const FormTDS = () => {
         {/* Signature moved to Layout Footer */}
     </FormLayout>
   );
-
-
 
 };
 

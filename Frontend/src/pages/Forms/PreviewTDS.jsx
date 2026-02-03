@@ -36,7 +36,7 @@ const PreviewTDS = () => {
   const status = derivedStatus;
   const employeeId = targetId;
   const rejectionReason = stateRejectionReason || autoFillData?.tdsRejectionReason;
-  const signaturePreview = stateSig || (data?.signature_path ? `http://localhost:3001/uploads/signatures/${data.signature_path}` : null);
+  const signaturePreview = stateSig || (data?.signature_path ? `/uploads/signatures/${data.signature_path}` : null);
 
   if (autoFillLoading && !data) return <div className="p-10 text-center">Loading...</div>;
 
@@ -81,7 +81,7 @@ const PreviewTDS = () => {
 
       data.append("isDraft", "false");
 
-      await axios.post("http://localhost:3001/api/forms/tds", data, {
+      await axios.post("/api/forms/tds", data, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -114,7 +114,7 @@ const PreviewTDS = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:3001/api/forms/tds/verify/${employeeId}`,
+        `/api/forms/tds/verify/${employeeId}`,
         {
           status: newStatus,
           remarks: reason,
@@ -173,7 +173,7 @@ const PreviewTDS = () => {
           isSubmitting={actionLoading}
         />
 
-        {derivedStatus === 'REJECTED' && (stateRejectionReason || autoFillData?.tdsRejectionReason) && (
+        {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.tdsRejectionReason))) && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
                 <div className="font-bold flex items-center gap-2 mb-1">
                     Form Rejected
@@ -560,7 +560,7 @@ const PreviewTDS = () => {
                     />
                   ) : formData.signature_path ? (
                     <img
-                      src={`http://localhost:3001/uploads/signatures/${formData.signature_path}`}
+                      src={`/uploads/signatures/${formData.signature_path}`}
                       alt="Signature"
                       className="h-16 w-auto border border-gray-300 p-1"
                     />

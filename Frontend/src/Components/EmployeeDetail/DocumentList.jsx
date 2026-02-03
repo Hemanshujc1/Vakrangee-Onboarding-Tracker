@@ -41,7 +41,7 @@ const DocumentList = ({ documents, handleDocumentVerification }) => {
                   </span>
                 )}
                 <a
-                  href={`http://localhost:3001/uploads/documents/${doc.file_path}`}
+                  href={`/uploads/documents/${doc.file_path}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-500 hover:underline break-all"

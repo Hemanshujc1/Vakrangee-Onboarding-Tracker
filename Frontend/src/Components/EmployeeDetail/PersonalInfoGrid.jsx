@@ -8,7 +8,7 @@ import {
   CalendarDays,
   Calendar,
   UserCheck,
-  CheckCircle,
+
 } from "lucide-react";
 
 const PersonalInfoGrid = ({
@@ -183,29 +183,7 @@ const PersonalInfoGrid = ({
           )}
         </div>
       </div>
-      {/* Onboarding Status */}
-      <div className="flex flex-col items-start gap-3 text-gray-600 rounded-xl border border-gray-100 shadow-sm p-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-            <CheckCircle size={20} />
-          </div>
-          <h3 className="text-sm font-bold text-[#4E4E4E]">
-            Onboarding Progress
-          </h3>
-        </div>
-        <div className="text-gray-500 text-xs w-full">
-          Current Stage:{" "}
-          <span className="font-medium text-gray-800">
-            {employee.onboardingStage || "Not Started"}
-          </span>
-          <div className="w-full bg-gray-100 rounded-full h-2.5 mt-2">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full"
-              style={{ width: "40%" }}
-            ></div>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };

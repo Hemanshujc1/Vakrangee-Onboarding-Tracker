@@ -154,36 +154,36 @@ const FormInformation = () => {
             position: Yup.string()
             .min(2,"Min 2 chars").max(30,"Max 30 chars").nullable().optional(),
             compensation: commonSchemas.currency.optional(),
-            city: Yup.string().min(3,"Min 3 chars").max(40,"Max 40 chars").nullable().optional(),
+            city: Yup.string().nullable()
+            .transform((value) => (value === "" ? null : value))
+            .min(3,"Min 3 chars").max(40,"Max 40 chars"),
 
             hrRep: commonSchemas.nameStringOptional,
-            hrTel: commonSchemas.mobile.optional(),
-            hrMob: commonSchemas.mobile.optional(),
-            hrEmail:  commonSchemas.email.optional(),
+            hrTel: commonSchemas.mobileOptional,
+            hrMob: commonSchemas.mobileOptional,
+            hrEmail:  commonSchemas.emailOptional,
 
             supervisorName: commonSchemas.nameStringOptional,
-            supTel: commonSchemas.mobile.optional(),
-            supMob: commonSchemas.mobile.optional(),
-            supEmail: commonSchemas.email.optional(),
+            supTel: commonSchemas.mobileOptional,
+            supMob: commonSchemas.mobileOptional,
+            supEmail: commonSchemas.emailOptional,
             designation: Yup.string()
-            .min(2,"Min 2 chars").max(30,"Max 30 chars").nullable().optional(),
-            reportStartDate: commonSchemas.datePast.nullable().optional(),
-            reportEndDate: Yup.date() 
-            .min(1900, "Enter a valid date")
-            .max(3000, "Enter a  valid date").nullable().optional(),
+            .nullable()
+            .transform((value) => (value === "" ? null : value))
+            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
+            reportStartDate: commonSchemas.datePastOptional,
+            reportEndDate: commonSchemas.dateOptional,
 
             supervisorName2: commonSchemas.nameStringOptional,
-            supTel2: commonSchemas.mobile.optional(),
-            supMob2: commonSchemas.mobile.optional(),
-            supEmail2: commonSchemas.email.optional(),
+            supTel2: commonSchemas.mobileOptional,
+            supMob2: commonSchemas.mobileOptional,
+            supEmail2: commonSchemas.emailOptional,
             designation2: Yup.string()
-            .min(2,"Min 2 chars")
-            .max(30,"Max 30 chars").nullable().optional(),
-            reportStartDate2: commonSchemas.datePast.nullable().optional(),
-            reportEndDate2:  Yup.date() 
-            .min(1900, "Enter a valid date")
-            .max(3000, "Enter a  valid date").nullable().optional(),
-
+            .nullable()
+            .transform((value) => (value === "" ? null : value))
+            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
+            reportStartDate2: commonSchemas.datePastOptional,
+            reportEndDate2: commonSchemas.dateOptional,
             duties: Yup.string().max(400,"Max 400 chars").nullable().optional(),
             reasonLeaving: Yup.string()
             .max(300,"Max 300 chars").nullable().optional(),
@@ -197,12 +197,13 @@ const FormInformation = () => {
             Yup.object().shape({
               name:commonSchemas.nameStringOptional,
               address: commonSchemas.addressStringOptional.label("Address"),
-              tel: commonSchemas.mobile.optional(),
-              mob: commonSchemas.mobile.optional(),
-              email: commonSchemas.email.optional(),
-              designation: Yup.string()
-              .min(2,"Min 2 chars")
-              .max(30,"Max 30 chars").nullable().optional(),
+              tel: commonSchemas.mobileOptional,
+              mob: commonSchemas.mobileOptional,
+              email: commonSchemas.emailOptional,
+              designation:Yup.string()
+              .nullable()
+              .transform((value) => (value === "" ? null : value))
+              .min(2,"Min 2 chars").max(30,"Max 30 chars"),
             })
           ),
 
@@ -494,7 +495,7 @@ const FormInformation = () => {
         setSignaturePreview(
           path.startsWith("http")
             ? path
-            : `http://localhost:3001/uploads/signatures/${path}`
+            : `/uploads/signatures/${path}`
         );
       }
     }
@@ -555,7 +556,7 @@ const FormInformation = () => {
 
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:3001/api/forms/save-employee-info",
+        "/api/forms/save-employee-info",
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -564,7 +565,7 @@ const FormInformation = () => {
 
       if (isPreview) {
         const saved = autoFillData?.employeeInfoData || {};
-        navigate("/forms/information/preview", {
+        navigate(`/forms/information/preview/${employeeId}`, {
           state: {
             formData: {
               ...values,
@@ -578,7 +579,7 @@ const FormInformation = () => {
         await showAlert("Draft Saved!", { type: 'success' });
       } else {
          // Should not reach here if logic is correct, but fallback to preview or alert
-         navigate("/forms/information/preview", { state: { formData: values, signaturePreview, employeeId } });
+         navigate(`/forms/information/preview/${employeeId}`, { state: { formData: values, signaturePreview, employeeId } });
       }
     } catch (error) {
       console.error("Submission Error:", error);

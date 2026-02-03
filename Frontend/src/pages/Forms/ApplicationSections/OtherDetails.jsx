@@ -50,7 +50,7 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
       </FormSection>
 
       {/* Habits */}
-      <FormSection title="Do you have following habits:">
+      <FormSection title="Do you have following habits:" isRequired="true">
         <div className="flex gap-8 border p-4 rounded">
           <div className="flex items-center gap-2">
             <span className="font-bold">Smoking:</span>
@@ -83,7 +83,7 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
       </FormSection>
 
       {/* Languages */}
-      <FormSection title="Languages Known">
+      <FormSection title="Languages Known" isRequired="true">
         <div className="overflow-x-auto mb-2">
           <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import {
   UserCog,
@@ -18,6 +19,7 @@ import ExportModal from "../../Components/Shared/ExportModal";
 import { useAlert } from "../../context/AlertContext";
 
 const ManageAdmins = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { showAlert, showConfirm } = useAlert();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -391,7 +393,7 @@ const ManageAdmins = () => {
                         <tr
                           key={admin.id}
                           onClick={() =>
-                            (window.location.href = `/hr-super-admin/admins/${admin.id}`)
+                            navigate(`/hr-super-admin/admins/${admin.id}`)
                           }
                           className="hover:bg-gray-50 transition-colors cursor-pointer"
                         >

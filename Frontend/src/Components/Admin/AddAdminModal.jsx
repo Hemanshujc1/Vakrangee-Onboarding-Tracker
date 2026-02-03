@@ -110,7 +110,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
         firstName: formData.firstName,
         password: formData.password,
         cc: formData.cc,
-        portalUrl: window.location.origin,
+        portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
         hrName: hrDetails.name,
         hrDesignation: hrDetails.designation
       }, config);

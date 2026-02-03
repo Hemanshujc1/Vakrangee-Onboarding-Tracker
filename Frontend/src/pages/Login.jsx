@@ -88,7 +88,7 @@ const Login = () => {
           <div>
             <div className="flex items-center gap-3 mb-12">
               <img
-                src={`${import.meta.env.BASE_URL}vakrangee Logo.svg`}
+                src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
                 alt="Vakrangee Logo"
                 className="h-30 w-100 object-contain brightness"
               />
@@ -114,7 +114,7 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="flex justify-center mb-6 lg:hidden">
              <img
-               src={`${import.meta.env.BASE_URL}vakrangee Logo.svg`}
+               src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
                 alt="Vakrangee Logo"
                 className="h-16 w-auto object-contain"
               />

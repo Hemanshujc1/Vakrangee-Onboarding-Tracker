@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DocumentHeader, InstructionBlock, PreviewActions } from "../../Components/Forms/Shared";
 import useAutoFill from "../../hooks/useAutoFill";
 import { useAlert } from "../../context/AlertContext";
@@ -7,6 +7,7 @@ import { useAlert } from "../../context/AlertContext";
 const PreviewMediclaim = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { employeeId: paramEmployeeId } = useParams(); // Get from URL
   const { showAlert, showConfirm } = useAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -21,7 +22,7 @@ const PreviewMediclaim = () => {
   } = location.state || {};
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const targetId = stateEmployeeId || user.employeeId;
+  const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
 
   // 2. Fetch backend data (fallback/robustness)
   const { data: autoFillData, loading: autoFillLoading } = useAutoFill(targetId);
@@ -35,8 +36,8 @@ const PreviewMediclaim = () => {
   // 4. Derive signature URL robustly
   const derivedSignature = stateSig || 
     (data?.signature instanceof File ? URL.createObjectURL(data.signature) : null) ||
-    (data?.signature_path ? `http://localhost:3001/uploads/signatures/${data.signature_path}` : null) ||
-    (autoFillData?.signature ? `http://localhost:3001/uploads/signatures/${autoFillData.signature}` : null);
+    (data?.signature_path ? `/uploads/signatures/${data.signature_path}` : null) ||
+    (autoFillData?.signature ? `/uploads/signatures/${autoFillData.signature}` : null);
 
   const handleFinalSubmit = async () => {
     if (!data) return;
@@ -83,7 +84,7 @@ const PreviewMediclaim = () => {
 
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "http://localhost:3001/api/forms/mediclaim",
+        "/api/forms/mediclaim",
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -125,7 +126,7 @@ const PreviewMediclaim = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3001/api/forms/mediclaim/verify/${location.state.employeeId}`,
+        `/api/forms/mediclaim/verify/${location.state.employeeId}`,
         {
           method: "POST",
           headers: {
@@ -198,7 +199,8 @@ const PreviewMediclaim = () => {
         />
 
         {/* Rejection Alert */}
-        {derivedStatus === 'REJECTED' && (stateRejectionReason || autoFillData?.mediclaimRejectionReason) && (
+        {/* Rejection Alert */}
+        {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.mediclaimRejectionReason))) && (
             <div className="mb-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
                 <div className="font-bold flex items-center gap-2 mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>

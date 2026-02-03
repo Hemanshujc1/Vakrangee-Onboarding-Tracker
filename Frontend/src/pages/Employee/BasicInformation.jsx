@@ -167,7 +167,7 @@ const BasicInformation = () => {
 
         if (record.profile_photo) {
           setPreviewImage(
-            `http://localhost:3001/uploads/profilepic/${record.profile_photo}`
+            `/uploads/profilepic/${record.profile_photo}`
           );
         }
 

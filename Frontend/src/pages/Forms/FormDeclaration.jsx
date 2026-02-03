@@ -1,4 +1,4 @@
- 
+
 import React, { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -13,18 +13,7 @@ import { useAlert } from "../../context/AlertContext";
 import { commonSchemas, createSignatureSchema } from "../../utils/validationSchemas";
 import { onValidationFail } from "../../utils/formUtils";
 
-const MAX_FILE_SIZE = 200 * 1024; // 200KB
 
-const defaultValues = {
-  title: "Mr.",
-  employee_full_name: "",
-  employee_code: "",
-  previous_company_name: "",
-  previous_job_title: "",
-  current_job_title: "",          
-  signature: undefined,
-  isDraft: false,
-};
 
 const FormDeclaration = () => {
   const navigate = useNavigate();
@@ -55,10 +44,10 @@ const FormDeclaration = () => {
     if (isLocked && autoFillData?.declarationData) {
        const savedData = autoFillData.declarationData;
        const signatureUrl = savedData.signature_path 
-          ? `http://localhost:3001/uploads/signatures/${savedData.signature_path}`
+          ? `/uploads/signatures/${savedData.signature_path}`
           : null;
 
-       navigate('/forms/declaration-form/preview', { 
+       navigate(`/forms/declaration-form/preview/${employeeId}`, { 
          state: { 
            formData: savedData,
            signaturePreview: signatureUrl
@@ -123,11 +112,13 @@ const FormDeclaration = () => {
 
       if (savedData.signature_path || autoFillData.signature) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
+          `/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
         );
       }
     }
   }, [autoFillData, reset]);
+
+  const isPreviewRef = React.useRef(false);
 
   const onFormSubmit = async (values) => {
     // Disabled fields are excluded from 'values', so fetch them manually
@@ -156,15 +147,16 @@ const FormDeclaration = () => {
       }
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/api/forms/declaration", formData, {
+      await axios.post("/api/forms/declaration", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (allValues.isDraft) {
+      if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: 'success' });
       } else {
+         // Navigate to Preview
          const savedData = autoFillData?.declarationData || {};
-         navigate("/forms/declaration-form/preview", {
+         navigate(`/forms/declaration-form/preview/${employeeId}`, {
             state: {
               formData: {
                 ...allValues,
@@ -172,7 +164,9 @@ const FormDeclaration = () => {
               },
               signaturePreview: signaturePreview,
               employeeId: employeeId,
-              isHR: false
+              isHR: false,
+              status: "DRAFT", // Still Draft until confirmed
+              fromPreviewSubmit: true
             },
          });
       }
@@ -185,7 +179,7 @@ const FormDeclaration = () => {
 
   if (loading) return <div>Loading Form Data...</div>;
 
-    return (
+  return (
     <FormLayout
         title="SELF-DECLARATION FORM"
         employeeData={autoFillData}
@@ -198,9 +192,14 @@ const FormDeclaration = () => {
             isSubmitting,
             onSaveDraft: () => {
                 setValue("isDraft", true);
+                isPreviewRef.current = false;
                 handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
             },
-            onSubmit: () => setValue("isDraft", false)
+            onSubmit: () => {
+                setValue("isDraft", true); // Save as draft first
+                isPreviewRef.current = true;
+                handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
+            }
         }}
         signature={{
             setValue,
@@ -284,4 +283,3 @@ const FormDeclaration = () => {
 };
 
 export default FormDeclaration;
-

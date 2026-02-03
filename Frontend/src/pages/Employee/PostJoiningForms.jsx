@@ -14,7 +14,7 @@ const PostJoiningForms = () => {
   useEffect(() => {
     if (
       autoFillData &&
-      !["POST_JOINING", "ACTIVE"].includes(autoFillData.onboardingStage)
+      !["POST_JOINING", "ONBOARDED"].includes(autoFillData.onboardingStage)
     ) {
       navigate("/employee");
     }
@@ -102,6 +102,8 @@ const PostJoiningForms = () => {
         let uiStatus =
           status === "PENDING"
             ? "Pending"
+            : status === "DRAFT"
+            ? "Draft"
             : status === "VERIFIED"
             ? "Approved"
             : status === "REJECTED"
@@ -123,10 +125,7 @@ const PostJoiningForms = () => {
 
   const handleCardClick = (form) => {
     // Navigation Path Construction
-    let previewPath = `${form.path}/preview`;
-    if (form.id === 4) {
-      previewPath += `/${employeeId}`;
-    }
+    const previewPath = `${form.path}/preview/${employeeId}`;
 
     if (["Approved", "Submitted", "Rejected"].includes(form.status)) {
          navigate(previewPath, {

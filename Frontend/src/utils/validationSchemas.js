@@ -29,17 +29,20 @@ export const commonSchemas = {
   nameString: Yup.string()
     .min(2, "Minimum 2 characters required")
     .max(50, "Maximum 50 characters allowed") 
-    .matches(/^[a-zA-Z\s.]+$/, "Only letters and dots allowed")
+    .matches(/^[a-zA-Z\s.'-]+$/, "Only letters, dots, hyphens and apostrophes allowed")
     .required("Required"),
 
     nameStringOptional: Yup.string()
-    .min(2, "Minimum 2 characters required")
-    .max(50, "Maximum 50 characters allowed") 
-    .matches(/^[a-zA-Z\s.]+$/, "Only letters and dots allowed")
-    .optional(),
+  .nullable()
+  .transform((value) => (value === "" ? null : value))
+  .min(2, "Minimum 2 characters required")
+  .max(50, "Maximum 50 characters allowed")
+  .matches(/^[a-zA-Z\s.'-]+$/, "Only letters, dots, hyphens and apostrophes allowed"),
+
 
 
   email: Yup.string().email("Invalid email").required("Required"),
+  emailOptional: Yup.string().email("Invalid email").optional(),
 
   // --- Numbers & Currencies ---
   currency: Yup.number()
@@ -55,12 +58,14 @@ export const commonSchemas = {
     .max(120, "Invalid age"),
 
   // --- Common String Types ---
+
   stringOptional: Yup.string()
-    .min(2, "Min 2 characters")
-    .max(50, "Max 50 characters")
-    .nullable()
-    .optional(),
-    
+  .nullable()
+  .transform((value) => (value === "" ? null : value))
+  .min(2, "Min 2 characters")
+  .max(50, "Max 50 characters"),
+
+
   landmark: Yup.string()
     .min(3, "Min 3 chars")
     .max(100, "Max 100 chars")
@@ -79,21 +84,25 @@ export const commonSchemas = {
     .trim()
     .required("Required"),
 
-  addressStringOptional: Yup.string()
-    .min(5, "Min 5 characters")
-    .max(150, "Max 150 characters")
-    .trim()
-    .nullable()
-    .optional(),
+    addressStringOptional: Yup.string()
+  .nullable()
+  .transform((v) => (v === "" ? null : v))
+  .min(4, "Min 4 characters")
+  .max(150, "Max 150 characters")
+  .trim(),
+
+
 
   // --- Contact IDs ---
   mobile: Yup.string()
     .matches(commonPatterns.mobile, "Mobile number must be 10 digits")
     .required("Required"),
-
     mobileOptional: Yup.string()
-    .matches(commonPatterns.mobile, "Mobile number must be 10 digits")
-    .optional(),
+    .nullable()
+    .transform((v) => (v === "" ? null : v))
+    .matches(commonPatterns.mobile, "Mobile number must be 10 digits"),
+  
+   
   
   pincode: Yup.string()
     .matches(commonPatterns.pincode, "Pincode must be 6 digits")
@@ -117,11 +126,13 @@ export const commonSchemas = {
     .typeError("Invalid Date")
     .required("Required"),
     
-    dateOptional: Yup.date()
+  dateOptional:
+     Yup.date()
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
     .min(new Date("1900-01-01"), "Invalid Date")
-    .max(new Date(), "Date cannot be in the future")
-    .typeError("Invalid Date")
-    .optional(),
+    .max(new Date("3000-01-01"), "Invalid Date")
+    .typeError("Invalid Date"),
   
   datePast: Yup.date()
     .min(new Date("1900-01-01"), "Invalid Date")
@@ -129,12 +140,14 @@ export const commonSchemas = {
     .typeError("Invalid Date")
     .required("Required"),
 
-      
-  datePastOptional: Yup.date()
-  .min(new Date("1900-01-01"), "Invalid Date")
-  .max(new Date(), "Date cannot be in the future")
-  .typeError("Invalid Date")
-  .required("Required"),
+    datePastOptional: Yup.date()
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
+    .min(new Date("1900-01-01"), "Invalid Date")
+    .max(new Date(), "Date cannot be in the future")
+    .typeError("Invalid Date"),
+  
+
 
   dateFuture: Yup.date()
     .min(new Date(), "Date must be in the future")

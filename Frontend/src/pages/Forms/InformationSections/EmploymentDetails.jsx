@@ -181,7 +181,6 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                   name={`employment_details.${index}.reportEndDate`}
                   register={register}
                   error={errors.employment_details?.[index]?.reportEndDate}
-
                 />
               </div>
             </div>
@@ -239,12 +238,15 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                     type="date"
                     name={`employment_details.${index}.reportStartDate2`}
                     register={register}
+                    error={errors.employment_details?.[index]?.reportStartDate2}
                   />
                   <FormInput
                     label="End Date"
                     type="date"
                     name={`employment_details.${index}.reportEndDate2`}
                     register={register}
+                    error={errors.employment_details?.[index]?.reportEndDate2}
+                    
                   />
                 </div>
               </div>

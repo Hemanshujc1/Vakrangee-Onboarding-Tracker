@@ -21,7 +21,7 @@ const VerifyOTP = () => {
     setError('');
 
     try {
-      await axios.post('http://localhost:3001/api/auth/verify-otp', { email, otp });
+      await axios.post('/api/auth/verify-otp', { email, otp });
       // Navigate to Reset Password page, passing email and otp
       navigate('/reset-password', { state: { email, otp } });
     } catch (err) {

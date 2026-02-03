@@ -9,13 +9,13 @@ import { useAlert } from "../../context/AlertContext";
 
 
 const PreviewInformation = () => {
-  const { id } = useParams();
+  const { employeeId: paramId } = useParams();
   const navigate = useNavigate();
   const { showAlert, showConfirm } = useAlert();
   const [actionLoading, setActionLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const employeeId = id || user.id;
+  const employeeId = paramId || user.employeeId;
 
   const { data: autoFillData, loading } = useAutoFill(employeeId);
 
@@ -51,7 +51,8 @@ const PreviewInformation = () => {
           });
           
           await showAlert("Form Submitted Successfully!", { type: 'success' });
-          window.location.reload();
+          navigate("/employee/pre-joining");
+          // window.location.reload();
       } catch(err) {
           console.error(err);
           await showAlert("Submission failed", { type: 'error' });
@@ -126,7 +127,7 @@ const PreviewInformation = () => {
       {/* Header */}
       <div className="text-center mb-6 relative">
         <img
-          src={`${import.meta.env.BASE_URL}vakrangee Logo.svg`}
+          src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
           alt="Vakrangee"
           className="h-20 mx-auto mb-2"
         />
@@ -135,7 +136,7 @@ const PreviewInformation = () => {
           record.profile_photo ||
           record.profilePhoto) && (
           <img
-            src={`http://localhost:3001/uploads/profilepic/${(
+            src={`/uploads/profilepic/${(
               data.profile_photo_path ||
               record.profile_photo_path ||
               record.profile_photo ||
@@ -958,7 +959,7 @@ const PreviewInformation = () => {
               record.signature_path ||
               record.signature) && (
               <img
-                src={`http://localhost:3001/uploads/signatures/${
+                src={`/uploads/signatures/${
                   data.signature_path ||
                   record.signature_path ||
                   record.signature

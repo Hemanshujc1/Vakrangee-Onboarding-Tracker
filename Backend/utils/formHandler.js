@@ -148,6 +148,73 @@ exports.verifyForm = async (req, res, formType) => {
 
         res.json({ message: `Form ${status}`, form });
 
+        // --- Auto-Update Onboarding Stage Logic ---
+        if (status === 'VERIFIED') {
+             try {
+                 const employee = await EmployeeMaster.findByPk(employeeId);
+                 
+                 // PRE-JOINING Logic
+                 if (employee && employee.onboarding_stage === 'PRE_JOINING') {
+                     const disabledParams = employee.disabled_forms || [];
+                     const preJoiningForms = ['GRATUITY', 'EMPLOYEE_INFO', 'MEDICLAIM', 'EMPLOYMENT_APP']; 
+                     
+                     let allVerified = true;
+                     
+                     for (const type of preJoiningForms) {
+                         if (disabledParams.includes(type)) continue;
+
+                         const f = await FormSubmission.findOne({
+                             where: { employee_id: employeeId, form_type: type },
+                             order: [['version', 'DESC']]
+                         });
+                         
+                         if (!f || f.status !== 'VERIFIED') {
+                             allVerified = false;
+                             break;
+                         }
+                     }
+
+                     if (allVerified) {
+                         employee.onboarding_stage = 'PRE_JOINING_VERIFIED';
+                         await employee.save();
+                         console.log(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
+                     }
+                 }
+                 
+                 // POST-JOINING Logic
+                 else if (employee && employee.onboarding_stage === 'POST_JOINING') {
+                     const disabledParams = employee.disabled_forms || [];
+                     const postJoiningForms = ['NDA', 'DECLARATION', 'TDS', 'EPF'];
+                     
+                     let allVerified = true;
+                     
+                     for (const type of postJoiningForms) {
+                         if (disabledParams.includes(type)) continue; 
+
+                         const f = await FormSubmission.findOne({
+                             where: { employee_id: employeeId, form_type: type },
+                             order: [['version', 'DESC']]
+                         });
+                         
+                         if (!f || f.status !== 'VERIFIED') {
+                             allVerified = false;
+                             break;
+                         }
+                     }
+
+                     if (allVerified) {
+                         employee.onboarding_stage = 'ONBOARDED';
+                         await employee.save();
+                         console.log(`Auto-updated employee ${employeeId} to ONBOARDED`);
+                     }
+                 }
+
+             } catch (err) {
+                 console.error("Error auto-updating stage:", err);
+             }
+        }
+        // ------------------------------------------
+
     } catch (error) {
         console.error(`Error verifying ${formType}:`, error);
         res.status(500).json({ message: "Server error verifying form." });

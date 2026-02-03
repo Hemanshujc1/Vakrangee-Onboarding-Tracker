@@ -1,32 +1,56 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PreviewActions from "../../Components/Forms/Shared/PreviewActions";
 import { ArrowLeft, Printer, CheckCircle } from "lucide-react";
 import { useAlert } from "../../context/AlertContext";
+import useAutoFill from "../../hooks/useAutoFill";
 
 const PreviewGratuity = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const componentRef = useRef();
+  const { employeeId: paramEmployeeId } = useParams();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { showAlert, showConfirm } = useAlert();
 
   // Get data passed from the form
-  const { formData, signaturePreview: initialSigPreview, status, isHR, employeeId, rejectionReason } = location.state || {}; // Added rejectionReason extraction
+  const { 
+      formData: stateData, 
+      signaturePreview: stateSig, 
+      status: stateStatus, 
+      isHR: stateIsHR, 
+      employeeId: stateEmployeeId, 
+      rejectionReason: stateRejectionReason 
+  } = location.state || {};
+
+  const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
+  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+
+  const { data: autoFillData, loading: autoFillLoading } = useAutoFill(targetId);
+
+  const status = stateStatus || autoFillData?.gratuityStatus;
+  const rejectionReason = stateRejectionReason || autoFillData?.gratuityRejectionReason;
+  const formData = stateData || autoFillData?.gratuityData;
+  const initialSigPreview = stateSig || (formData?.signature_path ? `/uploads/signatures/${formData.signature_path}` : null);
+
   const [signaturePreview, setSignaturePreview] = useState(initialSigPreview);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (formData) {
-        // If signaturePreview was passed in state, it's already set by useState initial value.
-        // If not, check formData for signature_path
         if (!initialSigPreview && formData.signature_path) {
-            setSignaturePreview(`http://localhost:3001/uploads/signatures/${formData.signature_path}`);
+            setSignaturePreview(`/uploads/signatures/${formData.signature_path}`);
         } else if (formData.signature instanceof File) {
-            // Handle File object if passed directly (e.g. from immediate preview before save)
              setSignaturePreview(URL.createObjectURL(formData.signature));
+        } else if (initialSigPreview) {
+             setSignaturePreview(initialSigPreview);
         }
     }
   }, [formData, initialSigPreview]);
+
+  if (autoFillLoading && !formData) {
+      return <div className="p-10 text-center">Loading Preview...</div>;
+  }
 
   if (!formData) {
     return (
@@ -77,7 +101,7 @@ const PreviewGratuity = () => {
   };
 
   const handleVerification = async (verifyStatus) => {
-    if (!employeeId) return await showAlert("Missing Employee ID", { type: 'error' });
+    if (!targetId) return await showAlert("Missing Employee ID", { type: 'error' });
 
     let reason = null;
     if (verifyStatus === "REJECTED") {
@@ -95,7 +119,7 @@ const PreviewGratuity = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3001/api/forms/gratuity/verify/${employeeId}`,
+        `/api/forms/gratuity/verify/${targetId}`,
         {
           method: "POST",
           headers: {
@@ -150,7 +174,7 @@ const PreviewGratuity = () => {
       // Ensure isDraft is false
       submitData.append("isDraft", "false");
 
-      const response = await fetch("http://localhost:3001/api/forms/gratuity", {
+      const response = await fetch("/api/forms/gratuity", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: submitData,
@@ -210,7 +234,7 @@ const PreviewGratuity = () => {
         </div>
 
         {/* Rejection Alert */}
-        {status === 'REJECTED' && rejectionReason && (
+        {(status === 'REJECTED' || (status === 'DRAFT' && rejectionReason)) && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
                 <div className="font-bold flex items-center gap-2 mb-1">
                     <CheckCircle size={20} className="text-red-500" />

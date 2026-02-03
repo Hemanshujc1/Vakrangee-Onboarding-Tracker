@@ -19,7 +19,7 @@ const ProfileHeader = ({ employee, isEditing, editForm, setEditForm, children })
             'PRE_JOINING': { label: 'In Progress', color: 'text-blue-600 bg-blue-100', icon: Clock },
             'PRE_JOINING_VERIFIED': { label: 'Ready to Join', color: 'text-green-600 bg-green-100', icon: ShieldCheck },
             'POST_JOINING': { label: 'Joining Formalities', color: 'text-yellow-600 bg-yellow-100', icon: Building },
-            'ACTIVE': { label: 'Completed', color: 'text-green-600 bg-green-100', icon: CheckCircle }
+            'ONBOARDED': { label: 'Completed', color: 'text-green-600 bg-green-100', icon: CheckCircle }
         };
 
         const status = stages[stage] || { label: stage || 'Unknown', color: 'text-gray-600 bg-gray-100', icon: Clock };
@@ -43,7 +43,7 @@ const ProfileHeader = ({ employee, isEditing, editForm, setEditForm, children })
                             {(employee.profilePhoto || employee.profilePhotoFile) ? (
                                 <img 
                                     src={employee.profilePhotoFile 
-                                        ? `http://localhost:3001/uploads/profilepic/${employee.profilePhotoFile}`
+                                        ? `/uploads/profilepic/${employee.profilePhotoFile}`
                                         : employee.profilePhoto} 
                                     alt={employee.firstName} 
                                     className="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover bg-white"

@@ -62,8 +62,8 @@ const PreJoiningForms = () => {
       let formData = null;
       let rejectionReason = null;
       let verifiedByName = null;
-      let previewPath = `${form.path}/preview`; // Default
       let isDisabled = false;
+      let previewPath = `${form.path}/preview/${employeeId}`; // Default
 
       if (form.id === 4) {
         // Mediclaim
@@ -78,7 +78,7 @@ const PreJoiningForms = () => {
         formData = autoFillData.applicationData;
         rejectionReason = autoFillData.applicationRejectionReason;
         verifiedByName = autoFillData.applicationVerifiedByName;
-        previewPath = "/forms/application/preview"; // Custom path
+        previewPath = `/forms/application/preview/${employeeId}`; // Custom path
         isDisabled = autoFillData.applicationDisabled;
       } else if (form.id === 3) {
         // Gratuity
@@ -93,7 +93,7 @@ const PreJoiningForms = () => {
         formData = autoFillData.employeeInfoData;
         rejectionReason = autoFillData.employeeInfoRejectionReason;
         verifiedByName = autoFillData.employeeInfoVerifiedByName;
-        previewPath = "/forms/information/preview";
+        previewPath = `/forms/information/preview/${employeeId}`;
         isDisabled = autoFillData.employeeInfoDisabled;
       }
 
@@ -101,6 +101,8 @@ const PreJoiningForms = () => {
       let uiStatus =
         status === "PENDING"
           ? "Pending"
+          : status === "DRAFT"
+          ? "Draft"
           : status === "VERIFIED"
           ? "Approved"
           : status === "REJECTED"

@@ -128,7 +128,7 @@ const FormApplication = () => {
           employer: commonSchemas.stringOptional,
           designation: commonSchemas.stringOptional,
           fromDate: commonSchemas.datePastOptional,
-          toDate: commonSchemas.datePastOptional,
+          toDate: commonSchemas.dateOptional,
           ctc: commonSchemas.currency,
           reportingOfficer: Yup.string(),
         })
@@ -341,6 +341,9 @@ const FormApplication = () => {
         panNo: saved.panNo || autoFillData.panNo || "",
         hasPan: saved.hasPan || autoFillData.hasPan || "No",
 
+        passportNo: saved.passportNo || autoFillData.passportNo || "",
+        hasPassport: saved.hasPassport || autoFillData.hasPassport || "No",
+
         ...saved,
 
         // Ensure arrays have at least one row if empty and required
@@ -379,7 +382,7 @@ const FormApplication = () => {
 
       if (saved.signature_path) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${saved.signature_path}`
+          `/uploads/signatures/${saved.signature_path}`
         );
       }
     }
@@ -433,7 +436,7 @@ const FormApplication = () => {
 
       // Assuming endpoint exists or will exist
       const response = await fetch(
-        "http://localhost:3001/api/forms/application",
+        "/api/forms/application",
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -448,7 +451,7 @@ const FormApplication = () => {
           if (isPreviewMode) {
              const savedData = autoFillData?.applicationData || {};
              // We need to pass the saved form ID if possible, or just rely on autoFill
-             navigate("/forms/application/preview", {
+             navigate(`/forms/application/preview/${employeeId}`, {
                 state: {
                   formData: {
                     ...values,
@@ -466,7 +469,7 @@ const FormApplication = () => {
         } else {
           await showAlert("Form Submitted!", { type: 'success' });
           const savedData = autoFillData?.applicationData || {};
-          navigate("/forms/application/preview", {
+          navigate(`/forms/application/preview/${employeeId}`, {
             state: {
               formData: {
                 ...values,

@@ -80,6 +80,7 @@ const FormEPF = () => {
           .transform((v, o) => (o === "" ? null : v)),
         scheme_cert_no: Yup.string().nullable().optional(),
         ppo_no: Yup.string().nullable().optional(),
+        
         // International Worker
         international_worker: Yup.string().required("Required"),
         country_of_origin: Yup.string().when("international_worker", {
@@ -180,7 +181,7 @@ const FormEPF = () => {
       reset(stateData);
       if (stateData.signature_path) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${stateData.signature_path}`
+          `/uploads/signatures/${stateData.signature_path}`
         );
       }
     } else if (autoFillData) {
@@ -227,7 +228,7 @@ const FormEPF = () => {
       const sigPath = savedData.signature_path || autoFillData.signature;
       if (sigPath) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${sigPath}`
+          `/uploads/signatures/${sigPath}`
         );
       }
     }
@@ -278,7 +279,7 @@ const FormEPF = () => {
         });
 
         const token = localStorage.getItem("token");
-        await axios.post("http://localhost:3001/api/forms/epf", formData, {
+        await axios.post("/api/forms/epf", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -321,6 +322,7 @@ const FormEPF = () => {
           signaturePreview: signaturePreview,
           employeeId: targetId,
           isHR: false,
+          status: "DRAFT",
         },
       });
     }

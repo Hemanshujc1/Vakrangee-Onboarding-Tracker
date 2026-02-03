@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'; 
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {Home, Users, UserPlus, UserCog, UserCircle, LogOut, FileText, CheckCircle, User, Building2, ListCheck, X} from 'lucide-react';
 import axios from 'axios';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isSuperAdmin = location.pathname.startsWith('/hr-super-admin');
   const isHrAdmin = location.pathname.startsWith('/hr-admin');
   const isEmployee = location.pathname.startsWith('/employee');
@@ -58,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login'; 
+    navigate('/login'); 
   };
 
   const navItems = [];
@@ -70,7 +71,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             return employeeStage && employeeStage !== 'BASIC_INFO' && employeeStage !== 'Not_joined';
         }
         if (item.path === '/employee/post-joining') {
-            return ['POST_JOINING', 'ACTIVE'].includes(employeeStage);
+            return ['POST_JOINING', 'ONBOARDED'].includes(employeeStage);
         }
         return true;
     });

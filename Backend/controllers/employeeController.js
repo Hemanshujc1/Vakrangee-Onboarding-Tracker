@@ -55,7 +55,7 @@ exports.getAllEmployees = async (req, res) => {
         adminStats[record.onboarding_hr_id].assigned += 1;
 
         const stage = record.EmployeeMaster?.onboarding_stage;
-        if (stage === "ACTIVE" || stage === "POST_JOINING") {
+        if (stage === "ONBOARDED" || stage === "POST_JOINING") {
           adminStats[record.onboarding_hr_id].onboarded += 1;
         } else if (stage === "Not_joined") {
           adminStats[record.onboarding_hr_id].notJoined += 1;
@@ -307,7 +307,7 @@ exports.getDashboardStats = async (req, res) => {
               link: "/employee/pre-joining",
               type: "action"
           };
-      } else if (employee.onboarding_stage === 'POST_JOINING' || employee.onboarding_stage === 'ACTIVE') {
+      } else if (employee.onboarding_stage === 'POST_JOINING' || employee.onboarding_stage === 'ONBOARDED') {
            // check if all post joining forms are done
            // Simplified check
            nextAction = {
@@ -414,7 +414,7 @@ exports.getEmployeeById = async (req, res) => {
     ).length;
 
     const completedCount = assignedRecords.filter(
-      (r) => r.EmployeeMaster?.onboarding_stage === "ACTIVE",
+      (r) => r.EmployeeMaster?.onboarding_stage === "ONBOARDED",
     ).length;
 
     const notJoinedCount = assignedRecords.filter(
@@ -765,7 +765,7 @@ exports.advanceOnboardingStage = async (req, res) => {
     // Allowed transitions usually handled by specific actions, but this is a manual override/progression
     // e.g. PRE_JOINING -> POST_JOINING
     
-    if (!['POST_JOINING', 'ACTIVE'].includes(stage)) {
+    if (!['POST_JOINING', 'ONBOARDED'].includes(stage)) {
        return res.status(400).json({ message: "Invalid stage transition requested." });
     }
 

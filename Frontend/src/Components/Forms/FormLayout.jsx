@@ -16,14 +16,14 @@ const  FormLayout = ({
   const { profilePhoto, signature: dataSignature } = employeeData || {};
   
   const photoUrl = profilePhoto 
-    ? `http://localhost:3001/uploads/profilepic/${profilePhoto}`
+    ? `/uploads/profilepic/${profilePhoto}`
     : null;
 
   // Use preview if available, otherwise fallback to server url
   const signatureUrl = signaturePreview 
     ? signaturePreview
     : dataSignature
-      ? `http://localhost:3001/uploads/signatures/${dataSignature}`
+      ? `/uploads/signatures/${dataSignature}`
       : null;
 
   return (

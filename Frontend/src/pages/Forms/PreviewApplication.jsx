@@ -78,7 +78,7 @@ const PreviewApplication = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:3001/api/forms/application/verify/${targetId}`,
+        `/api/forms/application/verify/${targetId}`,
         { status: newStatus, remarks: reason },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -145,7 +145,7 @@ const PreviewApplication = () => {
       });
       dataToSend.append("isDraft", false);
 
-      const response = await fetch("http://localhost:3001/api/forms/application", {
+      const response = await fetch("/api/forms/application", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: dataToSend,
@@ -211,7 +211,7 @@ const PreviewApplication = () => {
             {autoFillData?.profilePhoto && (
                 <div className="absolute top-8 right-8 w-24 h-32 border border-black bg-white p-1 z-10">
                     <img 
-                        src={`http://localhost:3001/uploads/profilepic/${autoFillData.profilePhoto}`} 
+                        src={`/uploads/profilepic/${autoFillData.profilePhoto}`} 
                         alt="Profile" 
                         className="w-full h-full object-cover"
                         onError={(e) => e.target.style.display = 'none'}
@@ -921,7 +921,7 @@ const PreviewApplication = () => {
                         src={
                           signaturePreview
                             ? signaturePreview
-                            : `http://localhost:3001/uploads/signatures/${
+                            : `/uploads/signatures/${
                                 formData?.signature_path || autoFillData?.signature
                               }`
                         }

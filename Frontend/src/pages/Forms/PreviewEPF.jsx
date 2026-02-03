@@ -47,7 +47,7 @@ const PreviewEPF = () => {
   }, []);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const targetId = stateEmployeeId || user.employeeId;
+  const targetId = stateEmployeeId || employeeId || user.employeeId;
 
   // 2. Fetch backend data (fallback/robustness)
   const { data: autoFillData, loading: autoFillLoading } =
@@ -61,7 +61,7 @@ const PreviewEPF = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:3001/api/forms/auto-fill/${employeeId}`,
+          `/api/forms/auto-fill/${employeeId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -93,7 +93,7 @@ const PreviewEPF = () => {
 
   // Signature URL helper
   const getSignatureUrl = (path) =>
-    path ? `http://localhost:3001/uploads/signatures/${path}` : null;
+    path ? `/uploads/signatures/${path}` : null;
 
   // Helper to render Yes/No with checkmark
   const renderYesNo = (val) => {
@@ -165,7 +165,7 @@ const PreviewEPF = () => {
       payload.append("isDraft", "false");
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/api/forms/epf", payload, {
+      await axios.post("/api/forms/epf", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -199,7 +199,7 @@ const PreviewEPF = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:3001/api/forms/epf/verify/${employeeId}`,
+        `/api/forms/epf/verify/${employeeId}`,
         {
           status: newStatus,
           remarks: reason,
@@ -263,13 +263,14 @@ const PreviewEPF = () => {
             onSubmit={handleFinalSubmit}
             onVerify={handleVerification}
             onEdit={() =>
-              navigate(
+                navigate(
                 `/forms/employees-provident-fund/${employeeId || targetId}`,
                 {
                   state: {
-                    formData: data || autoFillData?.epfData,
+                    formData: data?.epfData || autoFillData?.epfData,
                     isEdit: true,
                     isResubmitting: derivedStatus === "REJECTED",
+                    rejectionReason: data?.epfRejectionReason || autoFillData?.epfRejectionReason
                   },
                 }
               )
@@ -726,7 +727,7 @@ const PreviewEPF = () => {
                       (epf.signature instanceof File
                         ? URL.createObjectURL(epf.signature)
                         : null) ||
-                      `http://localhost:3001/uploads/signatures/${
+                      `/uploads/signatures/${
                         epf.signature_path || data.signature
                       }`
                     }

@@ -6,7 +6,7 @@ export const getEmployeeStatus = (emp) => {
         case 'PRE_JOINING': return "In Progress";
         case 'PRE_JOINING_VERIFIED': return "Ready to Join";
         case 'POST_JOINING': return "Joining Formalities";
-        case 'ACTIVE': return "Completed";
+        case 'ONBOARDED': return "Completed";
         default: return emp.onboarding_stage;
     }
 };

@@ -6,7 +6,7 @@ const EducationAndTraining = ({ register, errors, control, educationFields, appe
   return (
     <>
       {/* Education */}
-      <FormSection title="Educational & Professional Qualifications">
+      <FormSection title="Educational & Professional Qualifications" isRequired="true">
         <DynamicTable
           headers={[
             "Qualification",

@@ -164,7 +164,7 @@ const FormMediclaim = () => {
       const existingSignature = savedData.signature_path || autoFillData.signature;
       if (existingSignature) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${existingSignature}`
+          `/uploads/signatures/${existingSignature}`
         );
       }
     }
@@ -199,7 +199,7 @@ const FormMediclaim = () => {
             });
 
             const token = localStorage.getItem("token");
-            const response = await fetch("http://localhost:3001/api/forms/mediclaim", {
+            const response = await fetch("/api/forms/mediclaim", {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` },
                 body: formData,
@@ -217,7 +217,7 @@ const FormMediclaim = () => {
         }
     } else {
         const savedData = autoFillData?.mediclaimData || {};
-        navigate("/forms/mediclaim/preview", {
+        navigate(`/forms/mediclaim/preview/${employeeId}`, {
             state: {
                 formData: {
                   ...values,
@@ -225,7 +225,8 @@ const FormMediclaim = () => {
                 },
                 signaturePreview: signaturePreview,
                 employeeId: employeeId,
-                isHR: false // Assuming default flow is employee side? Or derive from user/mode
+                isHR: false,
+                status: "DRAFT"
             }
         });
     }
@@ -328,12 +329,12 @@ const FormMediclaim = () => {
               <FormInput label="Address Line 1" register={register} name="address_line1" error={errors.address_line1} required={true} />
             </div>
             <div className="md:col-span-2">
-              <FormInput label="Address Line 2" register={register} name="address_line2" required={true} />
+              <FormInput label="Address Line 2" register={register} name="address_line2" required={true} error={errors.address_line2} />
             </div>
-            <FormInput label="Landmark" register={register} name="landmark" />
+            <FormInput label="Landmark" register={register} name="landmark" error={errors.landmark} />
             <FormInput label="Post Office" register={register} name="post_office" error={errors.post_office} required={true} />
             <FormInput label="City" register={register} name="city" error={errors.city} required={true} />
-            <FormInput label="District" register={register} name="district" />
+            <FormInput label="District" register={register} name="district" error={errors.district} />
             <FormInput label="State" register={register} name="state" error={errors.state} required={true} />
             <FormInput label="Pincode" register={register} name="pincode" error={errors.pincode} required={true} />
           </div>
@@ -341,7 +342,7 @@ const FormMediclaim = () => {
 
         {/* 3. Family Details Section (Dynamic) - Only if Married */}
         {maritalStatus === "Married" && (
-          <FormSection title="Family Details / Dependents">
+          <FormSection title="Family Details / Dependents" isRequired="true">
             <DynamicTable
                 headers={["Relationship", "Name", "Age", "DOB"]}
                 fields={fields}
@@ -355,8 +356,8 @@ const FormMediclaim = () => {
                             >
                                 <option value="Spouse">Spouse</option>
                                 <option value="Child">Child</option>
-                                <option value="Mother">Mother</option>
-                                <option value="Father">Father</option>
+                                {/* <option value="Mother">Mother</option>
+                                <option value="Father">Father</option> */}
                             </select>
                              {errors.dependents?.[index]?.relationship && (
                                 <span className="text-red-500 text-xs block px-1">{errors.dependents[index].relationship.message}</span>

@@ -31,7 +31,7 @@ const Documents = () => {
 
   const fetchDocuments = async () => {
     try {
-        const response = await fetch('http://localhost:3001/api/documents', {
+        const response = await fetch('/api/documents', {
             headers: { Authorization: `Bearer ${token}` }
         });
         if (response.ok) {
@@ -55,7 +55,7 @@ const Documents = () => {
     formData.append('file', file);
 
     try {
-        const response = await fetch('http://localhost:3001/api/documents/upload', {
+        const response = await fetch('/api/documents/upload', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
             body: formData
@@ -82,7 +82,7 @@ const Documents = () => {
       if(!isConfirmed) return;
 
       try {
-        const response = await fetch(`http://localhost:3001/api/documents/${docId}`, {
+        const response = await fetch(`/api/documents/${docId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -163,7 +163,7 @@ const Documents = () => {
                                 {data ? (
                                     <>
                                         <a 
-                                            href={`http://localhost:3001/uploads/documents/${data.file_path}`} 
+                                            href={`/uploads/documents/${data.file_path}`} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
                                             className="p-2 text-gray-500 hover:text-(--color-primary) hover:bg-blue-50 rounded-lg transition-colors" 

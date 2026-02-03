@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +38,6 @@ const FormNDA = () => {
   );
 
   // Validation Schema
-  // Validation Schema
   const validationSchema = useMemo(() => Yup.object().shape({
         isDraft: Yup.boolean(),
         employee_full_name: commonSchemas.nameString.label("Full Name"),
@@ -59,7 +59,7 @@ const FormNDA = () => {
   // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData) {
-       navigate('/forms/non-disclosure-agreement/preview', { 
+       navigate(`/forms/non-disclosure-agreement/preview/${employeeId}`, { 
          state: { 
            formData: {
              ...autoFillData.ndaData,
@@ -73,7 +73,7 @@ const FormNDA = () => {
              pincode: autoFillData.ndaData?.pincode || autoFillData.address?.pincode,
            },
            signaturePreview: autoFillData.ndaData?.signature_path 
-            ? `http://localhost:3001/uploads/signatures/${autoFillData.ndaData.signature_path}`
+            ? `/uploads/signatures/${autoFillData.ndaData.signature_path}`
             : null
          } 
        });
@@ -123,11 +123,13 @@ const FormNDA = () => {
 
       if (savedData.signature_path || autoFillData.signature) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
+          `/uploads/signatures/${savedData.signature_path || autoFillData.signature}`
         );
       }
     }
   }, [autoFillData, reset]);
+
+  const isPreviewRef = React.useRef(false);
 
   const onFormSubmit = async (values) => {
     // Disabled fields are excluded from 'values', so fetch them manually
@@ -145,7 +147,10 @@ const FormNDA = () => {
 
     try {
       const formData = new FormData();
-        
+      
+      // Always treat as draft for saving data before preview, unless actually submitting final (which is not handled here anymore for direct submit)
+      // But we use isDraft from form state to distinguish "Save Draft" vs "Next/Preview"
+      
       Object.keys(allValues).forEach((key) => {
         if (key === "signature") {
           if (allValues.signature instanceof File) {
@@ -162,23 +167,25 @@ const FormNDA = () => {
       }
 
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/api/forms/nda", formData, {
+      await axios.post("/api/forms/nda", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (allValues.isDraft) {
+      if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: 'success' });
       } else {
+        // Navigate to Preview
          const savedData = autoFillData?.ndaData || {};
-         navigate("/forms/non-disclosure-agreement/preview", {
+         navigate(`/forms/non-disclosure-agreement/preview/${employeeId}`, {
             state: {
               formData: {
                 ...allValues,
                 signature_path: savedData.signature_path || autoFillData?.signature
               },
-              signaturePreview: signaturePreview,
               employeeId: employeeId,
-              isHR: false
+              isHR: false,
+              status: "DRAFT", // Still DRAFT until confirmed in preview
+              fromPreviewSubmit: true
             },
          });
       }
@@ -191,7 +198,7 @@ const FormNDA = () => {
 
   if (loading) return <div>Loading Form Data...</div>;
 
-    return (
+  return (
     <FormLayout
         title="Non-Disclosure Agreement"
         employeeData={autoFillData}
@@ -204,9 +211,14 @@ const FormNDA = () => {
             isSubmitting,
             onSaveDraft: () => {
                 setValue("isDraft", true);
+                isPreviewRef.current = false;
                 handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
             },
-            onSubmit: () => setValue("isDraft", false)
+            onSubmit: () => {
+                setValue("isDraft", true); // Save as Draft first
+                isPreviewRef.current = true;
+                handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
+            }
         }}
         signature={{
             setValue,

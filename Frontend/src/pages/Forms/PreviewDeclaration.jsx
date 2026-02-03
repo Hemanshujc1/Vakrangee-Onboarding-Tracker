@@ -46,7 +46,7 @@ const PreviewDeclaration = () => {
         setSignaturePreview(stateSig);
       } else if (data.signature_path) {
         setSignaturePreview(
-          `http://localhost:3001/uploads/signatures/${data.signature_path}`
+          `/uploads/signatures/${data.signature_path}`
         );
       }
     }
@@ -75,7 +75,7 @@ const PreviewDeclaration = () => {
         payload.append('isDraft', 'false');
 
         const token = localStorage.getItem("token");
-        await axios.post("http://localhost:3001/api/forms/declaration", payload, {
+        await axios.post("/api/forms/declaration", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -109,7 +109,7 @@ const PreviewDeclaration = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3001/api/forms/declaration/verify/${location.state.employeeId}`,
+        `/api/forms/declaration/verify/${location.state.employeeId}`,
         {
           method: "POST",
           headers: {
@@ -169,7 +169,7 @@ const PreviewDeclaration = () => {
         />
 
         {/* Rejection Alert */}
-        {derivedStatus === 'REJECTED' && (stateRejectionReason || autoFillData?.declarationRejectionReason) && (
+        {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.declarationRejectionReason))) && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
                 <div className="font-bold flex items-center gap-2 mb-1">
                     Form Rejected

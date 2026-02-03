@@ -40,7 +40,7 @@ const FormGratuity = () => {
   // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData) {
-      navigate("/forms/gratuity-form/preview", {
+      navigate(`/forms/gratuity-form/preview/${employeeId}`, {
         state: {
           formData: {
             ...autoFillData.gratuityData,
@@ -49,7 +49,7 @@ const FormGratuity = () => {
               autoFillData.fullName,
           },
           signaturePreview: autoFillData.gratuityData?.signature_path
-            ? `http://localhost:3001/uploads/signatures/${autoFillData.gratuityData.signature_path}`
+            ? `/uploads/signatures/${autoFillData.gratuityData.signature_path}`
             : null,
         },
       });
@@ -69,7 +69,7 @@ const FormGratuity = () => {
     gender: commonSchemas.stringRequired,
     department: commonSchemas.stringRequired,
     ticket_no: Yup.string().optional(), 
-    date_of_appointment: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
+    date_of_appointment: commonSchemas.dateOptional,
     
     // Address
     city: commonSchemas.stringRequired,
@@ -82,17 +82,18 @@ const FormGratuity = () => {
 
     nominees: Yup.array().of(
       Yup.object().shape({
-        name: commonSchemas.nameString,
+        name: commonSchemas.nameString.label("Name"),
         address: commonSchemas.addressString.label("Address"),
         relationship: commonSchemas.stringRequired,
         age: commonSchemas.age.required("Required"),
         share: Yup.number()
-         .min(0,"Min 0").max(100,"Max 100")
          .typeError("Must be a number")
-         .positive().integer().required("Required"),
+         .min(1,"Min 1%")
+         .max(100,"Max 100%")
+         .required("Required"),
       })
     ),
-
+ 
     // Witnesses - New Array Structure
     witnesses: Yup.array().of(
         Yup.object().shape({
@@ -103,12 +104,12 @@ const FormGratuity = () => {
     
     witnesses_place: Yup.string().when('isDraft', {
         is: false,
-        then: (schema) => commonSchemas.stringRequired,
+        then: (schema) => commonSchemas.stringOptional,
         otherwise: (schema) => schema.optional()
     }),
-    witnesses_date: Yup.date().max(new Date(), "Date cannot be in the future").when('isDraft', {
+    witnesses_date: Yup.date().when('isDraft', {
         is: false,
-        then: (schema) => commonSchemas.datePast.required("Required"),
+        then: (schema) => commonSchemas.dateOptional,
         otherwise: (schema) => schema.optional()
     }),
     
@@ -238,7 +239,7 @@ const FormGratuity = () => {
       const sigPath = savedData.signature_path || savedData.signature;
       if (sigPath) {
         // If it's a full URL (rare), use it, otherwise assume filename
-        const url = sigPath.startsWith('http') ? sigPath : `http://localhost:3001/uploads/signatures/${sigPath}`;
+        const url = sigPath.startsWith('http') ? sigPath : `/uploads/signatures/${sigPath}`;
         setSignaturePreview(url);
       }
     }
@@ -276,7 +277,7 @@ const FormGratuity = () => {
 
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:3001/api/forms/gratuity",
+          "/api/forms/gratuity",
           {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
@@ -295,7 +296,7 @@ const FormGratuity = () => {
       }
     } else {
       const savedData = autoFillData?.gratuityData || {};
-      navigate("/forms/gratuity-form/preview", {
+      navigate(`/forms/gratuity-form/preview/${employeeId}`, {
         state: {
           formData: {
             ...values,
@@ -303,7 +304,8 @@ const FormGratuity = () => {
           },
           signaturePreview: signaturePreview,
           employeeId: autoFillData?.id || employeeId,
-          isHR: false // Assuming default flow is employee side
+          isHR: false,
+          status: "DRAFT"
         },
       });
     }
@@ -449,39 +451,44 @@ const FormGratuity = () => {
                 renderRow={(item, index) => (
                     <>
                          <td className="border border-gray-300 p-1 align-top">
-                           <TableInput
-                                register={register(`nominees.\${index}.name`)}
+                           <input
+                                {...register(`nominees.${index}.name`)}
                                 placeholder="Full Name"
-                                error={errors.nominees?.[index]?.name}
-                                required
+                                className={`w-full border-b border-gray-300 outline-none p-1 mb-1 bg-transparent ${errors.nominees?.[index]?.name ? 'bg-red-50' : ''}`}
                             />
+                            {errors.nominees?.[index]?.name && <span className="text-red-500 text-xs block px-1">{errors.nominees[index].name.message}</span>}
+                            
                             <textarea
-                                {...register(`nominees.\${index}.address`)}
+                                {...register(`nominees.${index}.address`)}
                                 placeholder="Full Address"
-                                className={`w-full border border-gray-200 outline-none p-1 text-xs h-16 resize-none mt-1 \${errors.nominees?.[index]?.address ? 'bg-red-50' : ''}`}
+                                className={`w-full border border-gray-200 outline-none p-1 text-xs h-16 resize-none mt-1 ${errors.nominees?.[index]?.address ? 'bg-red-50' : ''}`}
                             />
                             {errors.nominees?.[index]?.address && <span className="text-red-500 text-xs block px-1">{errors.nominees[index].address.message}</span>}
                          </td>
-                         <TableInput
-                            register={register(`nominees.\${index}.relationship`)}
-                            placeholder="e.g. Spouse"
-                            error={errors.nominees?.[index]?.relationship}
-                            required
-                        />
-                        <TableInput
-                            type="number"
-                            register={register(`nominees.\${index}.age`)}
-                            placeholder="Age"
-                            error={errors.nominees?.[index]?.age}
-                            required
-                        />
+                         <td className="border border-gray-300 p-1 align-top">
+                           <input
+                                {...register(`nominees.${index}.relationship`)}
+                                placeholder="e.g. Spouse"
+                                className={`w-full outline-none p-1 bg-transparent ${errors.nominees?.[index]?.relationship ? 'bg-red-50' : ''}`}
+                            />
+                            {errors.nominees?.[index]?.relationship && <span className="text-red-500 text-xs block px-1">{errors.nominees[index].relationship.message}</span>}
+                         </td>
+                         <td className="border border-gray-300 p-1 align-top">
+                           <input
+                                type="number"
+                                {...register(`nominees.${index}.age`)}
+                                placeholder="Age"
+                                className={`w-full outline-none p-1 bg-transparent ${errors.nominees?.[index]?.age ? 'bg-red-50' : ''}`}
+                            />
+                            {errors.nominees?.[index]?.age && <span className="text-red-500 text-xs block px-1">{errors.nominees[index].age.message}</span>}
+                         </td>
                          <td className="border border-gray-300 p-1 align-top">
                             <div className="flex items-center gap-1">
                                 <input
                                     type="number"
-                                    {...register(`nominees.\${index}.share`)}
+                                    {...register(`nominees.${index}.share`)}
                                     placeholder="%"
-                                    className={`w-full outline-none p-1 bg-transparent \${errors.nominees?.[index]?.share ? 'bg-red-50' : ''}`}
+                                    className={`w-full outline-none p-1 bg-transparent ${errors.nominees?.[index]?.share ? 'bg-red-50' : ''}`}
                                 />
                                 <span>%</span>
                             </div>
@@ -586,8 +593,8 @@ const FormGratuity = () => {
 
             {/* Declaration by Witnesses (Redesigned) */}
             <div>
-              <h3 className="font-bold text-center uppercase mb-6 text-lg border-b border-gray-300 pb-2">
-                Declaration by Witnesses
+              <h3 className="font-bold text-center uppercase mb-6 text-lg border-b border-gray-300 pb-2 pt-2">
+                Declaration by Witnesses <span className="text-red-500">*</span>
               </h3>
               <p className="mb-4 font-medium">
                 Nomination signed/thumb-impressed before me.
@@ -599,7 +606,7 @@ const FormGratuity = () => {
                       <h4 className="font-bold underline">Witness {index + 1}</h4>
                       <div>
                         <input
-                          {...register(`witnesses.\${index}.name`)}
+                          {...register(`witnesses.${index}.name`)}
                           placeholder="Name in full"
                           className="w-full border-b border-gray-300 py-1 outline-none"
                         />
@@ -607,7 +614,7 @@ const FormGratuity = () => {
                       </div>
                       <div>
                         <textarea
-                          {...register(`witnesses.\${index}.address`)}
+                          {...register(`witnesses.${index}.address`)}
                           placeholder="Full Address"
                           className="w-full border border-gray-300 p-2 text-xs resize-none h-20 outline-none"
                         />
@@ -661,21 +668,21 @@ const FormGratuity = () => {
           </div>
           <div className="flex flex-col items-end gap-8 w-[35%]">
             <div className="text-left">
-              <p className="border-t pt-1 border-black ">
+              <p className="border-t border-gray-900">
                 Signature of the employer/Officer authorised
               </p>
               <p>Designation</p>
             </div>
             <div className="text-left">
-              <p className="border-t border-black pt-1">
+              <p className="border-t pt-1 border-gray-900">
                 Name and address of the establishment or rubber stamp thereof.
-              </p>3
+              </p>
             </div>
           </div>
           </div>
         </div>
          {/* Acknowledgement */}
-         <div className="mt-12 mb-5 pt-6 border-t-4 border-black page-break-inside-avoid">
+         <div className="mt-12 mb-5 pt-6 border-t-4 border-gray-900 page-break-inside-avoid">
                  <h4 className="font-bold text-lg text-center mb-6">Acknowledgement by the Employee</h4>
                  <p>Received the duplicate copy of nomination in Form 'F' filed by me and duly certified by the employer.</p>
                  <div className="flex justify-between items-end mt-12">

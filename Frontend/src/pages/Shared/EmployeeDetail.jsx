@@ -328,18 +328,18 @@ const EmployeeDetail = () => {
         />
         
         {/* Stage Progression Control */}
-        {employee.onboardingStage === 'PRE_JOINING' && (
-             <div className="bg-white p-6 rounded-xl shadow-sm border border-yellow-100 flex justify-between items-center">
+        {employee.onboardingStage === 'PRE_JOINING_VERIFIED' && (
+             <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 flex justify-between items-center">
                  <div>
-                     <h3 className="text-lg font-bold text-gray-800">Onboarding Progression</h3>
-                     <p className="text-sm text-gray-500">Employee is currently in Pre-Joining stage.</p>
+                     <h3 className="text-lg font-bold text-gray-800">Ready for Joining</h3>
+                     <p className="text-sm text-gray-500">Employee has completed all Pre-Joining requirements.</p>
                  </div>
                  <button 
                     onClick={() => handleAdvanceStage('POST_JOINING')}
                     disabled={actionLoading}
-                    className="bg-yellow-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-yellow-700 transition-colors shadow-sm disabled:opacity-50"
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
                  >
-                    Advance to Post-Joining
+                    Start Post-Joining
                  </button>
              </div>
         )}
@@ -383,7 +383,7 @@ const EmployeeDetail = () => {
                 )
               }
               onView={() =>
-                navigate("/forms/mediclaim/preview", {
+                navigate(`/forms/mediclaim/preview/${employee.id}`, {
                   state: {
                     formData: {
                       ...(employee.mediclaimData || {}),
@@ -411,7 +411,7 @@ const EmployeeDetail = () => {
                 )
               }
               onView={() =>
-                navigate("/forms/gratuity-form/preview", {
+                navigate(`/forms/gratuity-form/preview/${employee.id}`, {
                   state: {
                     formData: {
                       ...(employee.gratuityData || {}),
@@ -453,7 +453,7 @@ const EmployeeDetail = () => {
                 handleToggleFormAccess("NDA", "POST", employee.ndaDisabled)
               }
               onView={() =>
-                navigate("/forms/non-disclosure-agreement/preview", {
+                navigate(`/forms/non-disclosure-agreement/preview/${employee.id}`, {
                   state: {
                     formData: {
                       ...(employee.ndaData || {}),
@@ -481,7 +481,7 @@ const EmployeeDetail = () => {
                 )
               }
               onView={() =>
-                navigate("/forms/declaration-form/preview", {
+                navigate(`/forms/declaration-form/preview/${employee.id}`, {
                   state: {
                     formData: {
                       ...(employee.declarationData || {}),
@@ -505,7 +505,7 @@ const EmployeeDetail = () => {
                 handleToggleFormAccess("TDS", "POST", employee.tdsDisabled)
               }
               onView={() =>
-                navigate("/forms/tds-form/preview", {
+                navigate(`/forms/tds-form/preview/${employee.id}`, {
                   state: {
                     formData: {
                       ...(employee.tdsData || {}),

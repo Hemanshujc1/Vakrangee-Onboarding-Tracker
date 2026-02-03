@@ -57,7 +57,7 @@ const PreviewNDA = () => {
 
     // Derive signature URL if not provided in state (e.g. from Dashboard)
     const finalSignature = signaturePreview || (formData.signature_path 
-        ? `http://localhost:3001/uploads/signatures/${formData.signature_path}` 
+        ? `/uploads/signatures/${formData.signature_path}` 
         : null);
 
     const handleFinalSubmit = async () => {
@@ -76,7 +76,7 @@ const PreviewNDA = () => {
             payload.append("isDraft", "false");
 
             const token = localStorage.getItem("token");
-            const response = await fetch("http://localhost:3001/api/forms/nda", {
+            const response = await fetch("/api/forms/nda", {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` },
                 body: payload,
@@ -109,7 +109,7 @@ const PreviewNDA = () => {
         setActionLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`http://localhost:3001/api/forms/nda/verify/${employeeId}`, {
+            await axios.post(`/api/forms/nda/verify/${employeeId}`, {
                 status: newStatus,
                 remarks: reason
             }, { headers: { Authorization: `Bearer ${token}` } });
@@ -135,12 +135,19 @@ const PreviewNDA = () => {
                     onBack={() => navigate(-1)}
                     onSubmit={handleFinalSubmit}
                     onVerify={handleVerification}
-                    onEdit={() => navigate("/forms/non-disclosure-agreement")}
+                    onEdit={() => navigate("/forms/non-disclosure-agreement", {
+                        state: {
+                            formData: data,
+                            isEdit: true,
+                            isResubmitting: derivedStatus === 'REJECTED',
+                            rejectionReason: rejectionReason
+                        }
+                    })}
                     isSubmitting={actionLoading}
                     loading={actionLoading}
                 />
 
-                {derivedStatus === 'REJECTED' && (stateRejectionReason || autoFillData?.ndaRejectionReason) && (
+                {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.ndaRejectionReason))) && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
                         <div className="font-bold flex items-center gap-2 mb-1">
                             Form Rejected

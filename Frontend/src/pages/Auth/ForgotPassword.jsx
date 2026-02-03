@@ -15,7 +15,7 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      await axios.post('http://localhost:3001/api/auth/forgot-password', { email });
+      await axios.post('/api/auth/forgot-password', { email });
       // Navigate to Verify OTP page, passing the email
       navigate('/verify-otp', { state: { email } });
     } catch (err) {

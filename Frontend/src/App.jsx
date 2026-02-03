@@ -128,37 +128,28 @@ const App = () => {
           }
         >
           <Route
-            path="/forms/information/preview"
+            path="/forms/information/preview/:employeeId"
             element={<PreviewInformation />}
           />
           <Route
-            path="/forms/information/preview/:id"
-            element={<PreviewInformation />}
-          />
-          <Route
-            path="/forms/mediclaim/preview"
+            path="/forms/mediclaim/preview/:employeeId"
             element={<PreviewMediclaim />}
           />
           <Route
-            path="/forms/non-disclosure-agreement/preview"
+            path="/forms/non-disclosure-agreement/preview/:employeeId"
             element={<PreviewNDA />}
           />
           <Route
-            path="/forms/declaration-form/preview"
+            path="/forms/declaration-form/preview/:employeeId"
             element={<PreviewDeclaration />}
           />
           <Route
-            path="/forms/gratuity-form/preview"
+            path="/forms/gratuity-form/preview/:employeeId"
             element={<PreviewGratuity />}
           />
           <Route
-            path="/forms/gratuity-form/preview"
-            element={<PreviewGratuity />}
-          />
-          <Route path="/forms/tds-form/preview" element={<PreviewTDS />} />
-          <Route
-            path="/forms/application/preview"
-            element={<PreviewApplication />}
+            path="/forms/tds-form/preview/:employeeId"
+            element={<PreviewTDS />}
           />
           <Route
             path="/forms/application/preview/:employeeId"
