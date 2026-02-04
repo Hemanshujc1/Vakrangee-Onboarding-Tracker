@@ -154,7 +154,48 @@ server {
 
 ---
 
-## 4. Final Verification
+## 4. Application Management
+
+### 4.1 Manage Backend (PM2)
+
+We use PM2 to keep the backend server running in the background.
+
+**Start the Backend:**
+
+```bash
+cd Backend
+pm2 start server.js --name "vakrangee-backend"
+pm2 save
+```
+
+**Common PM2 Commands:**
+
+- **List all processes**: `pm2 list`
+- **View logs**: `pm2 logs vakrangee-backend`
+- **Restart**: `pm2 restart vakrangee-backend`
+- **Stop**: `pm2 stop vakrangee-backend`
+- **Delete Process** (If created by mistake or to rename):
+  ```bash
+  pm2 delete vakrangee-backend
+  ```
+
+### 4.2 Manage Frontend
+
+Since the Frontend is served as static files by Nginx, "running" it just means building the files. Nginx serves them automatically.
+
+**To Update/Deploy Frontend Changes:**
+
+1.  Navigate to Frontend: `cd Frontend`
+2.  Update code (`git pull`) or confiugration (`.env`).
+3.  **Rebuild**:
+    ```bash
+    npm run build
+    ```
+4.  (Optional) If you changed Nginx config, restart it: `sudo systemctl restart nginx`
+
+---
+
+## 5. Final Verification
 
 1.  **Frontend**: Visit `http://your-domain.com/vakrangee-onboarding-portal/`. You should see the login page.
 2.  **Backend Connectivity**: Try logging in with the Super Admin credentials.
@@ -163,7 +204,7 @@ server {
     pm2 status
     ```
 
-## 5. Troubleshooting common errors
+## 6. Troubleshooting common errors
 
 - **404 on API**: Check `location /api/` in Nginx. Ensure `proxy_pass` does **NOT** have a trailing slash (`http://localhost:3001` ✅, `http://localhost:3001/` ❌).
 - **White Screen on Frontend**: Check console for `VITE_API_URL` issues. Ensure `Frontend/.env` is correct and you ran `npm run build`.
