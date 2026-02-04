@@ -266,19 +266,20 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </button>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
-                >
-                  Cancel
-                </button>
+               
                 <button
                   type="submit"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
                 >
                   <Plus className="w-4 h-4" />
                   Add Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
+                >
+                  Cancel
                 </button>
               </div>
             </div>

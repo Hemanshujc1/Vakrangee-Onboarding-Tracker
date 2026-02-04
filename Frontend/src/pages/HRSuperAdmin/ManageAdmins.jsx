@@ -278,12 +278,19 @@ const ManageAdmins = () => {
         showSortWithJoinDate={false}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        customSortOptions={[
+          { label: "Default", value: "" },
+          { label: "Onboarded: Low to High", value: "onboardedCount-asc" },
+          { label: "Onboarded: High to Low", value: "onboardedCount-desc" },
+          { label: "Assigned: Low to High", value: "assignedCount-asc" },
+          { label: "Assigned: High to Low", value: "assignedCount-desc" },
+        ]}
       />
 
       {/* Main Content */}
       <div className="w-full">
         {/* Top Bar: Search & Sort */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-row sm:flex-row gap-4 justify-between items-center">
           <div className="relative flex-1 w-full sm:w-auto">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -300,43 +307,14 @@ const ManageAdmins = () => {
 
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center gap-2 text-gray-700 font-medium border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 w-full sm:w-auto justify-center transition-colors"
+            className="flex items-center gap-2 text-gray-700 font-medium border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 w-fit sm:w-auto justify-center transition-colors"
           >
             <Filter size={18} />
             {/* <span>Filters</span> */}
           </button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-sm text-gray-500 whitespace-nowrap hidden sm:inline">
-              Sort by:
-            </span>
-            <select
-              value={
-                sortConfig.key
-                  ? `${sortConfig.key}-${sortConfig.direction}`
-                  : ""
-              }
-              onChange={(e) => {
-                const val = e.target.value;
-                if (!val) {
-                  setSortConfig({ key: null, direction: "asc" });
-                } else {
-                  const [key, direction] = val.split("-");
-                  setSortConfig({ key, direction });
-                }
-              }}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-(--color-accent-green) bg-white w-full sm:w-48 cursor-pointer"
-            >
-              <option value="">Default</option>
-              <option value="onboardedCount-asc">Onboarded: Low to High</option>
-              <option value="onboardedCount-desc">
-                Onboarded: High to Low
-              </option>
-              <option value="assignedCount-asc">Assigned: Low to High</option>
-              <option value="assignedCount-desc">Assigned: High to Low</option>
-            </select>
-          </div>
         </div>
+
+
 
         {totalItems > 0 && (
           <div className="mb-6">
@@ -363,23 +341,23 @@ const ManageAdmins = () => {
                       <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Admins
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Job Title
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                      <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                         Assigned
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                      <th className="hidden xl:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                         Onboarded
                       </th>
 
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                      <th className="hidden xl:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                         Not Joined
                       </th>
                       <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
@@ -418,13 +396,13 @@ const ManageAdmins = () => {
                             </div>
                           </td>
 
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="hidden md:table-cell px-6 py-4 text-gray-600">
                             {admin.jobTitle || admin.role}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="hidden lg:table-cell px-6 py-4 text-gray-600">
                             {admin.location || "-"}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="hidden md:table-cell px-6 py-4">
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 admin.accountStatus === "Inactive"
@@ -437,18 +415,18 @@ const ManageAdmins = () => {
                               {admin.accountStatus || "ACTIVE"}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          <td className="hidden sm:table-cell px-6 py-4 text-center">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-s font-medium bg-blue-100 text-blue-800">
                               {admin.assignedCount || 0}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          <td className="hidden xl:table-cell px-6 py-4 text-center">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-s font-medium bg-green-100 text-green-800">
                               {admin.onboardedCount || 0}
                             </span>
                           </td>
 
-                          <td className="px-6 py-4 text-center">
+                          <td className="hidden xl:table-cell px-6 py-4 text-center">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-s font-medium bg-gray-600 text-gray-100">
                               {admin.notJoinedCount || 0}
                             </span>

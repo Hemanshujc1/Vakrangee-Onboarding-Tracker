@@ -31,7 +31,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('API is running for the Onboarding Portal...');
 });
 
 // Database Sync and Server Start

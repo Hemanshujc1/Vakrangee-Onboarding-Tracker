@@ -26,5 +26,6 @@ dist.zip
 
 # Environment Variables
 .env
+.env.production
 Notes
 src/pages/temp.jsx

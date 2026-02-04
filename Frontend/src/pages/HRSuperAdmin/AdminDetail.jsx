@@ -206,9 +206,9 @@ const AdminDetail = () => {
 
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-blue-600 to-blue-800"></div>
+          <div className="h-32 bg-linear-to-r from-blue-600 to-blue-800"></div>
           <div className="px-4 md:px-8 pb-8">
-            <div className="relative flex md:flex-row justify-between items-center md:items-end -mt-12 mb-6 gap-4">
+            <div className="relative flex flex-col md:flex-row justify-between items-center md:items-end -mt-12 mb-6 gap-4">
               <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 w-full md:w-auto">
                 <div className="relative shrink-0">
                   {admin.profilePhoto ? (
@@ -223,7 +223,7 @@ const AdminDetail = () => {
                     </div>
                   )}
                 </div>
-                <div className="mb-2 text-center md:text-left">
+                <div className="mb-2 text-center md:text-left mt-2 md:mt-0">
                   <h2 className="text-2xl font-bold text-gray-800">
                     {admin.firstName} {admin.lastName}
                   </h2>

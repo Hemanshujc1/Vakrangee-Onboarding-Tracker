@@ -12,7 +12,7 @@ const PageHeader = ({ title, subtitle, actionLabel, onAction, ActionIcon, childr
         {actionLabel && onAction && (
             <button 
                 onClick={onAction}
-                className="flex items-center gap-2 bg-(--color-secondary) text-white px-5 py-2.5 rounded-lg hover:brightness-110 transition-all font-medium cursor-pointer shadow-sm"
+                className="flex items-center gap-2 bg-(--color-secondary) text-white px-3 py-2 text-xs sm:text-sm sm:px-5 sm:py-2.5 rounded-lg hover:brightness-110 transition-all font-medium cursor-pointer shadow-sm"
             >
             {ActionIcon && <ActionIcon size={20} />}
             <span>{actionLabel}</span>

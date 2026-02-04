@@ -210,9 +210,9 @@ const EditProfileForm = () => {
       <div className="h-32 bg-(--color-secondary)"></div>
 
       <div className="px-4 md:px-8 pb-8">
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Left Column: Photo & Basic Info */}
-          <div className="md:w-1/3 -mt-16 flex flex-col items-center text-center">
+          <div className="w-full lg:w-1/3 -mt-16 flex flex-col items-center text-center mb-6 lg:mb-0">
             <div className="relative group">
               <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-200 overflow-hidden shadow-md">
                 {previewImage ? (
@@ -252,7 +252,7 @@ const EditProfileForm = () => {
           </div>
 
           {/* Right Column: View/Edit Content */}
-          <div className="md:w-2/3 mt-6">
+          <div className="w-full lg:w-2/3 lg:mt-6">
             {message.text && (
               <div
                 className={`mb-6 p-4 rounded-lg text-sm font-medium ${

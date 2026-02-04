@@ -34,7 +34,7 @@ const createSuperAdmin = async () => {
         const empMaster = await EmployeeMaster.create({
             employee_id: user.id,
             role: role,
-            onboarding_stage: 'ACTIVE',
+            onboarding_stage: 'ONBOARDED',
             account_status: 'ACTIVE', // Ensure active
             company_email_id: email,
             first_login_at: new Date() // Mark as logged in so they don't get stuck in "First Login" flows if any

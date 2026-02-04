@@ -11,12 +11,12 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssign
           <thead className="bg-gray-50 border-b border-gray-100 text-center">
             <tr>
               <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Employee</th>
-              <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Title</th>
-              <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
-              <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-              <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joining Date</th>
+              <th className="hidden md:table-cell px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Title</th>
+              <th className="hidden lg:table-cell px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Department</th>
+              <th className="hidden lg:table-cell px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+              <th className="hidden xl:table-cell px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joining Date</th>
               <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <th className="hidden md:table-cell px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 {showAssignedDate ? "Assigned Date" : "HR Assigned"}
               </th>
               {(onDelete || onActivate) && <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>}
@@ -48,22 +48,22 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssign
                       )} 
                       <span>  {emp.firstName} {emp.lastName}</span>
                     </td>
-                    <td className="px-4 py-4 text-gray-600">
+                    <td className="hidden md:table-cell px-4 py-4 text-gray-600">
                       {emp.jobTitle || "-"}
                     </td>
-                    <td className="px-4 py-4 text-gray-600">
+                    <td className="hidden lg:table-cell px-4 py-4 text-gray-600">
                       {emp.department || "-"}
                     </td>
-                    <td className="px-4 py-4 text-gray-600">
+                    <td className="hidden lg:table-cell px-4 py-4 text-gray-600">
                       {emp.location || "-"}
                     </td>
-                    <td className="px-4 py-4 text-gray-600">
+                    <td className="hidden xl:table-cell px-4 py-4 text-gray-600">
                       {emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString('en-GB') : "-"}
                     </td>
                     <td className="px-0 py-4">
                       <StatusBadge status={statusText} />
                     </td>
-                    <td className="px-4 py-4 text-gray-600">
+                    <td className="hidden md:table-cell px-4 py-4 text-gray-600">
                       {showAssignedDate 
                         ? (emp.assignedDate ? new Date(emp.assignedDate).toLocaleDateString('en-GB') : "-")
                         : (emp.assignedHRName || "-")}

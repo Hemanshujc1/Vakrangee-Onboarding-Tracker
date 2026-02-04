@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
     Filter, Building2, Briefcase, MapPin, User, CheckCircle2, 
-    X, ChevronDown, ChevronRight, Check
+    X, ChevronDown, ChevronRight, Check, ArrowUpDown
 } from 'lucide-react';
 
 const EmployeeFilters = ({
@@ -11,7 +11,10 @@ const EmployeeFilters = ({
     showDepartment = true,
     isOpen, 
     onClose, 
-    variant = 'sidebar'
+    variant = 'sidebar',
+    sortConfig,
+    setSortConfig,
+    customSortOptions
 }) => {
     const {
         status, setStatus,
@@ -20,6 +23,9 @@ const EmployeeFilters = ({
         location, setLocation,
         resetFilters
     } = filters;
+    
+    // Ensure sortConfig is accessible to SortSection if defined inside
+    // They are available in scope from props: sortConfig, setSortConfig
 
     const {
         statuses = [],
@@ -81,6 +87,62 @@ const EmployeeFilters = ({
         );
     };
 
+    const SortSection = () => {
+        const [isExpanded, setIsExpanded] = useState(true);
+        const currentVal = sortConfig?.key ? `${sortConfig.key}-${sortConfig.direction}` : "";
+
+        const defaultSortOptions = [
+            { label: "Default", value: "" },
+            { label: "Joining Date: Oldest First", value: "dateOfJoining-asc" },
+            { label: "Joining Date: Newest First", value: "dateOfJoining-desc" }
+        ];
+
+        const optionsToDisplay = customSortOptions || defaultSortOptions;
+
+        return (
+            <div className="py-4 border-b border-gray-100 last:border-0">
+                <button 
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="flex items-center justify-between w-full text-left mb-2 group"
+                >
+                    <div className="flex items-center gap-2 font-bold text-gray-800 text-sm">
+                        <ArrowUpDown size={16} className="text-(--color-primary)" />
+                        <span>Sort by</span>
+                    </div>
+                    {isExpanded ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
+                </button>
+                
+                {isExpanded && (
+                    <div className="space-y-1 mt-2 pl-1">
+                        {optionsToDisplay.map((opt) => (
+                            <label key={opt.value} className={`flex items-center gap-2 cursor-pointer py-1 px-2 rounded-md transition-colors text-sm ${currentVal === opt.value ? 'bg-(--color-primary)/10 text-(--color-primary) font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}>
+                                <input 
+                                    type="radio" 
+                                    name="sortOrder" 
+                                    value={opt.value} 
+                                    checked={currentVal === opt.value} 
+                                    onChange={() => {
+                                        if (!opt.value) {
+                                            setSortConfig({ key: null, direction: "asc" });
+                                        } else {
+                                            const [key, direction] = opt.value.split("-");
+                                            setSortConfig({ key, direction });
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                                <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${currentVal === opt.value ? 'border-(--color-primary) bg-(--color-primary)' : 'border-gray-300'}`}>
+                                    {currentVal === opt.value && <Check size={10} className="text-white" />}
+                                </span>
+                                <span>{opt.label}</span>
+                            </label>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const hasActiveFilters = status || department || jobTitle || location || filters.assignedHR;
 
     return (
@@ -114,6 +176,9 @@ const EmployeeFilters = ({
                         </button>
                     </div>
                 )}
+
+                {/* Sort By */}
+                <SortSection />
 
                 {/* Status */}
                 {showStatus && (
