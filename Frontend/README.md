@@ -55,9 +55,12 @@ This is the frontend for the **Vakrangee Onboarding Portal**, a comprehensive we
     The app will be available at `http://localhost:5173`.
 
 5.  **Build for Production**:
+
     ```bash
     npm run build
     ```
+
+    _For detailed deployment instructions (serving static files with Nginx), see **[ProductionSetup.md](../ProductionSetup.md)**._
 
 ## 📂 Project Structure
 

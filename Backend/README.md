@@ -49,10 +49,7 @@ This is the backend API for the **Vakrangee Onboarding Portal**. It provides a r
       npm run dev
       ```
     - **Production**:
-      ```bash
-      npm start
-      ```
-      The server typically runs on port `3001`.
+      Please refer to **[ProductionSetup.md](../ProductionSetup.md)** for detailed deployment instructions (PM2, Nginx, etc.).
 
 ## 📂 Project Structure
 

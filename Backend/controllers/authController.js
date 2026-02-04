@@ -8,7 +8,7 @@ const sendEmail = require('../utils/emailService');
 const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 // Register a new user
-exports.register = async (req, res) => {
+exports.cregister = async (req, res) => {
   const t = await sequelize.transaction();
   try {
     // destructuring
