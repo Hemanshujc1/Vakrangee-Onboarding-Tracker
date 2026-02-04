@@ -3,7 +3,7 @@ const router = express.Router();
 const employeeController = require('../controllers/employeeController');
 const protect = require('../middleware/authMiddleware'); 
 
-router.get('/', employeeController.getAllEmployees); 
+router.get('/', protect, employeeController.getAllEmployees); 
 router.get('/my-hr', protect, employeeController.getMyHR);
 router.get('/me', protect, employeeController.getMe);
 router.get('/dashboard-stats', protect, employeeController.getDashboardStats);

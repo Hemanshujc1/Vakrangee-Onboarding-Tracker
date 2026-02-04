@@ -383,6 +383,15 @@ exports.getEmployeeById = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
+    // Security Check: IDOR Protection
+    // Only allow if user is HR/SuperAdmin OR if the user owns this record
+    if (
+      !["HR_SUPER_ADMIN", "HR_ADMIN"].includes(req.user.role) &&
+      employee.employee_id !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Access denied. You are not authorized to view this profile." });
+    }
+
     const record = employee.EmployeeRecord || {};
     const user = employee.User || {};
 
