@@ -15,9 +15,18 @@ This document outlines the detailed steps to set up the Vakrangee Onboarding Por
 
 ### Step 1.1: Configure Environment Variables
 
-Ensure your `Backend/.env` file has the correct database credentials.
+1.  Navigate to the `Backend` directory: `cd Backend`
+2.  Copy the production example file to `.env`:
+    ```bash
+    cp .env.production.example .env
+    ```
+3.  Open the `.env` file (`nano .env`) and update the values with your actual credentials:
 
 ```ini
+APP_PORT=3001
+CORS_ORIGIN=http://your-domain.com
+
+# Database Credentials
 DB_HOST=localhost
 DB_USER=your_prod_user
 DB_PASSWORD=your_prod_password
