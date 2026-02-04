@@ -97,3 +97,78 @@ Status of individual forms (EPF, Gratuity, NDA, etc.) submitted by employees.
 | `REJECTED`             | **Rejected**  | Sent back to employee for corrections.          |
 
 ---
+
+## 🌍 Production Deployment Guide
+
+Follow these steps to deploy the application to a production server (Ubuntu/Linux recommended).
+
+### 1. Prerequisites (Server Side)
+
+- **Node.js**: Install Node.js v18+
+- **PM2**: Process manager to keep backend alive (`npm install -g pm2`)
+- **Nginx**: Web server for reverse proxy and static files
+- **MySQL**: Production database instance
+
+### 2. Backend Deployment
+
+1.  **Prepare Directory**: Clone repo and navigate to `Backend`.
+2.  **Install Dependencies**:
+    ```bash
+    npm install --production
+    ```
+3.  **Environment Setup**:
+    - Copy the example production config: `cp .env.production.example .env`
+    - Edit `.env` with your **Production Database Credentials** and **Secrets**.
+    - Ensure `CORS_ORIGIN` points to your frontend domain.
+4.  **Start Server**:
+    ```bash
+    pm2 start server.js --name "vakrangee-backend"
+    pm2 save
+    ```
+
+### 3. Frontend Deployment
+
+1.  **Prepare Directory**: Navigate to `Frontend`.
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Environment Setup**:
+    - Copy the example config: `cp .env.production.example .env`
+    - Edit `.env`: Set `VITE_API_URL` to your public backend URL (e.g., `https://api.yourcomapny.com` or `http://your-ip`).
+    - **CRITICAL**: Do NOT use `localhost`.
+4.  **Build Project**:
+    ```bash
+    npm run build
+    ```
+
+    - This creates a `dist` folder containing the optimized static files.
+
+### 4. Nginx Configuration (Example)
+
+Configure Nginx to serve the Frontend `dist` folder and proxy API requests to the Backend.
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    root /var/www/vakrangee/Frontend/dist;
+    index index.html;
+
+    # Serve Frontend
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API requests to Backend
+    location /api/ {
+        proxy_pass http://localhost:3001/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
