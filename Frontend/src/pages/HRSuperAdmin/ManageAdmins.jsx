@@ -275,8 +275,6 @@ const ManageAdmins = () => {
           setLocation: setFilterLocation,
           status: filterStatus,
           setStatus: setFilterStatus,
-          sortConfig,
-          setSortConfig,
           resetFilters: () => {
             setFilterJobTitle("");
             setFilterLocation("");
@@ -285,6 +283,8 @@ const ManageAdmins = () => {
             setSortConfig({ key: null, direction: "asc" });
           },
         }}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
         options={{ jobTitles, locations, statuses }}
         showStatus={true}
         showDepartment={false}

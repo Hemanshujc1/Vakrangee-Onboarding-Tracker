@@ -414,18 +414,18 @@ const AdminDetail = () => {
             setLocation: setFilterLocation,
             status: filterStatus,
             setStatus: setFilterStatus,
-            sortConfig,
-            setSortConfig,
             resetFilters: () => {
               setFilterDepartment("");
               setFilterJobTitle("");
               setFilterLocation("");
               setFilterStatus("");
-              setSearchTerm("");
+            setSearchTerm("");
               setSortConfig({ key: null, direction: "asc" });
             },
           }}
           options={{ departments, jobTitles, locations, statuses }}
+          sortConfig={sortConfig}
+          setSortConfig={setSortConfig}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
