@@ -102,7 +102,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     setSendingEmail(true);
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : null;
+      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       await axios.post("/api/email/send-admin-welcome", {
