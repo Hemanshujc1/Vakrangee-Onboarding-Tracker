@@ -27,7 +27,12 @@ const resizePhoto = async (req, res, next) => {
 
   // Create unique filename
   const filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-  const outputPath = path.join(__dirname, '../uploads/profilepic', filename);
+  const uploadDir = path.join(__dirname, '../uploads/profilepic');
+  const outputPath = path.join(uploadDir, filename);
+
+  if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
 
   try {
     await sharp(req.file.buffer)

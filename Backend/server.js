@@ -43,7 +43,7 @@ const startServer = async () => {
 
     console.log('Syncing models...');
     // Sync Models
-    await sequelize.sync({ alter: true }); 
+    await sequelize.sync({ alter: false }); 
     console.log('Database synchronized. All tables created.');
 
     // Global Error Handler Middleware

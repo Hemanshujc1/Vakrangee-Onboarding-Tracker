@@ -45,7 +45,7 @@ const createSuperAdmin = async () => {
             employee_id: empMaster.id,
             firstname: 'Super',
             lastname: 'Admin',
-            designation_id: null, // or fetch a default? Leaving null is safer if optional
+            designation_id: null, 
             department_id: null,
             job_title: 'HR Super Admin',
             personal_email_id: email,

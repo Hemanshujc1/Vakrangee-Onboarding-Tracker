@@ -9,7 +9,7 @@ const fs = require('fs');
 // Configure Multer  
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      const dir = 'uploads/documents';
+      const dir = path.join(__dirname, '../uploads/documents');
       if (!fs.existsSync(dir)){
           fs.mkdirSync(dir, { recursive: true });
       }
@@ -17,8 +17,6 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
       // Create unique filename: docType-timestamp-originalExt
-      // We can get docType from body, but body might not be parsed yet. 
-      // Safest is generic unique name.
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }

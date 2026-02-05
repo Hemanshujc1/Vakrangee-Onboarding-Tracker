@@ -173,14 +173,13 @@ exports.forgotPassword = async (req, res) => {
         const expiry = new Date(Date.now() + 3 * 60 * 1000);
 
         // Update User
-        // Note: in a real app, hash the OTP
         user.reset_password_token = otp;
         user.reset_password_expire = expiry;
         await user.save();
 
         // Send Email (Production ready)
         await sendEmail({
-            to: user.username, // Assuming username is email
+            to: user.username, 
             subject: 'Password Reset OTP - Vakrangee',
             text: `Your OTP for password reset is: ${otp}. Valid for 3 minutes.`,
             html: `<h3>Password Reset Request</h3><p>Your OTP is: <b>${otp}</b></p><p>This OTP is valid for 10 minutes.</p>`

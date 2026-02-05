@@ -1,5 +1,5 @@
 const { sendHRAdminAssignmentEmail } = require('../services/emailServiceforAdmin');
-const { sendWelcomeEmail } = require('../services/emailServiceforEmployee'); // Assuming original service is here or needs to be moved/renamed
+const { sendWelcomeEmail } = require('../services/emailServiceforEmployee'); 
 
 exports.sendAdminWelcomeEmail = async (req, res) => {
     try {

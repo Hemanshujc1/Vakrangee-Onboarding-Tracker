@@ -17,7 +17,7 @@ const EmployeeRecord = sequelize.define(
       },
     },
     // Work Details
-    department_name: DataTypes.STRING, // Deprecated, use department_id
+    department_name: DataTypes.STRING, 
     department_id: {
       type: DataTypes.INTEGER,
       references: {
@@ -25,7 +25,7 @@ const EmployeeRecord = sequelize.define(
         key: "id",
       },
     },
-    job_title: DataTypes.STRING, // Deprecated, use designation_id
+    job_title: DataTypes.STRING, 
     designation_id: {
       type: DataTypes.INTEGER,
       references: {
@@ -45,7 +45,7 @@ const EmployeeRecord = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    work_location: DataTypes.STRING, // Deprecated, use location_id
+    work_location: DataTypes.STRING,
     location_id: {
       type: DataTypes.INTEGER,
       references: {

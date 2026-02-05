@@ -101,6 +101,9 @@ server {
     listen 80;
     server_name your-domain.com; # e.g., ecartsit.vakrangee.in
 
+    # Allow large uploads (Images, PDFs)
+    client_max_body_size 10M;
+
     # 1. Serve Frontend Static Files
     root /path/to/your/project/Frontend/dist;
     index index.html;
@@ -217,4 +220,8 @@ Since the Frontend is served as static files by Nginx, "running" it just means b
 
 - **404 on API**: Check `location /api/` in Nginx. Ensure `proxy_pass` does **NOT** have a trailing slash (`http://localhost:3001` ✅, `http://localhost:3001/` ❌).
 - **White Screen on Frontend**: Check console for `VITE_API_URL` issues. Ensure `Frontend/.env` is correct and you ran `npm run build`.
+- **File Uploads Failing**:
+  - Check Nginx `client_max_body_size` is set.
+  - Check permissions on `Backend/uploads` folder: `chmod -R 755 Backend/uploads`.
+  - Check if the owner of the process can write using `ls -l Backend/uploads`.
 - **Database Connection Error**: Verify `Backend/.env` credentials and that MySQL service is running (`sudo systemctl status mysql`).

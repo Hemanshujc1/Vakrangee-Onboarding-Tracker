@@ -86,7 +86,7 @@ exports.getAllEmployees = async (req, res) => {
         hrMap[hr.employee_id] = { name, location };
       });
 
-      // Fallback for HRs who might be just Users without EmployeeMaster (edge case)
+      // Fallback for HRs who might be just Users without EmployeeMaster
       const foundHrIds = hrMasters.map((h) => h.employee_id);
       const missingHrIds = Array.from(hrIds).filter(
         (id) => !foundHrIds.includes(id),
@@ -98,7 +98,7 @@ exports.getAllEmployees = async (req, res) => {
           attributes: ["id", "username"],
         });
         miscUsers.forEach((u) => {
-          hrMap[u.id] = { name: u.username, location: null }; // Use username/email as fallback
+          hrMap[u.id] = { name: u.username, location: null }; 
         });
       }
     }
@@ -247,7 +247,6 @@ exports.getMe = async (req, res) => {
       id: employee.id, // EmployeeMaster ID
       onboardingStage: employee.onboarding_stage,
       disabledForms: employee.disabled_forms || [],
-      // Add other necessary fields if needed by Sidebar/Dashboard
       basicInfoStatus: employee.basic_info_status,
       firstName: employee.EmployeeRecord?.firstname,
       lastName: employee.EmployeeRecord?.lastname,
@@ -309,7 +308,6 @@ exports.getDashboardStats = async (req, res) => {
           };
       } else if (employee.onboarding_stage === 'POST_JOINING' || employee.onboarding_stage === 'ONBOARDED') {
            // check if all post joining forms are done
-           // Simplified check
            nextAction = {
               title: "Complete Post-Joining Forms",
               description: "Finish EPF, Gratuity and other joining documents.",
@@ -383,7 +381,6 @@ exports.getEmployeeById = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // Security Check: IDOR Protection
     // Only allow if user is HR/SuperAdmin OR if the user owns this record
     if (
       !["HR_SUPER_ADMIN", "HR_ADMIN"].includes(req.user.role) &&
@@ -435,7 +432,7 @@ exports.getEmployeeById = async (req, res) => {
       id: r.EmployeeMaster?.id,
       firstName: r.firstname,
       lastName: r.lastname,
-      name: `${r.firstname} ${r.lastname}`, // Keep for backward compatibility if needed
+      name: `${r.firstname} ${r.lastname}`, 
       department: r.department_name,
       jobTitle: r.job_title,
       location: r.work_location,
@@ -444,7 +441,7 @@ exports.getEmployeeById = async (req, res) => {
         ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${r.profile_photo}`
         : null,
       onboarding_stage: r.EmployeeMaster?.onboarding_stage,
-      stage: r.EmployeeMaster?.onboarding_stage, // Keep for backward compatibility
+      stage: r.EmployeeMaster?.onboarding_stage,
       firstLoginAt: r.EmployeeMaster?.first_login_at,
       lastLoginAt: r.EmployeeMaster?.last_login_at,
       assignedDate: r.onboarding_hr_assigned_at,
@@ -478,7 +475,7 @@ exports.getEmployeeById = async (req, res) => {
     // Fetch Basic Info Verifier Name if it exists
     let basicInfoVerifiedByName = null;
     if (employee.basic_info_verified_by) {
-        if (assignedHR && assignedHR.id == employee.basic_info_verified_by) { // Use loose equality just in case of type mismatch
+        if (assignedHR && assignedHR.id == employee.basic_info_verified_by) { 
              basicInfoVerifiedByName = assignedHR.name;
         } else {
             const verifierUser = await User.findByPk(employee.basic_info_verified_by);

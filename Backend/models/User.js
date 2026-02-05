@@ -10,7 +10,6 @@ const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    // unique: true, // Commented out to prevent "Too many keys" error on sync
   },
   password: {
     type: DataTypes.STRING,

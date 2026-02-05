@@ -1,4 +1,3 @@
-/// Done
 // Email Services for the Add employee module 
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -146,7 +145,7 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
         attachments: [{
             filename: 'Vakrangee_email_logo.jpg',
             path: path.join(__dirname, '../uploads/Vakrangee_email_logo.jpg'),
-            cid: 'vakrangeelogo' // same cid value as in the html img src
+            cid: 'vakrangeelogo' 
         }]
     };
 

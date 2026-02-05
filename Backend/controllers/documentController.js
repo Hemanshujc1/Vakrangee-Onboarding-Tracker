@@ -48,7 +48,7 @@ exports.uploadDocument = async (req, res) => {
         return res.status(400).json({ message: 'Document type is required' });
     }
 
-    // Check if document of this type already exists, if so, maybe update it or delete old? 
+    // Check if document of this type already exists, if so maybe update it or delete old? 
     let document = await EmployeeDocument.findOne({
         where: { 
             employee_id: employee.id,
@@ -134,7 +134,7 @@ const resolveVerifierName = async (verifierId) => {
     return empRecord ? `${empRecord.firstname} ${empRecord.lastname}` : user.username;
 };
 
-// HR: Get all documents for a specific employee
+// Get all documents for a specific employee
 exports.getEmployeeDocuments = async (req, res) => {
     try {
         const { employeeId } = req.params;

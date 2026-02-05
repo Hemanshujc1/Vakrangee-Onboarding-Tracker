@@ -28,9 +28,8 @@ EmployeeRecord.belongsTo(EmployeeMaster, { foreignKey: "employee_id" });
 const logAudit = async (modelName, record, action, options) => {
   try {
     const changes = action === "UPDATE" ? JSON.stringify(record._changed) : null;
-    const changedBy = options.userId || null; // Ensure controllers pass { userId: req.user.id } in options if possible, or we rely on some context.
-    
-    // For now, simple logging without user context if not passed
+    const changedBy = options.userId || null; 
+
     await AuditLog.create({
       table_name: modelName,
       record_id: record.id,
