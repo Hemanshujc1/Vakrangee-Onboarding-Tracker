@@ -33,6 +33,11 @@ app.get('/', (req, res) => {
   res.send('API is running for the Onboarding Portal...');
 });
 
+// Explicit health check for Nginx proxied path
+app.get('/api', (req, res) => {
+  res.send('API is running for the Onboarding Portal...');
+});
+
 // Database Sync and Server Start
 const startServer = async () => {
   try {
