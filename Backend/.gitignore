@@ -80,3 +80,5 @@ typings/
 # OS X
 .DS_Store
 uploads/
+
+production_debug.js

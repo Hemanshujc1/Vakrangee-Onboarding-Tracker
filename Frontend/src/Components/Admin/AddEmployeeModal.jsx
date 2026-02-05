@@ -34,13 +34,17 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
   const fetchManagers = async () => {
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : null;
+      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      if (!token) {
+        console.error("No authentication token found");
+        return;
+      }
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const { data } = await axios.get("/api/employees", config);
       
       const adminRoles = ['HR_ADMIN', 'HR_SUPER_ADMIN'];
-      const filteredManagers = data.filter(emp => adminRoles.includes(emp.role) && emp.accountStatus == 'ACTIVE');
+      const filteredManagers = data.filter(emp => adminRoles.includes(emp.role) && emp.accountStatus?.toUpperCase() === 'ACTIVE');
       
       const sortedManagers = filteredManagers.sort((a, b) => a.firstName.localeCompare(b.firstName));
       setManagers(sortedManagers);
@@ -63,7 +67,8 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
     let hrName = "";
     let hrDesignation = "";
     if (formData.managerId) {
-        const selectedManager = managers.find(m => m.id === parseInt(formData.managerId));
+        // Use userId for comparison as the value is now userId
+        const selectedManager = managers.find(m => m.userId === parseInt(formData.managerId));
         if (selectedManager) {
             hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
             hrDesignation = selectedManager.role;
@@ -74,7 +79,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
         ...formData,
         hrName,
         hrDesignation,
-        onboarding_hr_id: formData.managerId
+        onboarding_hr_id: formData.managerId // This will now be the User ID
     });
 
     setFormData({
@@ -103,13 +108,19 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
     setSendingEmail(true);
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : null;
+      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      if (!token) {
+        await showAlert("Authentication token missing. Please login again.", { type: 'error' });
+        setSendingEmail(false);
+        return;
+      }
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       let hrName = "";
       let hrDesignation = "";
       if (formData.managerId) {
-          const selectedManager = managers.find(m => m.id === parseInt(formData.managerId));
+          // Use userId for comparison
+          const selectedManager = managers.find(m => m.userId === parseInt(formData.managerId));
           if (selectedManager) {
               hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
               hrDesignation = selectedManager.jobTitle; 
@@ -321,7 +332,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
                   >
                     <option value="">Select HR</option>
                     {managers.map((manager) => (
-                      <option key={manager.id} value={manager.id}>
+                      <option key={manager.id} value={manager.userId}>
                         {manager.firstName} {manager.lastName} ({manager.role})
                       </option>
                     ))}

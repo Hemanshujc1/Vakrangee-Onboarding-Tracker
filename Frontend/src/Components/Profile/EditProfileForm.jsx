@@ -53,7 +53,7 @@ const EditProfileForm = () => {
     address_line1: commonSchemas.addressString.label("Address Line 1"),
     address_line2: commonSchemas.addressString.label("Address Line 2"),
     landmark: commonSchemas.landmark,
-    post_office: commonSchemas.stringOptional.label("Post Office"),
+    post_office: commonSchemas.stringRequired.label("Post Office"),
     pincode: commonSchemas.pincode,
     city: commonSchemas.stringRequired.label("City"),
     district: commonSchemas.stringRequired.label("District"),
@@ -582,7 +582,7 @@ const EditProfileForm = () => {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Address Line 1
+                      Address Line 1  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="address_line1"
@@ -600,7 +600,7 @@ const EditProfileForm = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Address Line 2
+                      Address Line 2  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="address_line2"
@@ -630,7 +630,7 @@ const EditProfileForm = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Post Office/Taluka
+                      Post Office/Taluka <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="post_office"
@@ -641,7 +641,7 @@ const EditProfileForm = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Pincode
+                      Pincode  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="pincode"
@@ -660,7 +660,7 @@ const EditProfileForm = () => {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      City
+                      City  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="city"
@@ -671,7 +671,7 @@ const EditProfileForm = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      District
+                      District  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="district"
@@ -683,7 +683,7 @@ const EditProfileForm = () => {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      State
+                      State  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="state"
@@ -694,7 +694,7 @@ const EditProfileForm = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Country
+                      Country  <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="country"

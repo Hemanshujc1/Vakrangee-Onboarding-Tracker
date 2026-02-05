@@ -48,8 +48,8 @@ const ManageAdmins = () => {
 
       const { data } = await axios.get("/api/employees", config);
 
-      const strictAdmins = data.filter((emp) =>
-        ["HR_ADMIN", "HR_SUPER_ADMIN", "ADMIN"].includes(emp.role)
+      const strictAdmins = data.filter(
+        (emp) => ["HR_ADMIN", "HR_SUPER_ADMIN", "ADMIN"].includes(emp.role) //
       );
 
       setAdmins(strictAdmins);
@@ -82,19 +82,21 @@ const ManageAdmins = () => {
       };
 
       await axios.post("/api/auth/register", payload, config);
-      await showAlert("Admin added successfully!", { type: 'success' });
+      await showAlert("Admin added successfully!", { type: "success" });
       setIsModalOpen(false);
       fetchAdmins();
     } catch (error) {
       console.error("Error adding admin:", error);
-      await showAlert(error.response?.data?.message || "Failed to add admin", { type: 'error' });
+      await showAlert(error.response?.data?.message || "Failed to add admin", {
+        type: "error",
+      });
     }
   };
 
   const handleActivateAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to activate this admin?",
-      { type: 'info' }
+      { type: "info" }
     );
     if (!isConfirmed) return;
 
@@ -126,20 +128,24 @@ const ManageAdmins = () => {
                 onboarding_stage: "BASIC_INFO",
                 firstLoginAt: null,
                 lastLoginAt: null,
+                role,
               }
             : admin
         )
       );
 
-      await showAlert("Admin activated successfully!", { type: 'success' });
+      await showAlert("Admin activated successfully!", { type: "success" });
     } catch (error) {
       console.error("Error activating admin:", error);
-      await showAlert("Failed to activate admin", { type: 'error' });
+      await showAlert("Failed to activate admin", { type: "error" });
     }
   };
 
   const handleDeleteAdmin = async (id) => {
-    const isConfirmed = await showConfirm("Are you sure you want to deactivate this admin?", { type: 'warning' });
+    const isConfirmed = await showConfirm(
+      "Are you sure you want to deactivate this admin?",
+      { type: "warning" }
+    );
     if (!isConfirmed) return;
 
     try {
@@ -149,7 +155,10 @@ const ManageAdmins = () => {
         : localStorage.getItem("token");
 
       if (!token) {
-        await showAlert("Authentication error: No token found. Please login again.", { type: 'error' });
+        await showAlert(
+          "Authentication error: No token found. Please login again.",
+          { type: "error" }
+        );
         return;
       }
 
@@ -164,13 +173,17 @@ const ManageAdmins = () => {
         )
       );
 
-      await showAlert("Admin deactivated successfully", { type: 'success' });
+      await showAlert("Admin deactivated successfully", { type: "success" });
     } catch (error) {
       console.error("Error deleting admin:", error);
       if (error.response && error.response.status === 403) {
-        await showAlert(error.response.data.message || "Unauthorized action.", { type: 'error' });
+        await showAlert(error.response.data.message || "Unauthorized action.", {
+          type: "error",
+        });
       } else {
-        await showAlert("Failed to delete admin. See console for details.", { type: 'error' });
+        await showAlert("Failed to delete admin. See console for details.", {
+          type: "error",
+        });
       }
     }
   };
@@ -314,8 +327,6 @@ const ManageAdmins = () => {
           </button>
         </div>
 
-
-
         {totalItems > 0 && (
           <div className="mb-6">
             <Pagination
@@ -433,29 +444,39 @@ const ManageAdmins = () => {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end gap-2">
-                                {(admin.accountStatus === 'Inactive' || admin.accountStatus === 'Not Joined') ? (
+                              {admin.accountStatus === "Inactive" ||
+                              admin.accountStatus === "Not Joined" ? (
                                 <button
-                                    onClick={(e) => {
+                                  onClick={(e) => {
                                     e.stopPropagation();
                                     handleActivateAdmin(admin.id);
-                                    }}
-                                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                    title="Activate Admin"
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                  title="Activate Admin"
                                 >
-                                    <RotateCcw size={18} />
+                                  <RotateCcw size={18} />
                                 </button>
-                                ) : (
-                                    <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteAdmin(admin.id);
-                                    }}
-                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Deactivate Admin"
-                                    >
-                                    <Trash2 size={18} />
-                                    </button>
-                                )}
+                              ) : (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteAdmin(admin.id);
+                                  }}
+                                  disabled={admin.role === "HR_SUPER_ADMIN"}
+                                  className={`p-2 rounded-lg transition-colors text-black ${
+                                    admin.role === "HR_SUPER_ADMIN"
+                                      ? "cursor-not-allowed"
+                                      : "hover:text-red-600 hover:bg-red-50"
+                                  }`}
+                                  title={
+                                    admin.role === "HR_SUPER_ADMIN"
+                                      ? "Cannot delete Super Admin"
+                                      : "Deactivate Admin"
+                                  }
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
