@@ -11,7 +11,7 @@ const EducationIdentitySection = ({ register, errors, isEditing, formData }) => 
 
         <div>
             <label className="block text-sm text-gray-500 mb-1">
-            10th Percentage
+            10th Percentage <span className="text-red-500">*</span>
             </label>
             {isEditing ? (
             <>
@@ -41,7 +41,7 @@ const EducationIdentitySection = ({ register, errors, isEditing, formData }) => 
         </div>
         <div>
             <label className="block text-sm text-gray-500 mb-1">
-            12th Percentage
+            12th Percentage <span className="text-red-500">*</span>
             </label>
             {isEditing ? (
             <>
@@ -71,7 +71,7 @@ const EducationIdentitySection = ({ register, errors, isEditing, formData }) => 
         </div>
         <div>
             <label className="block text-sm text-gray-500 mb-1">
-            Aadhar Number
+            Aadhar Number <span className="text-red-500">*</span>
             </label>
             {isEditing ? (
             <>
@@ -95,7 +95,7 @@ const EducationIdentitySection = ({ register, errors, isEditing, formData }) => 
         </div>
         <div>
             <label className="block text-sm text-gray-500 mb-1">
-            PAN Number
+            PAN Number <span className="text-red-500">*</span>
             </label>
             {isEditing ? (
             <>

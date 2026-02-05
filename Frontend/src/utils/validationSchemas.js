@@ -72,9 +72,10 @@ export const commonSchemas = {
 
 
   landmark: Yup.string()
+  .nullable()
+  .transform((value) => (value === "" ? null : value))
     .min(3, "Min 3 chars")
     .max(100, "Max 100 chars")
-    .nullable()
     .optional(),
     
   country: Yup.string()

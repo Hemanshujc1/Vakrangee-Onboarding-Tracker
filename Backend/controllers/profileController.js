@@ -58,8 +58,13 @@ exports.updateProfile = async (req, res) => {
         tenth_percentage, twelfth_percentage, adhar_number, pan_number
     } = req.body;
 
-    // Helper to convert empty string to null
-    const cleanDate = (date) => date === "" ? null : date;
+    // Helper to convert empty string to null and ensure YYYY-MM-DD format
+    const cleanDate = (date) => {
+        if (!date || date === "") return null;
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0];
+    };
     const cleanNumber = (num) => num === "" ? null : num;
 
     const cleanedData = {

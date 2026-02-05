@@ -10,7 +10,7 @@ const ProfessionalDetailsSection = ({ register, formData, formatDate }) => {
         </div>
         <div>
             <label className="block text-sm text-gray-500 mb-1">
-            Job Title
+            Job  
             </label>
             <input
             {...register("job_title")}

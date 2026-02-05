@@ -32,7 +32,7 @@ const BasicInformation = () => {
   const validationSchema = Yup.object().shape({
     firstname: commonSchemas.nameString.label("First Name"),
     lastname: commonSchemas.nameString.label("Last Name"),
-    email: commonSchemas.email.nullable(),
+    email: commonSchemas.emailOptional.nullable(),
     personal_email_id: commonSchemas.email.nullable(),
     phone: commonSchemas.mobile,
     date_of_birth: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
@@ -57,7 +57,7 @@ const BasicInformation = () => {
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
-      ),
+      ).required("Required"),
     twelfth_percentage: Yup.number()
       .typeError("Must be a number")
       .min(0, "Min 0")
@@ -65,9 +65,9 @@ const BasicInformation = () => {
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
-      ),
-    adhar_number: commonSchemas.aadhaar,
-    pan_number: commonSchemas.pan,
+      ).required("Required"),
+    adhar_number: commonSchemas.aadhaar.required("Required"),
+    pan_number: commonSchemas.pan.required("Required"),
   });
 
   const {

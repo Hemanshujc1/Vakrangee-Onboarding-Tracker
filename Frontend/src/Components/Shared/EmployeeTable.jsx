@@ -89,7 +89,7 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssign
                                                 e.stopPropagation();
                                                 onDelete(emp);
                                             }}
-                                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1 text-black hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 size={18} />

@@ -13,7 +13,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
         <>
           <div>
             <label className="block text-sm text-gray-500 mb-1">
-              Address Line 1
+              Address Line 1 <span className='text-red-500'>*</span>
             </label>
             <input
               {...register("address_line1")}
@@ -30,7 +30,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
           </div>
           <div>
             <label className="block text-sm text-gray-500 mb-1">
-              Address Line 2
+              Address Line 2 <span className='text-red-500'>*</span>
             </label>
             <input
               {...register("address_line2")}
@@ -55,7 +55,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Pincode</label>
+            <label className="block text-sm text-gray-500 mb-1">Pincode<span className="text-red-500">*</span></label>
             <input
               {...register("pincode")}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
@@ -69,7 +69,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">City</label>
+            <label className="block text-sm text-gray-500 mb-1">City<span className="text-red-500">*</span></label>
             <input
               {...register("city")}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
@@ -81,7 +81,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">District</label>
+            <label className="block text-sm text-gray-500 mb-1">District<span className="text-red-500">*</span></label>
             <input
               {...register("district")}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
@@ -95,7 +95,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">State</label>
+            <label className="block text-sm text-gray-500 mb-1">State<span className="text-red-500">*</span></label>
             <input
               {...register("state")}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
@@ -109,7 +109,7 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
             )}
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Country</label>
+            <label className="block text-sm text-gray-500 mb-1">Country<span className="text-red-500">*</span></label>
             <input
               {...register("country")}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${

@@ -49,7 +49,7 @@ const Dashboard = () => {
 
   const getPreJoiningStage = () => {
       // Logic relies on onboardingStage sequence
-      if (['POST_JOINING', 'ONBOARDED'].includes(onboardingStage)) return { status: 'Completed', color: 'green', icon: CheckCircle };
+      if (['PRE_JOINING_VERIFIED', 'POST_JOINING', 'ONBOARDED'].includes(onboardingStage)) return { status: 'Completed', color: 'green', icon: CheckCircle };
       if (onboardingStage === 'PRE_JOINING') return { status: 'In Progress', color: 'blue', icon: Clock };
       return { status: 'Locked', color: 'gray', icon: Lock };
   };
