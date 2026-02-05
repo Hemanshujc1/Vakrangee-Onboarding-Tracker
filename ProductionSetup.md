@@ -134,13 +134,28 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    # 3. Serve Uploaded Documents
+    # 3. Serve Uploaded Documents (Proxy to Backend)
+    # This ensures consistency as backend serves via express.static
     location /uploads/ {
-        alias /path/to/your/project/Backend/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
+        proxy_pass http://localhost:3001/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Handle uploads under the base path to prevent 304/SPA Fallback
+    location /vakrangee-onboarding-portal/uploads/ {
+        proxy_pass http://localhost:3001/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 }
+
 ```
 
 ### Step 3.3: Enable Site & Restart Nginx
