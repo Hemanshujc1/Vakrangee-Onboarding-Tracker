@@ -128,7 +128,7 @@ const ManageAdmins = () => {
                 onboarding_stage: "BASIC_INFO",
                 firstLoginAt: null,
                 lastLoginAt: null,
-                role,
+
               }
             : admin
         )
