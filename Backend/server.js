@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const sequelize = require('./config/database');
-const { User, EmployeeMaster, EmployeeRecord, PreJoiningForm, PostJoiningForm } = require('./models/index');
+// const { User, EmployeeMaster, EmployeeRecord, PreJoiningForm, PostJoiningForm } = require('./models/index');
 
 const app = express();
 const PORT = process.env.APP_PORT || 3001;

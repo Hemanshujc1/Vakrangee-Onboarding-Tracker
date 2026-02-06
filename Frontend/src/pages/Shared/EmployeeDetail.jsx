@@ -281,7 +281,7 @@ const EmployeeDetail = () => {
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-800 transition-all font-medium shadow-sm"
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-800 transition-all font-medium shadow-sm text-sm sm:text-sm "
             >
               <Pencil size={18} />
               <span>Edit Details</span>
@@ -361,10 +361,9 @@ const EmployeeDetail = () => {
           <AddressCard employee={employee} />
           <EducationIdentityCard employee={employee} />
         </div>
-        
-        <div className="flex flex-col md:flex-row gap-6 mb-6">
-          <FormSection title="Pre-Joining Forms" icon={Briefcase}>
-        
+        <div className="flex flex-col md:flex-row gap-4 sm:gap-6 mb-6">
+
+          <FormSection title="Pre-Joining Forms" icon={Briefcase}>        
 
             <FormRow
               title="Employment Application Form"
@@ -410,7 +409,6 @@ const EmployeeDetail = () => {
               }
               verifiedByName={employee.mediclaimVerifiedByName}
             />
-
             <FormRow
               title="Gratuity Form (Form F)"
               status={employee.gratuityStatus}
@@ -438,7 +436,6 @@ const EmployeeDetail = () => {
               }
               verifiedByName={employee.gratuityVerifiedByName}
             />
-
             <FormRow
               title="Employment Information Form"
               status={employee.employeeInfoStatus}

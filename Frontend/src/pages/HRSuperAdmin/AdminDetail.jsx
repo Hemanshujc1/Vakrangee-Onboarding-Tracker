@@ -358,9 +358,9 @@ const AdminDetail = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium">Assigned Employees</h3>
+              <h3 className="text-gray-500 font-medium text-sm">Assigned Employees</h3>
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                 <Users size={20} />
               </div>
@@ -369,9 +369,9 @@ const AdminDetail = () => {
               {admin.stats?.totalAssigned || 0}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium">Onboarding Active</h3>
+              <h3 className="text-gray-500 font-medium text-sm">Onboarding Active</h3>
               <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
                 <Clock size={20} />
               </div>
@@ -380,9 +380,9 @@ const AdminDetail = () => {
               {admin.stats?.activeOnboarding || 0}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium">Fully Onboarded</h3>
+              <h3 className="text-gray-500 font-medium text-sm">Fully Onboarded</h3>
               <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                 <CheckCircle size={20} />
               </div>
@@ -391,9 +391,9 @@ const AdminDetail = () => {
               {admin.stats?.completed || 0}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium">Not Joined</h3>
+              <h3 className="text-gray-500 font-medium text-sm">Not Joined</h3>
               <div className="p-2 bg-gray-100 text-gray-600 rounded-lg">
                 <Users size={20} />
               </div>

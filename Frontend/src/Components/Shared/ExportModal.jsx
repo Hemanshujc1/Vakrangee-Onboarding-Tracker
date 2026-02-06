@@ -157,7 +157,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         
         {/* Header */}
         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -173,7 +173,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:hidden">
             
             {/* 1. Filter Section */}
             <section>
@@ -237,7 +237,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                 )}
             </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex flex-col gap-8">
                 {/* 2. Select Fields */}
                 <section>
                     <div className="flex justify-between items-center mb-3">
@@ -260,7 +260,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                                 Select All
                             </label>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:hidden">
                             {allFields.map(field => (
                                 <label key={field} className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-100 p-2 rounded cursor-pointer transition-colors bg-white border border-gray-100">
                                     <input 
@@ -293,7 +293,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                                 : "border-gray-200 hover:border-green-200 hover:bg-gray-50 text-gray-600"
                             }`}
                         > 
-                            <FileSpreadsheet size={32} className="mb-2" />
+                            <FileSpreadsheet size={24} className="mb-2" />
                             <span className="font-semibold">CSV</span>
                         </button>
                         <button 
@@ -304,7 +304,7 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                                 : "border-gray-200 hover:border-red-200 hover:bg-gray-50 text-gray-600"
                             }`}
                         >
-                            <FileText size={32} className="mb-2" />
+                            <FileText size={24} className="mb-2" />
                             <span className="font-semibold">PDF</span>
                         </button>
                     </div>

@@ -273,7 +273,7 @@ const EditProfileForm = () => {
                   </h3>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                    className="text-xs sm:text-sm px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Edit Profile
                   </button>
