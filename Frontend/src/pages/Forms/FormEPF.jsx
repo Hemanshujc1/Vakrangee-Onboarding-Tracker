@@ -56,15 +56,15 @@ const FormEPF = () => {
         dob: commonSchemas.datePast,
         gender: Yup.string().required("Required"),
         marital_status: Yup.string().required("Required"),
-        relationship_type: Yup.string().required("Required"),
+        relationship_type: Yup.string().nullable().optional(),
 
         father_name: Yup.string().when("relationship_type", {
           is: "Father",
-          then: (schema) => commonSchemas.nameStringOptional.required("Father's Name Required"),
+          then: (schema) => commonSchemas.nameStringOptional.optional(),
         }),
         spouse_name: Yup.string().when("relationship_type", {
           is: "Spouse",
-          then: (schema) => commonSchemas.nameStringOptional.required("Spouse's Name Required"),
+          then: (schema) => commonSchemas.nameStringOptional.optional(),
         }),
         email: commonSchemas.email,
         mobile: commonSchemas.mobile,
@@ -155,7 +155,6 @@ const FormEPF = () => {
   } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
-      relationship_type: "Father",
       prev_epf_member: "No",
       prev_eps_member: "No",
       international_worker: "No",
@@ -470,23 +469,25 @@ const FormEPF = () => {
                 {errors.relationship_type.message}
               </p>
             )}
-            <FormInput
-              label={
-                relationshipType === "Father"
-                  ? "Father's Name"
-                  : "Spouse's Name"
-              }
-              register={register}
-              name={
-                relationshipType === "Father" ? "father_name" : "spouse_name"
-              }
-              className="uppercase"
-              error={
-                relationshipType === "Father"
-                  ? errors.father_name
-                  : errors.spouse_name
-              }
-            />
+            {relationshipType && (
+              <FormInput
+                label={
+                  relationshipType === "Father"
+                    ? "Father's Name"
+                    : "Spouse's Name"
+                }
+                register={register}
+                name={
+                  relationshipType === "Father" ? "father_name" : "spouse_name"
+                }
+                className="uppercase"
+                error={
+                  relationshipType === "Father"
+                    ? errors.father_name
+                    : errors.spouse_name
+                }
+              />
+            )}
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

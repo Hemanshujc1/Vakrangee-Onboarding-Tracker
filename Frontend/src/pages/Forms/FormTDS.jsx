@@ -49,7 +49,7 @@ const FormTDS = () => {
      housing_loan_interest: commonSchemas.currency,
      nps_contribution: commonSchemas.currency,
      hra_rent_per_month: commonSchemas.currency,
-     hra_months: Yup.number().transform((value) => (isNaN(value) ? null : value)).nullable().min(1, "Enter a Valid month").max(12, "Enter the valid month"),
+     hra_months: Yup.number().transform((value) => (isNaN(value) ? null : value)).nullable().min(0, "Enter a Valid month").max(12, "Enter the valid month"),
      medical_total_contribution: commonSchemas.currency,
      medical_self_family: commonSchemas.currency,
      medical_parents: commonSchemas.currency,
