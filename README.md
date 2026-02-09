@@ -238,6 +238,7 @@ All form routes support `POST` to save/submit and specific verify endpoints for 
 | **Ready to Join**       | All pre-joining requirements met.                     |
 | **Joining Formalities** | Post-joining forms (NDA, etc.) in progress.           |
 | **Completed**           | Full onboarding complete.                             |
+| **Not Joined**          | Employee didn't join the company.                     |
 
 ### Form Statuses
 
