@@ -13,8 +13,6 @@ const PORT = process.env.APP_PORT || 3001;
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 // Morgan middleware to log HTTP requests
-// Morgan middleware to log HTTP requests
-// Morgan middleware to log HTTP requests
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { 
   stream: logger.stream,
   skip: (req, res) => res.statusCode < 400 // Skip successful requests (2xx, 3xx) in ALL environments
