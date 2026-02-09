@@ -110,7 +110,7 @@ const sendHRAdminAssignmentEmail = async (
       html,
       attachments: [{
         filename: 'Vakrangee_email_logo.jpg',
-        path: path.join(__dirname, '../uploads/Vakrangee_email_logo.jpg'),
+        path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
         cid: 'vakrangeelogo'
       }]
     };
