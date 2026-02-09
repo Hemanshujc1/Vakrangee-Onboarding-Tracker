@@ -2,6 +2,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 //  Multer for memory storage
 const storage = multer.memoryStorage();
@@ -45,7 +46,7 @@ const resizePhoto = async (req, res, next) => {
     req.body.profile_photo = filename;
     next();
   } catch (error) {
-    console.error('Error processing image:', error);
+    logger.error('Error processing image: %o', error);
     return res.status(500).json({ message: 'Error processing image upload' });
   }
 };
@@ -61,7 +62,7 @@ const processSignature = async (req, res, next) => {
   if (!fileToProcess) return next();
 
   if (!req.user || !req.user.id) {
-      console.error('Cannot process signature: User not authenticated');
+      logger.warn('Cannot process signature: User not authenticated');
       return res.status(401).json({ message: 'User not authenticated during upload.' });
   }
 
@@ -87,7 +88,7 @@ const processSignature = async (req, res, next) => {
     req.body.signature_path = filename;
     next();
   } catch (error) {
-    console.error('Error processing signature:', error);
+    logger.error('Error processing signature: %o', error);
     return res.status(500).json({ message: 'Error processing signature upload' });
   }
 };

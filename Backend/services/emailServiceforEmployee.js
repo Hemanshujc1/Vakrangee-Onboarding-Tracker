@@ -19,9 +19,9 @@ const transporter = nodemailer.createTransport({
 
 transporter.verify((error, success) => {
   if (error) {
-    console.error("SMTP error for add Employee model:", error);
+    logger.error('SMTP error for add Employee model: %o', error);
   } else {
-    console.log(" SMTP ready for add Employee model ✅");
+    logger.info('SMTP ready for add Employee model ✅');
   }
 });
 

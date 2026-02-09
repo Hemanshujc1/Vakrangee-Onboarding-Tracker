@@ -18,14 +18,11 @@ const transporter = nodemailer.createTransport({
 
 transporter.verify((error, success) => {
   if (error) {
-    console.error("SMTP error for add Admin model:", error);
+    logger.error('SMTP error for add Admin model: %o', error);
   } else {
-    console.log(" SMTP ready for add Admin model ✅");
+    logger.info('SMTP ready for add Admin model ✅');
   }
 });
-
-
-
 
 
 const sendHRAdminAssignmentEmail = async (
