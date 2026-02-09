@@ -147,28 +147,82 @@ Backend/
 
 ---
 
-## 🔗 API Overview
+## 🔗 API Endpoints
 
-### Authentication
+### 🔐 Authentication (`/api/auth`)
 
-- `POST /api/auth/login`: User login.
-- `POST /api/auth/register`: Admin-only registration.
+| Method | Endpoint           | Description            |
+| :----- | :----------------- | :--------------------- |
+| `POST` | `/register`        | Register a new user    |
+| `POST` | `/login`           | User login             |
+| `POST` | `/forgot-password` | Request password reset |
+| `POST` | `/verify-otp`      | Verify OTP             |
+| `POST` | `/reset-password`  | Reset password         |
 
-### Employees
+### 👤 Profile (`/api/profile`)
 
-- `GET /api/employees`: List all employees (HR).
-- `GET /api/employees/me`: Get current profile.
-- `POST /api/employees/:id/advance-stage`: Manually advance onboarding stage.
+| Method | Endpoint | Description                            |
+| :----- | :------- | :------------------------------------- |
+| `GET`  | `/`      | Get current user profile               |
+| `PUT`  | `/`      | Update profile (includes photo upload) |
 
-### Forms
+### 👥 Employees (`/api/employees`)
 
-- Supports `POST` to save/submit and `POST /verify` for HR actions.
-- Endpoints: `/application`, `/mediclaim`, `/nda`, `/declaration`, `/epf`, `/gratuity`.
+| Method   | Endpoint                 | Description                            |
+| :------- | :----------------------- | :------------------------------------- |
+| `GET`    | `/`                      | Get all employees (Admin)              |
+| `GET`    | `/me`                    | Get current logged-in employee details |
+| `GET`    | `/my-hr`                 | Get assigned HR details                |
+| `GET`    | `/dashboard-stats`       | Get stats for employee dashboard       |
+| `GET`    | `/:id`                   | Get specific employee by ID            |
+| `PUT`    | `/:id`                   | Update employee details                |
+| `POST`   | `/submit-basic-info`     | Submit basic info for verification     |
+| `POST`   | `/:id/verify-basic-info` | Verify/Reject basic info (HR)          |
+| `PUT`    | `/:id/form-access`       | Toggle form access                     |
+| `POST`   | `/:id/advance-stage`     | Advance onboarding stage               |
+| `DELETE` | `/:id`                   | Soft delete employee                   |
 
-### Documents
+### 📄 Forms (`/api/forms`)
 
-- `POST /api/documents/upload`: Upload files.
-- `POST /api/documents/verify/:id`: Verify or reject documents.
+All form routes support `POST` to save/submit and specific verify endpoints for HR.
+
+| Method | Endpoint                            | Description                        |
+| :----- | :---------------------------------- | :--------------------------------- |
+| `GET`  | `/auto-fill/:employeeId`            | Fetch data to auto-fill forms      |
+| `POST` | `/access/toggle/:employeeId`        | Toggle specific form access        |
+| `POST` | `/save-employee-info`               | Save "Employee Information" form   |
+| `POST` | `/verify-employee-info/:employeeId` | Verify "Employee Information" form |
+| `POST` | `/application`                      | Save "Employment Application"      |
+| `POST` | `/application/verify/:employeeId`   | Verify "Employment Application"    |
+| `POST` | `/mediclaim`                        | Save "Mediclaim" form              |
+| `POST` | `/mediclaim/verify/:employeeId`     | Verify "Mediclaim" form            |
+| `POST` | `/nda`                              | Save "NDA" form                    |
+| `POST` | `/nda/verify/:employeeId`           | Verify "NDA" form                  |
+| `POST` | `/declaration`                      | Save "Declaration" form            |
+| `POST` | `/declaration/verify/:employeeId`   | Verify "Declaration" form          |
+| `POST` | `/tds`                              | Save "TDS" form                    |
+| `POST` | `/tds/verify/:employeeId`           | Verify "TDS" form                  |
+| `POST` | `/epf`                              | Save "EPF" form                    |
+| `POST` | `/epf/verify/:employeeId`           | Verify "EPF" form                  |
+| `POST` | `/gratuity`                         | Save "Gratuity" form               |
+| `POST` | `/gratuity/verify/:employeeId`      | Verify "Gratuity" form             |
+
+### 📂 Documents (`/api/documents`)
+
+| Method   | Endpoint            | Description                                 |
+| :------- | :------------------ | :------------------------------------------ |
+| `GET`    | `/`                 | Get documents for current user              |
+| `POST`   | `/upload`           | Upload a new document                       |
+| `DELETE` | `/:id`              | Delete a document                           |
+| `GET`    | `/list/:employeeId` | List documents for a specific employee (HR) |
+| `POST`   | `/verify/:id`       | Verify/Reject a document                    |
+
+### 📧 Email (`/api/email`)
+
+| Method | Endpoint              | Description                        |
+| :----- | :-------------------- | :--------------------------------- |
+| `POST` | `/send-admin-welcome` | Send welcome email to new Admin    |
+| `POST` | `/send-welcome`       | Send welcome email to new Employee |
 
 ---
 
