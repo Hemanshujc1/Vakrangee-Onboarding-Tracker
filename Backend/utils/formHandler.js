@@ -94,6 +94,72 @@ exports.saveForm = async (req, res, formType) => {
   }
 };
 
+exports.checkAndUpdateOnboardingStage = async (employeeId) => {
+    try {
+        const employee = await EmployeeMaster.findByPk(employeeId);
+        if (!employee) return;
+
+        // PRE-JOINING Logic
+        if (employee.onboarding_stage === 'PRE_JOINING') {
+            const disabledParams = employee.disabled_forms || [];
+            const preJoiningForms = ['GRATUITY', 'EMPLOYEE_INFO', 'MEDICLAIM', 'EMPLOYMENT_APP']; 
+            
+            let allVerified = true;
+            
+            for (const type of preJoiningForms) {
+                if (disabledParams.includes(type)) continue;
+
+                const f = await FormSubmission.findOne({
+                    where: { employee_id: employeeId, form_type: type },
+                    order: [['version', 'DESC']]
+                });
+                
+                if (!f || f.status !== 'VERIFIED') {
+                    allVerified = false;
+                    break;
+                }
+            }
+
+            if (allVerified) {
+                employee.onboarding_stage = 'PRE_JOINING_VERIFIED';
+                await employee.save();
+                logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
+            }
+        }
+        
+        // POST-JOINING Logic
+        else if (employee.onboarding_stage === 'POST_JOINING') {
+            const disabledParams = employee.disabled_forms || [];
+            const postJoiningForms = ['NDA', 'DECLARATION', 'TDS', 'EPF'];
+            
+            let allVerified = true;
+            
+            for (const type of postJoiningForms) {
+                if (disabledParams.includes(type)) continue; 
+
+                const f = await FormSubmission.findOne({
+                    where: { employee_id: employeeId, form_type: type },
+                    order: [['version', 'DESC']]
+                });
+                
+                if (!f || f.status !== 'VERIFIED') {
+                    allVerified = false;
+                    break;
+                }
+            }
+
+            if (allVerified) {
+                employee.onboarding_stage = 'ONBOARDED';
+                await employee.save();
+                logger.info(`Auto-updated employee ${employeeId} to ONBOARDED`);
+            }
+        }
+
+    } catch (err) {
+        logger.error("Error auto-updating stage: %o", err);
+    }
+};
+
 exports.verifyForm = async (req, res, formType) => {
     try {
         const { employeeId } = req.params;
@@ -131,68 +197,7 @@ exports.verifyForm = async (req, res, formType) => {
 
         // --- Auto-Update Onboarding Stage Logic ---
         if (status === 'VERIFIED') {
-             try {
-                 const employee = await EmployeeMaster.findByPk(employeeId);
-                 
-                 // PRE-JOINING Logic
-                 if (employee && employee.onboarding_stage === 'PRE_JOINING') {
-                     const disabledParams = employee.disabled_forms || [];
-                     const preJoiningForms = ['GRATUITY', 'EMPLOYEE_INFO', 'MEDICLAIM', 'EMPLOYMENT_APP']; 
-                     
-                     let allVerified = true;
-                     
-                     for (const type of preJoiningForms) {
-                         if (disabledParams.includes(type)) continue;
-
-                         const f = await FormSubmission.findOne({
-                             where: { employee_id: employeeId, form_type: type },
-                             order: [['version', 'DESC']]
-                         });
-                         
-                         if (!f || f.status !== 'VERIFIED') {
-                             allVerified = false;
-                             break;
-                         }
-                     }
-
-                     if (allVerified) {
-                         employee.onboarding_stage = 'PRE_JOINING_VERIFIED';
-                         await employee.save();
-                         logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
-                     }
-                 }
-                 
-                 // POST-JOINING Logic
-                 else if (employee && employee.onboarding_stage === 'POST_JOINING') {
-                     const disabledParams = employee.disabled_forms || [];
-                     const postJoiningForms = ['NDA', 'DECLARATION', 'TDS', 'EPF'];
-                     
-                     let allVerified = true;
-                     
-                     for (const type of postJoiningForms) {
-                         if (disabledParams.includes(type)) continue; 
-
-                         const f = await FormSubmission.findOne({
-                             where: { employee_id: employeeId, form_type: type },
-                             order: [['version', 'DESC']]
-                         });
-                         
-                         if (!f || f.status !== 'VERIFIED') {
-                             allVerified = false;
-                             break;
-                         }
-                     }
-
-                     if (allVerified) {
-                         employee.onboarding_stage = 'ONBOARDED';
-                         await employee.save();
-                         logger.info(`Auto-updated employee ${employeeId} to ONBOARDED`);
-                     }
-                 }
-
-             } catch (err) {
-                 logger.error("Error auto-updating stage: %o", err);
-             }
+             await exports.checkAndUpdateOnboardingStage(employeeId);
         }
         // ------------------------------------------
 

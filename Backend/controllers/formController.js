@@ -328,6 +328,9 @@ exports.toggleFormAccess = async (req, res) => {
         employee.disabled_forms = disabledForms;
         await employee.save();
 
+        // Check if disabling this form triggers a stage update
+        await handler.checkAndUpdateOnboardingStage(employeeId);
+
         res.json({ message: `Form access updated`, isDisabled });
 
     } catch (error) {
