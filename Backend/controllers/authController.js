@@ -170,7 +170,7 @@ exports.forgotPassword = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         
         // Expiry 3 mins from now
-        const expiry = new Date(Date.now() + 3 * 60 * 1000);
+        const expiry = new Date(Date.now() + 2 * 60 * 1000);
 
         // Update User
         user.reset_password_token = otp;
@@ -181,8 +181,8 @@ exports.forgotPassword = async (req, res) => {
         await sendEmail({
             to: user.username, 
             subject: 'Password Reset OTP - Vakrangee',
-            text: `Your OTP for password reset is: ${otp}. Valid for 3 minutes.`,
-            html: `<h3>Password Reset Request</h3><p>Your OTP is: <b>${otp}</b></p><p>This OTP is valid for 10 minutes.</p>`
+            text: `Your OTP for password reset is: ${otp}. Valid for 2 minutes.`,
+            html: `<h3>Password Reset Request</h3><p>Your OTP is: <b>${otp}</b></p><p>This OTP is valid for 2 minutes.</p>`
         });
 
         res.json({ message: 'OTP sent successfully' });
