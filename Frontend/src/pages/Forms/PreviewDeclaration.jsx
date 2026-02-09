@@ -280,7 +280,7 @@ const PreviewDeclaration = () => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-4 hidden md:flex">
+            <div className="items-center gap-4 hidden md:flex">
               <span className="min-w-30 w-32"></span>
               <span className="text-xs uppercase tracking-wide text-gray-500 w-48 border-t border-gray-400 text-center pt-1">
                 Employee Signature
