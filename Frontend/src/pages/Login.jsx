@@ -9,13 +9,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
   const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState("login"); // 'login' or 'signup'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Signup specific states
-  const [fullName, setFullName] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,23 +20,6 @@ const Login = () => {
     setLoading(true);
 
     try {
-      if (activeTab === "signup") {
-        if (password !== confirmPassword) {
-          setError("Passwords do not match");
-          setLoading(false);
-          return;
-        }
-
-        await axios.post("/api/auth/register", {
-          username: email,
-          password: password,
-          fullName: fullName,
-          role: "EMPLOYEE",
-        });
-
-        await showAlert("Account created successfully! Please log in.", { type: 'success' });
-        setActiveTab("login");
-      } else {
         const response = await axios.post("/api/auth/login", {
           username: email,
           password: password,
@@ -59,7 +37,6 @@ const Login = () => {
         } else {
           navigate("/employee");
         }
-      }
     } catch (err) {
       console.error("Auth Error:", err);
       setError(
@@ -122,12 +99,10 @@ const Login = () => {
 
           <div className="text-center lg:text-left">
             <h2 className="text-3xl lg:text-4xl font-bold text-(--color-text-dark) mb-3 tracking-tight">
-              {activeTab === "login" ? "Welcome Back" : "Get Started"}
+              Welcome Back
             </h2>
             <p className="text-gray-500 text-base lg:text-lg">
-              {activeTab === "login"
-                ? "Please enter your details to sign in."
-                : "Create your account to continue."}
+              Please enter your details to sign in.
             </p>
           </div>
 
@@ -137,51 +112,7 @@ const Login = () => {
             </div>
           )}
 
-          <div className="flex bg-gray-50 p-1.5 rounded-lg mb-8">
-            <button
-              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                activeTab === "login"
-                  ? "bg-white text-(--color-secondary) shadow-sm ring-1 ring-gray-200"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => {
-                setActiveTab("login");
-                setError("");
-              }}
-            >
-              Log In
-            </button>
-            <button
-              className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                activeTab === "signup"
-                  ? "bg-white text-(--color-secondary) shadow-sm ring-1 ring-gray-200"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-              onClick={() => {
-                setActiveTab("signup");
-                setError("");
-              }}
-            >
-              Sign Up
-            </button>
-          </div>
-
           <form onSubmit={handleAuth} className="space-y-6">
-            {activeTab === "signup" && (
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:ring-1 focus:ring-blue-200 transition-all font-medium text-gray-800 placeholder:text-gray-400"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-            )}
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
@@ -220,7 +151,6 @@ const Login = () => {
                   {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
-              {activeTab === "login" && (
                 <div className="flex justify-end mt-1">
                   <Link
                     to="/forgot-password"
@@ -229,26 +159,7 @@ const Login = () => {
                     Forgot password?
                   </Link>
                 </div>
-              )}
             </div>
-
-            {activeTab === "signup" && (
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:ring-1 focus:ring-blue-200 transition-all font-medium text-gray-800 placeholder:text-gray-400"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
-            )}
 
             <button
               type="submit"
@@ -257,11 +168,7 @@ const Login = () => {
                 loading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {loading
-                ? "Processing..."
-                : activeTab === "login"
-                ? "Sign In"
-                : "Sign Up"}{" "}
+              {loading ? "Processing..." : "Sign In"}
               {!loading && <ArrowRight size={20} />}
             </button>
           </form>

@@ -12,6 +12,12 @@ const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 exports.register = async (req, res) => {
   const t = await sequelize.transaction();
   try {
+    // RESTRICTED: Only HR Admins can create new users
+    if (req.user.role !== 'HR_SUPER_ADMIN' && req.user.role !== 'HR_ADMIN') {
+        await t.rollback();
+        return res.status(403).json({ message: 'Access denied. Only HR Admins can create new users.' });
+    }
+
     // destructuring
     const { 
         username, password, role, 
