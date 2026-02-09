@@ -12,6 +12,13 @@ This is the backend API for the **Vakrangee Onboarding Portal**. It provides a r
 - **File Handling**: [Multer](https://github.com/expressjs/multer)
 - **Email**: Nodemailer
 
+## ✨ Key Features
+
+- **Automated Workflow**: Automatically advances employee onboarding stage when required forms are verified.
+- **Role-Based Access**: Granular permissions for Employees, HR Admins, and Super Admins.
+- **Secure File Handling**: Validation and secure storage for uploaded documents and signatures.
+- **Logging**: Comprehensive logging of actions and errors for auditing and debugging.
+
 ## 🛠️ Installation & Setup
 
 1.  **Clone the repository**:

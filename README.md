@@ -53,6 +53,8 @@ npm run dev
 - **Document Verification**: Secure upload and verification flow for regulatory documents.
 - **Automated Tracker**: Real-time status updates on onboarding progress.
 - **Secure Authentication**: JWT-based session management.
+- **Print-Optimized Forms**: A4-ready layouts for official documents.
+- **Responsive Interface**: Seamless experience across all device sizes.
 
 ---
 

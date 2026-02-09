@@ -25,7 +25,8 @@ This is the frontend for the **Vakrangee Onboarding Portal**, a comprehensive we
 - **Form Validation**: Robust client-side validation using schemas.
 - **Document Management**: Upload and view employee documents (PAN, Aadhaar, Passport, etc.).
 - **Progress Tracking**: Visual progress bars and stage indicators for onboarding status.
-- **Responsive Design**: Optimized for desktop and mobile devices.
+- **Responsive Design**: Optimized for desktop and mobile devices, ensuring form previews are readable on screens of all sizes.
+- **Print-Ready Forms**: Dedicated A4 print layouts for NDA, Mediclaim, and Declaration forms, removing UI elements for clean physical copies.
 
 ## 🛠️ Installation & Setup
 
