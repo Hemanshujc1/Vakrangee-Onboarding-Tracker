@@ -1,5 +1,6 @@
 const { User, EmployeeMaster, EmployeeRecord, FormSubmission } = require('../models');
 const sequelize = require('../config/database');
+const logger = require('../utils/logger');
 
 // Helper to resolve verified_by ID to Name
 const resolveVerifierName = async (verifierId) => {
@@ -292,7 +293,7 @@ exports.getAutoFillData = async (req, res) => {
     res.status(200).json(autoFillData);
 
   } catch (error) {
-    console.error('Error fetching auto-fill data:', error);
+    logger.error('Error fetching auto-fill data: %o', error);
     res.status(500).json({ message: 'Server error fetching form data.' });
   }
 };
@@ -330,7 +331,7 @@ exports.toggleFormAccess = async (req, res) => {
         res.json({ message: `Form access updated`, isDisabled });
 
     } catch (error) {
-        console.error('Error toggling form access:', error);
+        logger.error('Error toggling form access: %o', error);
         res.status(500).json({ message: 'Server error toggling access' });
     }
 };

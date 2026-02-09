@@ -1,15 +1,16 @@
 /// Done
 const nodemailer = require('nodemailer');
+const logger = require('./logger');
 
 const sendEmail = async ({ to, subject, text, html }) => {
   // Check if SMTP credentials are provided
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-    console.log("========================================");
-    console.log("[EMAIL SERVICE] SMTP Credentials not found. Printing email to console.");
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body: ${text}`);
-    console.log("========================================");
+    logger.warn("========================================");
+    logger.warn("[EMAIL SERVICE] SMTP Credentials not found. Printing email to console.");
+    logger.warn(`To: ${to}`);
+    logger.warn(`Subject: ${subject}`);
+    logger.warn(`Body: ${text}`);
+    logger.warn("========================================");
     return;
   }
 
@@ -33,9 +34,9 @@ const sendEmail = async ({ to, subject, text, html }) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent: ${info.messageId}`);
+    logger.info(`Email sent: ${info.messageId}`);
   } catch (error) {
-    console.error('Error sending email:', error);
+    logger.error('Error sending email: %o', error);
     throw new Error('Email sending failed');
   }
 };

@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const sequelize = require('./config/database');
+const logger = require('./utils/logger');
+const morgan = require('morgan');
 // const { User, EmployeeMaster, EmployeeRecord, PreJoiningForm, PostJoiningForm } = require('./models/index');
 
 const app = express();
@@ -10,6 +12,13 @@ const PORT = process.env.APP_PORT || 3001;
 // Middleware
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
+// Morgan middleware to log HTTP requests
+// Morgan middleware to log HTTP requests
+// Morgan middleware to log HTTP requests
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms', { 
+  stream: logger.stream,
+  skip: (req, res) => res.statusCode < 400 // Skip successful requests (2xx, 3xx) in ALL environments
+}));
 
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -40,37 +49,51 @@ app.get('/api', (req, res) => {
 
 // Database Sync and Server Start
 const startServer = async () => {
+  // Critical Environment Variable Check
+  const requiredEnvVars = [
+    'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST',
+    'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'
+  ];
+
+  const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+  if (missingEnvVars.length > 0) {
+    logger.error('CRITICAL ERROR: Missing required environment variables: %o', missingEnvVars);
+    console.error('CRITICAL ERROR: Missing required environment variables:', missingEnvVars); // Keep console for immediate feedback if logger fails
+    process.exit(1);
+  }
+
   try {
-    console.log('Attempting to connect to database...');
+    logger.info('Attempting to connect to database...');
     // Authenticate DB
     await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
+    logger.info('Database connection has been established successfully.');
 
-    console.log('Syncing models...');
+    logger.info('Syncing models...');
     // Sync Models
     await sequelize.sync({ alter: false }); 
-    console.log('Database synchronized. All tables created.');
+    logger.info('Database synchronized. All tables created.');
 
     // Global Error Handler Middleware
     app.use((err, req, res, next) => {
-      console.error('Unhandled Error:', err);
+      logger.error('Unhandled Error: %o', err);
       res.status(500).json({ message: 'Internal Server Error', error: err.message });
     });
 
     const server = app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      logger.info(`Server is running on port ${PORT}`);
     });
     
     // Graceful Shutdown
     process.on('SIGTERM', () => {
-        console.log('SIGTERM signal received: closing HTTP server');
+        logger.info('SIGTERM signal received: closing HTTP server');
         server.close(() => {
-            console.log('HTTP server closed');
+            logger.info('HTTP server closed');
         });
     });
 
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    logger.error('Unable to connect to the database: %o', error);
     process.exit(1); 
   }
 };
@@ -79,11 +102,9 @@ startServer();
 
 // Global Crash Prevention
 process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down gracefully...');
-  console.error(err.name, err.message, err.stack);
+  logger.error('UNCAUGHT EXCEPTION! 💥 Shutting down gracefully... %o', err);
 });
 
 process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION! 💥');
-  console.error(err.name, err.message, err.stack);
+  logger.error('UNHANDLED REJECTION! 💥 %o', err);
 });

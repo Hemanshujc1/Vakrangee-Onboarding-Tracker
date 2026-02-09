@@ -2,6 +2,7 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const path = require('path');
+const logger = require('../utils/logger');
 
 
 // for Email/Zoho service
@@ -118,11 +119,12 @@ const sendHRAdminAssignmentEmail = async (
     };
   
     try {
+        logger.info(`Attempting to send HR Admin assignment email to: ${to}`);
         await transporter.sendMail(mailOptions);
-        // console.log(`HR Admin assignment email sent to ${to}`);
+        logger.info(`HR Admin assignment email sent successfully to ${to}`);
         return { success: true };
     } catch (error) {
-        console.error('Error sending HR Admin assignment email:', error);
+        logger.error('Error sending HR Admin assignment email to %s: %o', to, error);
         return { success: false, error: error.message };
     }
   };

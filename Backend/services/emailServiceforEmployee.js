@@ -2,6 +2,7 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const path = require('path');
+const logger = require('../utils/logger');
 
 
 
@@ -163,11 +164,12 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
     };
 
     try {
+        logger.info(`Attempting to send Letter of Selection email to: ${to}`);
         await transporter.sendMail(mailOptions);
-        // console.log(`Letter of Selection email sent to ${to}`);
+        logger.info(`Letter of Selection email sent successfully to ${to}`);
         return { success: true };
     } catch (error) {
-        console.error('Error sending Letter of Selection email:', error);
+        logger.error('Error sending Letter of Selection email to %s: %o', to, error);
         return { success: false, error: error.message };
     }
 };

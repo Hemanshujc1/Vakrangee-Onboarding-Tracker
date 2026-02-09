@@ -1,4 +1,5 @@
 const { Sequelize } = require("sequelize");
+const logger = require("../utils/logger");
 require("dotenv").config();
 
 const sequelize = new Sequelize(
@@ -8,7 +9,7 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: "mysql",
-    logging: false,
+    logging: (msg) => logger.debug(msg),
   }
 );
 

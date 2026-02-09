@@ -1,5 +1,6 @@
 const { sendHRAdminAssignmentEmail } = require('../services/emailServiceforAdmin');
 const { sendWelcomeEmail } = require('../services/emailServiceforEmployee'); 
+const logger = require('../utils/logger'); 
 
 exports.sendAdminWelcomeEmail = async (req, res) => {
     try {
@@ -22,7 +23,7 @@ exports.sendAdminWelcomeEmail = async (req, res) => {
             res.status(500).json({ message: 'Failed to send email', error: result.error });
         }
     } catch (error) {
-        console.error('Email Controller Error:', error);
+        logger.error('Email Controller Error (Admin Welcome): %o', error);
         res.status(500).json({ message: 'Server error sending email', error: error.message });
     }
 };
@@ -42,7 +43,7 @@ exports.sendEmployeeWelcomeEmail = async (req, res) => {
             res.status(500).json({ message: 'Failed to send email', error: result.error });
         }
     } catch (error) {
-         console.error('Email Controller Error:', error);
+         logger.error('Email Controller Error (Employee Welcome): %o', error);
         res.status(500).json({ message: 'Server error sending email', error: error.message });
     }
 };

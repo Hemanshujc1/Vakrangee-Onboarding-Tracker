@@ -1,4 +1,5 @@
 const { FormSubmission, EmployeeMaster } = require("../models");
+const logger = require("./logger");
 
 exports.saveForm = async (req, res, formType) => {
   try {
@@ -88,7 +89,7 @@ exports.saveForm = async (req, res, formType) => {
     res.json({ message: "Form submitted successfully", formId: form.id, status: form.status });
 
   } catch (error) {
-    console.error(`Error saving ${formType}:`, error);
+    logger.error(`Error saving ${formType}: %o`, error);
     res.status(500).json({ message: "Server error saving form." });
   }
 };
@@ -157,7 +158,7 @@ exports.verifyForm = async (req, res, formType) => {
                      if (allVerified) {
                          employee.onboarding_stage = 'PRE_JOINING_VERIFIED';
                          await employee.save();
-                         console.log(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
+                         logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
                      }
                  }
                  
@@ -185,18 +186,18 @@ exports.verifyForm = async (req, res, formType) => {
                      if (allVerified) {
                          employee.onboarding_stage = 'ONBOARDED';
                          await employee.save();
-                         console.log(`Auto-updated employee ${employeeId} to ONBOARDED`);
+                         logger.info(`Auto-updated employee ${employeeId} to ONBOARDED`);
                      }
                  }
 
              } catch (err) {
-                 console.error("Error auto-updating stage:", err);
+                 logger.error("Error auto-updating stage: %o", err);
              }
         }
         // ------------------------------------------
 
     } catch (error) {
-        console.error(`Error verifying ${formType}:`, error);
+        logger.error(`Error verifying ${formType}: %o`, error);
         res.status(500).json({ message: "Server error verifying form." });
     }
 };

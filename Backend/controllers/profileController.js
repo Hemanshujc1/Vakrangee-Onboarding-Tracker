@@ -1,5 +1,6 @@
 
 const { User, EmployeeMaster, EmployeeRecord } = require('../models');
+const logger = require('../utils/logger');
 
 const resolveVerifierName = async (verifierId) => {
     if (!verifierId) return null;
@@ -42,7 +43,7 @@ exports.getProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get Profile Error:', error);
+    logger.error('Get Profile Error: %o', error);
     res.status(500).json({ message: 'Server error fetching profile' });
   }
 };
@@ -128,7 +129,7 @@ exports.updateProfile = async (req, res) => {
     res.json({ message: 'Profile updated successfully', record });
 
   } catch (error) {
-    console.error('Update Profile Error:', error);
+    logger.error('Update Profile Error: %o', error);
     res.status(500).json({ message: 'Server error updating profile' });
   }
 };

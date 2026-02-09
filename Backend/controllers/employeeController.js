@@ -1,4 +1,5 @@
 const { EmployeeMaster, EmployeeRecord, User } = require("../models");
+const logger = require("../utils/logger");
 
 // Get all employees
 exports.getAllEmployees = async (req, res) => {
@@ -153,7 +154,7 @@ exports.getAllEmployees = async (req, res) => {
 
     res.json(formattedEmployees);
   } catch (error) {
-    console.error("Error fetching employees:", error);
+    logger.error("Error fetching employees: %o", error);
     res
       .status(500)
       .json({
@@ -221,7 +222,7 @@ exports.getMyHR = async (req, res) => {
       designation: hrRecord?.job_title || "HR Manager",
     });
   } catch (error) {
-    console.error("Error fetching My HR:", error);
+    logger.error("Error fetching My HR: %o", error);
     res.status(500).json({ message: "Server error fetching HR details" });
   }
 };
@@ -252,7 +253,7 @@ exports.getMe = async (req, res) => {
       lastName: employee.EmployeeRecord?.lastname,
     });
   } catch (error) {
-    console.error("Error fetching my details:", error);
+    logger.error("Error fetching my details: %o", error);
     res.status(500).json({ message: "Server error fetching details" });
   }
 };
@@ -325,7 +326,7 @@ exports.getDashboardStats = async (req, res) => {
       });
 
   } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
+      logger.error("Error fetching dashboard stats: %o", error);
       res.status(500).json({ message: "Server error fetching stats" });
   }
 };
@@ -546,7 +547,7 @@ exports.getEmployeeById = async (req, res) => {
       disabledForms: employee.disabled_forms || [],
     });
   } catch (error) {
-    console.error("Error fetching employee details:", error);
+    logger.error("Error fetching employee details: %o", error);
     res.status(500).json({ message: "Server error fetching employee details" });
   }
 };
@@ -649,7 +650,7 @@ exports.updateEmployeeDetails = async (req, res) => {
 
     res.json({ message: "Details updated successfully", record });
   } catch (error) {
-    console.error("Error updating employee details:", error);
+    logger.error("Error updating employee details: %o", error);
     res.status(500).json({ message: "Server error updating details" });
   }
 };
@@ -681,7 +682,7 @@ exports.submitBasicInfo = async (req, res) => {
       status: "SUBMITTED",
     });
   } catch (error) {
-    console.error("Error submitting profile:", error);
+    logger.error("Error submitting profile: %o", error);
     res.status(500).json({ message: "Server error submitting profile" });
   }
 };
@@ -723,7 +724,7 @@ exports.verifyBasicInfo = async (req, res) => {
       stage: employee.onboarding_stage,
     });
   } catch (error) {
-    console.error("Error verifying profile:", error);
+    logger.error("Error verifying profile: %o", error);
     res.status(500).json({ message: "Server error verifying profile" });
   }
 };
@@ -758,7 +759,7 @@ exports.updateFormAccess = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error updating form access:", error);
+    logger.error("Error updating form access: %o", error);
     res.status(500).json({ message: "Server error updating form access" });
   }
 };
@@ -792,7 +793,7 @@ exports.advanceOnboardingStage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error advancing stage:", error);
+    logger.error("Error advancing stage: %o", error);
     res.status(500).json({ message: "Server error advancing stage" });
   }
 };

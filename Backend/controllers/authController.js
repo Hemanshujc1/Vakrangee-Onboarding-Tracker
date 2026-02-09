@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { User, EmployeeMaster, EmployeeRecord } = require('../models'); 
 const sequelize = require('../config/database');
 const sendEmail = require('../utils/emailService');
+const logger = require('../utils/logger');
 
 const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
@@ -79,7 +80,7 @@ exports.register = async (req, res) => {
     if (!t.finished) {
        await t.rollback();
     }
-    console.error('Registration Error:', error);
+    logger.error('Registration Error: %o', error);
     res.status(500).json({ message: `Server error during registration: ${error.message}`, error: error.message });
   }
 };
@@ -134,7 +135,7 @@ exports.login = async (req, res) => {
     
     // Check if status is null (legacy) or 'INVITED'
     if (!employeeRecord.account_status || employeeRecord.account_status === 'INVITED') {
-        console.log(`Activating user ${user.username} (ID: ${user.id}). Old Status: ${employeeRecord.account_status}`);
+        logger.info(`Activating user ${user.username} (ID: ${user.id}). Old Status: ${employeeRecord.account_status}`);
         employeeRecord.account_status = 'ACTIVE';
         await employeeRecord.save();
     }
@@ -151,7 +152,7 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login Error:', error);
+    logger.error('Login Error: %o', error);
     res.status(500).json({ message: 'Server error during login', error: error.message });
   }
 };
@@ -188,7 +189,7 @@ exports.forgotPassword = async (req, res) => {
         res.json({ message: 'OTP sent successfully' });
 
     } catch (error) {
-        console.error('Forgot Password Error:', error);
+        logger.error('Forgot Password Error: %o', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -213,7 +214,7 @@ exports.verifyOTP = async (req, res) => {
       // Return OTP to include in reset request if needed for double check
        res.json({ message: 'OTP Verified Successfully', otp: otp }); 
     } catch (error) {
-        console.error('Verify OTP Error:', error);
+        logger.error('Verify OTP Error: %o', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
@@ -248,7 +249,7 @@ exports.resetPassword = async (req, res) => {
          res.json({ message: 'Password reset successfully' });
  
     } catch (error) {
-         console.error('Reset Password Error:', error);
+         logger.error('Reset Password Error: %o', error);
          res.status(500).json({ message: 'Server error', error: error.message });
     }
  };

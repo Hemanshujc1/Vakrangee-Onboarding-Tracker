@@ -1,6 +1,7 @@
 const { EmployeeDocument, EmployeeMaster, EmployeeRecord, User } = require('../models');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 // Get all documents for the logged-in employee
 exports.getDocuments = async (req, res) => {
@@ -24,7 +25,7 @@ exports.getDocuments = async (req, res) => {
 
     res.json(enhancedDocuments);
   } catch (error) {
-    console.error('Error fetching documents:', error);
+    logger.error('Error fetching documents: %o', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -82,7 +83,7 @@ exports.uploadDocument = async (req, res) => {
     res.json({ message: 'Document uploaded successfully', document });
 
   } catch (error) {
-    console.error('Error uploading document:', error);
+    logger.error('Error uploading document: %o', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -116,7 +117,7 @@ exports.deleteDocument = async (req, res) => {
 
     res.json({ message: 'Document deleted successfully' });
   } catch (error) {
-    console.error('Error deleting document:', error);
+    logger.error('Error deleting document: %o', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -159,7 +160,7 @@ exports.getEmployeeDocuments = async (req, res) => {
 
         res.json(docsWithNames);
     } catch (error) {
-        console.error('Error fetching employee documents:', error);
+        logger.error('Error fetching employee documents: %o', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -189,7 +190,7 @@ exports.verifyDocument = async (req, res) => {
        res.json({ message: `Document ${status.toLowerCase()} successfully`, document });
 
     } catch (error) {
-        console.error('Error verifying document:', error);
+        logger.error('Error verifying document: %o', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
