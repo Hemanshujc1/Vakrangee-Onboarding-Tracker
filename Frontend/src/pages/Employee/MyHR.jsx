@@ -51,7 +51,7 @@ const MyHR = () => {
 
                 {hrDetails ? (
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 h-32 relative">
+                        <div className="bg-linear-to-r from-blue-600 to-blue-800 h-32 relative">
                             <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
                                 {hrDetails.profilePhoto ? (
                                     <img

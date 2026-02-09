@@ -167,7 +167,7 @@ const PreviewNDA = () => {
 
                 {/* Document Content */}
                 <div
-                    className="bg-white p-12 md:p-16 shadow-md rounded-sm print:shadow-none print:p-0 min-h-[29.7cm] print:min-h-0 print:h-auto flex flex-col print:block relative w-full max-w-[21cm] mx-auto text-gray-900 font-serif leading-relaxed"
+                    className="bg-white p-8 md:p-16 shadow-md rounded-sm print:shadow-none print:p-0 min-h-[29.7cm] print:w-[21cm] print:h-[29.7cm] print:min-h-[29.7cm] flex flex-col print:block relative w-full max-w-[21cm] mx-auto text-gray-900 font-serif leading-relaxed"
                 >
                     <DocumentHeader title="Non-Disclosure Agreement" subtitle="Confidentiality Agreement" />
                     
@@ -182,14 +182,14 @@ const PreviewNDA = () => {
                     {/* 4. Parties */}
                     <div className="space-y-6 mb-8 text-sm">
                         {/* Between */}
-                        <div className="grid grid-cols-[100px_1fr]">
+                        <div className="grid grid-cols-1 md:grid-cols-[100px_1fr] gap-2 md:gap-0">
                             <div className="font-bold">Between:</div>
                             <div>
-                                <div className="flex items-end">
+                                <div className="flex flex-col md:flex-row md:items-end">
                                     <div className="flex-1 border-b border-black px-2 pb-0.5 font-bold uppercase">
                                         {formData.employee_full_name}
                                     </div>
-                                    <div className="ml-2 whitespace-nowrap">(the "Employee")</div>
+                                    <div className="md:ml-2 whitespace-nowrap mt-1 md:mt-0">(the "Employee")</div>
                                 </div>
                                 <div className="mt-2 text-sm text-gray-800">
                                     An individual with its main address at:
@@ -204,7 +204,7 @@ const PreviewNDA = () => {
                         </div>
 
                         {/* And */}
-                        <div className="grid grid-cols-[100px_1fr]">
+                        <div className="grid grid-cols-1 md:grid-cols-[100px_1fr] gap-2 md:gap-0">
                             <div className="font-bold">And:</div>
                             <div className="text-justify">
                                 <span className="font-bold">Vakrangee Limited</span> a
@@ -275,9 +275,9 @@ const PreviewNDA = () => {
                         </div>
 
                         {/* 7. Signatures */}
-                        <div className="mt-16 pt-8 flex gap-8 justify-between items-end text-sm">
+                        <div className="mt-16 pt-8 flex flex-col md:flex-row gap-8 justify-between items-start md:items-end text-sm">
                             {/* Left: Company */}
-                            <div className="flex-1">
+                            <div className="flex-1 w-full md:w-auto">
                                 <div className="font-bold uppercase mb-16">
                                     For Vakrangee Ltd.
                                 </div>
@@ -293,12 +293,12 @@ const PreviewNDA = () => {
                             </div>
 
                             {/* Right: Employee (Accepted) */}
-                            <div className="flex-1 flex flex-col items-end text-right">
-                                <div className="font-bold uppercase mb-4 text-left w-full pl-8">
+                            <div className="flex-1 w-full md:w-auto flex flex-col items-start md:items-end text-left md:text-right">
+                                <div className="font-bold uppercase mb-4 text-left w-full md:pl-8">
                                     Accepted 
-                                    <span className="font-normal border-b border-black w-32 inline-block mx-3">
+                                    <div className="font-normal border-b border-black w-full md:w-48 inline-block md:mx-3 mt-2 md:mt-0">
                                         {/* Signature Image */}
-                                        <div className="mb-2 pr-8 w-full flex justify-end">
+                                        <div className="mb-2 w-full flex justify-start md:justify-end">
                                             {finalSignature ? (
                                                 <img
                                                     src={finalSignature}
@@ -309,18 +309,18 @@ const PreviewNDA = () => {
                                                 <div className="h-12 w-32"></div>
                                             )}
                                         </div>
-                                    </span>
+                                    </div>
                                 </div>
 
 
-                                <div className="flex items-end gap-2 w-full pl-8 justify-between">
+                                <div className="flex items-end gap-2 w-full md:pl-8 justify-between">
                                     <span className="uppercase font-bold">Name</span>
                                     <span className="border-b border-black flex-1 text-center font-bold uppercase text-sm px-2 pb-0.5">
                                         {formData.employee_full_name}
                                     </span>
                                 </div>
 
-                                <div className="mt-6 flex items-end gap-2 w-full pl-8 justify-between">
+                                <div className="mt-6 flex items-end gap-2 w-full md:pl-8 justify-between">
                                     <span className="uppercase">Date:</span>
                                     <span className="border-b border-black flex-1 text-center text-sm px-2 pb-0.5">
                                         {new Date().toLocaleDateString("en-GB")}

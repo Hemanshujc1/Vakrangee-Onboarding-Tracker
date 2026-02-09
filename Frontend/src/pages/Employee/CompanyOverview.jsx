@@ -29,7 +29,7 @@ const CompanyOverview = () => {
       <div className="bg-gray-50 min-h-screen font-sans text-gray-900">
 
         {/* Hero */}
-        <div className="relative bg-(--color-secondary) h-[22rem] sm:h-[26rem] md:h-96 flex items-center justify-center text-center px-4">
+        <div className="relative bg-(--color-secondary) h-88 sm:h-104 md:h-96 flex items-center justify-center text-center px-4">
           <div className="absolute inset-0 bg-linear-to-r from-(--color-secondary) to-(--color-primary) opacity-90" />
 
           <motion.div

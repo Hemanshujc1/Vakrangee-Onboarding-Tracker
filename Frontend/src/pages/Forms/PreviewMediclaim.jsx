@@ -220,7 +220,7 @@ const PreviewMediclaim = () => {
         )}
 
         {/* Official Document View */}
-        <div className="bg-white p-8 md:p-12 shadow-md rounded-sm print:shadow-none print:p-0">
+        <div className="bg-white p-6 md:p-12 shadow-md rounded-sm print:shadow-none print:p-0 print:w-[21cm] print:min-h-[29.7cm] mx-auto w-full max-w-[21cm]">
           {/* Document Header */}
           <DocumentHeader title="Mediclaim Information Form" />
 
@@ -233,29 +233,29 @@ const PreviewMediclaim = () => {
           </div>
           {/* Personal Details  */}
           <div className="grid grid-cols-1 gap-y-2 text-sm mb-6">
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Employee Full Name:
               </div>
-              <div className="col-span-9 text-gray-900 font-medium uppercase border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 font-medium uppercase border-b border-gray-600 border-dashed pb-1">
                 {data.employee_full_name}
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Date of Birth:
               </div>
-              <div className="col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
                 {formatDate(data.date_of_birth)}
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Address:
               </div>
-              <div className="col-span-9 text-gray-900 leading-relaxed border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 leading-relaxed border-b border-gray-600 border-dashed pb-1">
                 <div className="border-b border-gray-600 border-dashed">
                   {data.address_line1}
                 </div>
@@ -275,29 +275,29 @@ const PreviewMediclaim = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Gender:
               </div>
-              <div className="col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
                 {data.gender}
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Marital Status:
               </div>
-              <div className="col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
                 {data.marital_status}
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-3 font-semibold text-gray-800">
+            <div className="grid grid-cols-12 gap-2 md:gap-4">
+              <div className="col-span-12 md:col-span-3 font-semibold text-gray-800">
                 Mobile No:
               </div>
-              <div className="col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
+              <div className="col-span-12 md:col-span-9 text-gray-900 font-medium border-b border-gray-600 border-dashed pb-1">
                 {data.mobile_number}
               </div>
             </div>

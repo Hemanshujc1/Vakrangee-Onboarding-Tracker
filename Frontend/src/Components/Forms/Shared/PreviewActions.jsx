@@ -13,34 +13,29 @@ const PreviewActions = ({
   isSubmitHidden 
 }) => {
   return (
-    <div className="flex justify-between items-center mb-6 print:hidden">
-      {/* Back Button Logic */}
-      {status === "SUBMITTED" ||
-      status === "VERIFIED" ||
-      status === "REJECTED" ||
-      isHR ? (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft size={20} /> Back
-        </button>
-      ) : (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft size={20} /> Back to Edit
-        </button>
-      )}
+    <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6 print:hidden">
+      
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 w-fit"
+      >
+        <ArrowLeft size={20} />
+        {status === "SUBMITTED" || status === "VERIFIED" || status === "REJECTED" || isHR
+          ? "Back"
+          : "Back to Edit"}
+      </button>
 
-      <div className="flex gap-3">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3 justify-end md:justify-end">
+        
         {/* Print Button */}
         <button
           onClick={onPrint || (() => window.print())}
           className="flex items-center gap-2 px-4 py-2 bg-white border rounded hover:bg-gray-50 text-gray-700"
         >
-          <Printer size={18} /> Print / Save PDF
+          <Printer size={18} />
+          Print / Save PDF
         </button>
 
         {/* HR Actions */}
@@ -75,19 +70,19 @@ const PreviewActions = ({
           </button>
         ) : status === "REJECTED" ? (
           !isHR ? (
-              <button 
-                onClick={onEdit}
-                className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 shadow-sm"
-              >
-                  <ArrowLeft size={18} /> Edit & Resubmit
-              </button>
+            <button 
+              onClick={onEdit}
+              className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 shadow-sm"
+            >
+              <ArrowLeft size={18} /> Edit & Resubmit
+            </button>
           ) : (
-              <button 
-                disabled
-                className="flex items-center gap-2 px-6 py-2 bg-red-100 text-red-700 rounded cursor-not-allowed border border-red-200"
-              >
-                <CheckCircle size={18} /> Rejected
-              </button>
+            <button 
+              disabled
+              className="flex items-center gap-2 px-6 py-2 bg-red-100 text-red-700 rounded cursor-not-allowed border border-red-200"
+            >
+              <CheckCircle size={18} /> Rejected
+            </button>
           )
         ) : (
           !isHR && !isSubmitHidden && (
@@ -96,9 +91,7 @@ const PreviewActions = ({
               disabled={isSubmitting}
               className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm disabled:opacity-50"
             >
-              {isSubmitting ? (
-                "Submitting..."
-              ) : (
+              {isSubmitting ? "Submitting..." : (
                 <>
                   <CheckCircle size={18} /> Confirm & Submit
                 </>
