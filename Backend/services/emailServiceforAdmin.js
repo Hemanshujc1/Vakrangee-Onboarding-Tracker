@@ -105,7 +105,7 @@ const sendHRAdminAssignmentEmail = async (
     `;
   
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.SMTP_USER,
       to,
       cc,
       subject,
