@@ -20,31 +20,35 @@ const Login = () => {
     setLoading(true);
 
     try {
-        const response = await axios.post("/api/auth/login", {
-          username: email,
-          password: password,
-        });
+      const response = await axios.post("/api/auth/login", {
+        username: email,
+        password: password,
+      });
 
-        const { token, user } = response.data;
+      const { token, user } = response.data;
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-        if (user.role === "HR_SUPER_ADMIN") {
-          navigate("/hr-super-admin");
-        } else if (user.role === "HR_ADMIN") {
-          navigate("/hr-admin");
-        } else {
-          navigate("/employee");
-        }
+      if (user.role === "HR_SUPER_ADMIN") {
+        navigate("/hr-super-admin");
+      } else if (user.role === "HR_ADMIN") {
+        navigate("/hr-admin");
+      } else {
+        navigate("/employee");
+      }
     } catch (err) {
       console.error("Auth Error:", err);
-      setError(
-        err.response?.data?.message ||
-          "Authentication failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
+      if (err.response) {
+        // Backend responded (401, 400, 500, etc.)
+        setError(err.response.data?.message || "Invalid credentials");
+      } else if (err.request) {
+        // server down)
+        setError("Server is unreachable. Please try again later.");
+      } else {
+        // Something else went wrong
+        setError("Something went wrong.");
+      }
     }
   };
 
@@ -60,7 +64,7 @@ const Login = () => {
           />
           <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/90"></div>
         </div>
-        
+
         <div className="flex flex-col justify-center items-center align-middle text-center gap-15 relative z-10 h-full">
           <div>
             <div className="flex items-center gap-3 mb-12">
@@ -87,14 +91,13 @@ const Login = () => {
       {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 py-12 lg:p-16 bg-white relative lg:overflow-y-auto lg:h-full">
         <div className="w-full max-w-md lg:max-w-105 space-y-8">
-          
           {/* Mobile Logo */}
           <div className="flex justify-center mb-6 lg:hidden">
-             <img
-               src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
-                alt="Vakrangee Logo"
-                className="h-16 w-auto object-contain"
-              />
+            <img
+              src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+              alt="Vakrangee Logo"
+              className="h-16 w-auto object-contain"
+            />
           </div>
 
           <div className="text-center lg:text-left">
@@ -113,7 +116,6 @@ const Login = () => {
           )}
 
           <form onSubmit={handleAuth} className="space-y-6">
-
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
                 Email Address
@@ -151,14 +153,14 @@ const Login = () => {
                   {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
-                <div className="flex justify-end mt-1">
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+              <div className="flex justify-end mt-1">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <button
