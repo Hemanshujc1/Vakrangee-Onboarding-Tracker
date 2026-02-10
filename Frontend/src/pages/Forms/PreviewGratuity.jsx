@@ -217,27 +217,6 @@ const PreviewGratuity = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 print:p-0 print:bg-white print:min-h-0">
-      <style>
-        {`
-          @media print {
-            @page {
-              margin: 20mm;
-              size: auto;
-            }
-            body {
-              margin: 0;
-              padding: 10px;
-              background: white;
-            }
-            .page-break {
-              page-break-before: always;
-              break-before: page;
-              margin-top: 2rem;
-              display: block;
-            }
-          }
-        `}
-      </style>
       <div className="max-w-[210mm] mx-auto bg-white shadow-lg p-8 md:p-12 print:shadow-none print:w-full print:max-w-full print:p-0 print:m-0 flex flex-col print:a4-print-container">
         {/* Header Actions */}
         <div className="print:hidden mb-8">
@@ -274,7 +253,7 @@ const PreviewGratuity = () => {
           </div>
         )}
 
-        {/* Form Content - Printable Area */}
+        {/* Form Content - Printable Area*/}
         <div className="flex flex-col h-full print:p-8">
           <div
             ref={componentRef}
