@@ -15,19 +15,21 @@ const PreviewTDS = () => {
   // Get data passed from the form
   const { employeeId: paramEmployeeId } = useParams();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const { 
-    formData: stateData, 
-    signaturePreview: stateSig, 
-    status: stateStatus, 
-    isHR: stateIsHR, 
-    employeeId: stateEmployeeId, 
-    rejectionReason: stateRejectionReason 
+  const {
+    formData: stateData,
+    signaturePreview: stateSig,
+    status: stateStatus,
+    isHR: stateIsHR,
+    employeeId: stateEmployeeId,
+    rejectionReason: stateRejectionReason,
   } = location.state || {};
 
   const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
-  const { data: autoFillData, loading: autoFillLoading } = useAutoFill(targetId);
+  const { data: autoFillData, loading: autoFillLoading } =
+    useAutoFill(targetId);
 
-  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+  const isHR =
+    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.tdsStatus;
   const data = stateData || autoFillData?.tdsData;
 
@@ -35,11 +37,16 @@ const PreviewTDS = () => {
   const formData = data;
   const status = derivedStatus;
   const employeeId = targetId;
-  const rejectionReason = stateRejectionReason || autoFillData?.tdsRejectionReason;
-  const signaturePreview = stateSig || (data?.signature_path ? `/uploads/signatures/${data.signature_path}` : null);
+  const rejectionReason =
+    stateRejectionReason || autoFillData?.tdsRejectionReason;
+  const signaturePreview =
+    stateSig ||
+    (data?.signature_path
+      ? `/uploads/signatures/${data.signature_path}`
+      : null);
 
-  if (autoFillLoading && !data) return <div className="p-10 text-center">Loading...</div>;
-
+  if (autoFillLoading && !data)
+    return <div className="p-10 text-center">Loading...</div>;
 
   if (!formData) {
     return (
@@ -66,11 +73,11 @@ const PreviewTDS = () => {
       const data = new FormData();
       Object.keys(formData).forEach((key) => {
         if (key === "signature") {
-           if (formData.signature instanceof File) {
-               data.append("signature", formData.signature);
-           }
+          if (formData.signature instanceof File) {
+            data.append("signature", formData.signature);
+          }
         } else if (key !== "signature_path" && key !== "signaturePreview") {
-           data.append(key, formData[key] == null ? "" : formData[key]);
+          data.append(key, formData[key] == null ? "" : formData[key]);
         }
       });
 
@@ -87,11 +94,14 @@ const PreviewTDS = () => {
         },
       });
 
-      await showAlert("Form Submitted Successfully!", { type: 'success' });
+      await showAlert("Form Submitted Successfully!", { type: "success" });
       navigate("/employee/post-joining");
     } catch (error) {
       console.error("Error submitting form:", error);
-      await showAlert(`Submission failed: ${error.response?.data?.message || error.message}`, { type: 'error' });
+      await showAlert(
+        `Submission failed: ${error.response?.data?.message || error.message}`,
+        { type: "error" },
+      );
     } finally {
       setActionLoading(false);
     }
@@ -101,18 +111,22 @@ const PreviewTDS = () => {
     const isConfirmed = await showConfirm(
       `Are you sure you want to ${
         newStatus === "VERIFIED" ? "approve" : "reject"
-      } this form?`
+      } this form?`,
     );
     if (!isConfirmed) return;
 
     if (newStatus === "REJECTED" && !reason) {
-      reason = await showPrompt("Please provide a detailed reason for rejecting this TDS form:", {
-        title: "Rejection Reason",
-        type: "warning",
-        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
-        confirmText: "Submit Rejection",
-        cancelText: "Cancel"
-      });
+      reason = await showPrompt(
+        "Please provide a detailed reason for rejecting this TDS form:",
+        {
+          title: "Rejection Reason",
+          type: "warning",
+          placeholder:
+            "Enter the reason for rejection (minimum 10 characters)...",
+          confirmText: "Submit Rejection",
+          cancelText: "Cancel",
+        },
+      );
       if (!reason) return;
     }
 
@@ -125,74 +139,74 @@ const PreviewTDS = () => {
           status: newStatus,
           remarks: reason,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       await showAlert(
         `Form ${
           newStatus === "VERIFIED" ? "Approved" : "Rejected"
         } Successfully!`,
-        { type: 'success' }
+        { type: "success" },
       );
       navigate(-1);
     } catch (error) {
       console.error("Verification Error:", error);
-      await showAlert("Failed to update status.", { type: 'error' });
+      await showAlert("Failed to update status.", { type: "error" });
     } finally {
       setActionLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 font-serif print:bg-white print:p-0 print:m-0">
-      <style>
-        {`
-        @media print {
-          @page {
-            margin: 0;
-            size: auto;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            background-color: white !important;
-          }
-          /* Hide headers and footers that browsers might add */
-        }
-        `}
-      </style>
-      <div className="max-w-[210mm] mx-auto bg-white shadow-lg p-8 md:p-12 min-h-[297mm] flex flex-col print:shadow-none print:w-full print:max-w-full print:min-h-0 print:m-0 print:p-10">
-        <PreviewActions
-          status={derivedStatus}
-          isHR={isHR}
-          onBack={() => navigate(-1)}
-          onPrint={() => window.print()}
-          onVerify={handleVerification}
-          onEdit={() => navigate("/forms/tds-form", { 
-            state: { 
-              formData: data, 
-              isEdit: true, 
-              isResubmitting: derivedStatus === 'REJECTED' 
-            } 
-          })}
-          onSubmit={handleFinalSubmit}
-          isSubmitting={actionLoading}
-        />
+    <div className="min-h-screen bg-gray-50 py-8 px-4 print:p-0 print:m-0 print:w-full print:min-h-0 print:h-auto print:bg-white">
+      <div className="max-w-4xl mx-auto print:max-w-none print:mx-0 print:w-full print:p-0">
+        <div className="print:hidden">
+          <PreviewActions
+            status={derivedStatus}
+            isHR={isHR}
+            onBack={() => navigate(-1)}
+            onPrint={() => window.print()}
+            onVerify={handleVerification}
+            onEdit={() =>
+              navigate("/forms/tds-form", {
+                state: {
+                  formData: data,
+                  isEdit: true,
+                  isResubmitting: derivedStatus === "REJECTED",
+                },
+              })
+            }
+            onSubmit={handleFinalSubmit}
+            isSubmitting={actionLoading}
+          />
+        </div>
 
-        {(derivedStatus === 'REJECTED' || (derivedStatus === 'DRAFT' && (stateRejectionReason || autoFillData?.tdsRejectionReason))) && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
-                <div className="font-bold flex items-center gap-2 mb-1">
-                    Form Rejected
-                </div>
-                <p className="text-sm px-1">
-                    <span className="font-semibold">Reason:</span> {stateRejectionReason || autoFillData?.tdsRejectionReason}
-                </p>
-                <p className="text-xs mt-2 text-red-600">Please review the reason and click "Edit & Resubmit" to make necessary changes.</p>
+        {(derivedStatus === "REJECTED" ||
+          (derivedStatus === "DRAFT" &&
+            (stateRejectionReason || autoFillData?.tdsRejectionReason))) && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 print:hidden">
+            <div className="font-bold flex items-center gap-2 mb-1">
+              Form Rejected
             </div>
+            <p className="text-sm px-1">
+              <span className="font-semibold">Reason:</span>{" "}
+              {stateRejectionReason || autoFillData?.tdsRejectionReason}
+            </p>
+            <p className="text-xs mt-2 text-red-600">
+              Please review the reason and click "Edit & Resubmit" to make
+              necessary changes.
+            </p>
+          </div>
         )}
 
         {/* Printable Content */}
-        <div ref={componentRef} className="print:text-black text-gray-900">
+        <div
+          ref={componentRef}
+          className="bg-white p-4 md:p-12 shadow-lg rounded-sm 
+                w-full max-w-[210mm] min-h-[297mm] mx-auto 
+                flex flex-col relative text-gray-900 font-serif leading-relaxed
+                print:a4-print-container print:shadow-none print:p-[20mm] print:block overflow-x-hidden"
+        >
           <div className="text-center mb-6 border-b-2 border-black pb-4">
             <h1 className="font-bold text-2xl uppercase">Vakrangee Limited</h1>
             <h2 className="font-bold text-xl uppercase mt-2">
@@ -202,16 +216,16 @@ const PreviewTDS = () => {
 
           {/* Tax Regime */}
           <div className="border border-black w-full">
-            <div className="grid grid-cols-3 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 text-center">
               {/* Left Text */}
-              <div className="border-r border-black p-3 flex items-center justify-center">
+              <div className="border-b md:border-b-0 md:border-r border-black p-3 flex items-center justify-center">
                 <span className="font-normal uppercase text-sm">
                   OPTION FOR OPTING NEW TAX REGIME OR OLD TAX REGIME
                 </span>
               </div>
 
               {/* New Tax Regime */}
-              <div className="border-r border-black p-3">
+              <div className="border-b md:border-b-0 md:border-r border-black p-3">
                 <div className="font-normal uppercase mb-2 text-sm">
                   New Tax Regime
                 </div>
@@ -240,9 +254,9 @@ const PreviewTDS = () => {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="mt-0">
-            <table className="w-full mt-6 border border-black table-fixed text-center text-sm border-collapse">
+          {/* Table Container for Mobile Scroll */}
+          <div className="mt-0 overflow-x-auto print:overflow-visible w-full">
+            <table className="w-full min-w-150 mt-6 border border-black table-fixed text-center text-sm border-collapse print:w-full print:min-w-0">
               <thead>
                 <tr className="bg-gray-100">
                   <th className="w-[10%] border border-black p-2">SR NO</th>
@@ -553,7 +567,7 @@ const PreviewTDS = () => {
               </div>
 
               {/* Signature Block */}
-              <div className="mt-1 border-gray-300 pt-4 flex items-end">
+              <div className="mt-1 pt-4 flex items-end">
                 <span className="font-bold min-w-37.5 inline-block">
                   Signature:
                 </span>
@@ -562,16 +576,16 @@ const PreviewTDS = () => {
                     <img
                       src={signaturePreview}
                       alt="Signature"
-                      className="h-16 w-auto border border-gray-300 p-1"
+                      className="h-16 w-auto p-1"
                     />
                   ) : formData.signature_path ? (
                     <img
                       src={`/uploads/signatures/${formData.signature_path}`}
                       alt="Signature"
-                      className="h-16 w-auto border border-gray-300 p-1"
+                      className="h-16 w-auto p-1"
                     />
                   ) : (
-                    <div className="h-16 w-48 border border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-400">
+                    <div className="h-16 w-48 flex items-center justify-center text-xs text-gray-400">
                       No Signature
                     </div>
                   )}

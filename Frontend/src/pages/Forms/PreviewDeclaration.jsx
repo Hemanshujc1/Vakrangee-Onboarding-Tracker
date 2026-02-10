@@ -88,7 +88,7 @@ const PreviewDeclaration = () => {
       console.error(e);
       await showAlert(
         `Submission failed: ${e.response?.data?.message || e.message}`,
-        { type: "error" }
+        { type: "error" },
       );
     } finally {
       setIsSubmitting(false);
@@ -110,7 +110,7 @@ const PreviewDeclaration = () => {
             "Enter the reason for rejection (minimum 10 characters)...",
           confirmText: "Submit Rejection",
           cancelText: "Cancel",
-        }
+        },
       );
       if (!reason) return;
     }
@@ -118,7 +118,7 @@ const PreviewDeclaration = () => {
     const isConfirmed = await showConfirm(
       `Are you sure you want to ${
         status === "VERIFIED" ? "Approve" : "Reject"
-      } this form?`
+      } this form?`,
     );
     if (!isConfirmed) return;
 
@@ -133,7 +133,7 @@ const PreviewDeclaration = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status, remarks: reason }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -141,7 +141,7 @@ const PreviewDeclaration = () => {
           `Form ${
             status === "VERIFIED" ? "Approved" : "Rejected"
           } Successfully!`,
-          { type: "success" }
+          { type: "success" },
         );
         navigate(-1); // Back to Employee Detail
       } else {
@@ -164,27 +164,29 @@ const PreviewDeclaration = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header Actions */}
-        <PreviewActions
-          status={derivedStatus}
-          isHR={isHR}
-          onBack={() => navigate(-1)}
-          onPrint={() => window.print()}
-          onVerify={handleVerification}
-          onEdit={() =>
-            navigate("/forms/declaration-form", {
-              state: {
-                formData: data,
-                isEdit: true,
-                isResubmitting: derivedStatus === "REJECTED",
-              },
-            })
-          }
-          onSubmit={handleFinalSubmit}
-          isSubmitting={isSubmitting}
-        />
+    <div className="min-h-screen bg-gray-50 py-8 px-4 print:p-0 print:m-0 print:w-full print:min-h-0 print:h-auto print:bg-white">
+      <div className="max-w-4xl mx-auto print:max-w-none print:mx-0 print:w-full print:p-0">
+        <div className="print:hidden">
+          {/* Header Actions */}
+          <PreviewActions
+            status={derivedStatus}
+            isHR={isHR}
+            onBack={() => navigate(-1)}
+            onPrint={() => window.print()}
+            onVerify={handleVerification}
+            onEdit={() =>
+              navigate("/forms/declaration-form", {
+                state: {
+                  formData: data,
+                  isEdit: true,
+                  isResubmitting: derivedStatus === "REJECTED",
+                },
+              })
+            }
+            onSubmit={handleFinalSubmit}
+            isSubmitting={isSubmitting}
+          />
+        </div>
 
         {/* Rejection Alert */}
         {(derivedStatus === "REJECTED" ||
@@ -209,7 +211,10 @@ const PreviewDeclaration = () => {
         {/* Preview Content */}
         <div
           ref={printRef}
-          className="bg-white p-8 md:p-16 shadow-md rounded-sm print:shadow-none print:p-0 print:w-[21cm] print:h-[29.7cm] flex flex-col print:block relative w-full max-w-[21cm] mx-auto"
+          className="bg-white p-8 md:p-16 shadow-md rounded-sm 
+                w-full max-w-[210mm] min-h-[297mm] mx-auto 
+                flex flex-col relative text-gray-900 font-serif leading-relaxed
+                print:a4-print-container print:shadow-none print:p-[20mm] print:block overflow-x-hidden"
         >
           {/* Document Header */}
           <DocumentHeader title="Declaration Form" />
@@ -221,19 +226,24 @@ const PreviewDeclaration = () => {
                 {formData.title} {formData.employee_full_name}
               </span>{" "}
               hereby declare that I have resigned from my previous employment
-              i.e. Company Name: {formData.previous_company_name ? (
+              i.e. Company Name:{" "}
+              {formData.previous_company_name ? (
                 <span className="font-semibold border-b border-gray-800 px-2 uppercase">
                   {formData.previous_company_name}
                 </span>
               ) : (
                 <span>________</span>
-              )}Designation: {formData.previous_job_title ? (
+              )}
+              Designation:{" "}
+              {formData.previous_job_title ? (
                 <span className="font-semibold border-b border-gray-800 px-2 uppercase">
                   {formData.previous_job_title}
                 </span>
               ) : (
                 <span>________</span>
-              )} and completed all full and final processes before joining Vakrangee Limited.
+              )}{" "}
+              and completed all full and final processes before joining
+              Vakrangee Limited.
             </p>
 
             <p>
@@ -250,21 +260,21 @@ const PreviewDeclaration = () => {
           </div>
 
           <div className="mt-20 space-y-6 text-base font-medium text-gray-800 break-inside-avoid">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <div className="flex flex-col md:flex-row md:items-center print:flex-row print:items-center gap-2 md:gap-4">
               <span className="min-w-30 w-32">Name:</span>
               <span className="font-semibold px-0 md:px-4 uppercase flex-1 border-b border-dashed border-gray-400 w-full md:w-auto">
                 {formData.employee_full_name}
               </span>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <div className="flex flex-col md:flex-row md:items-center print:flex-row print:items-center gap-2 md:gap-4">
               <span className="min-w-30 w-32">Designation:</span>
               <span className="font-semibold px-0 md:px-4 uppercase flex-1 border-b border-dashed border-gray-400 w-full md:w-auto">
                 {formData.current_job_title}
               </span>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mt-8">
+            <div className="flex flex-col md:flex-row md:items-end print:flex-row print:items-end gap-2 md:gap-4 mt-8">
               <span className="min-w-30 w-32">Signature:</span>
               {signaturePreview ? (
                 <div className="px-0 md:px-4 flex-1 pb-2 w-full md:w-auto border-b border-gray-400 md:border-none">
@@ -287,7 +297,7 @@ const PreviewDeclaration = () => {
               </span>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mt-8">
+            <div className="flex flex-col md:flex-row md:items-center print:flex-row print:items-center gap-2 md:gap-4 mt-8">
               <span className="min-w-30 w-32">Date:</span>
               <span className="font-semibold px-0 md:px-4 flex-1 w-full md:w-auto">
                 {new Date().toLocaleDateString("en-GB")}

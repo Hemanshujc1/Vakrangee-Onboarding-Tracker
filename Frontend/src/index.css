@@ -113,5 +113,45 @@ body,
     transparent 31px,
     #000 32px
   );
+
   background-size: 100% 32px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    background: white;
+  }
+
+  /* Utility to force A4 dimensions */
+  .a4-print-container {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    background: white !important;
+    top: 0;
+    left: 0;
+  }
+
+  /* Force gray backgrounds to be white in print */
+  .bg-gray-50,
+  .bg-gray-100,
+  .bg-gray-200 {
+    background-color: white !important;
+  }
+
+  /* Hide non-printable elements */
+  .no-print {
+    display: none !important;
+  }
 }
