@@ -99,12 +99,14 @@ exports.login = async (req, res) => {
     // Find user
     const user = await User.findOne({ where: { username } });
     if (!user) {
+      logger.warn(`Login failed: User not found for username: ${username}`);
       return res.status(404).json({ message: 'User not found' });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      logger.warn(`Login failed: Invalid credentials for user: ${username}`);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -117,10 +119,12 @@ exports.login = async (req, res) => {
 
     // Check Access Control
     if (employeeRecord.onboarding_stage === 'Not_joined') {
+        logger.warn(`Login failed: User ${username} no longer has access (Not_joined).`);
         return res.status(403).json({ message: 'You no longer have access. Please contact HR.' });
     }
 
     if (employeeRecord.account_status === 'Inactive' || employeeRecord.is_deleted) {
+        logger.warn(`Login failed: User ${username} account is inactive or deleted.`);
         return res.status(403).json({ message: 'Your account is inactive. Please contact administrator.' });
     }
 

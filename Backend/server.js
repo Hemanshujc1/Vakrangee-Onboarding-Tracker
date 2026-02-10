@@ -79,7 +79,8 @@ const startServer = async () => {
     });
 
     const server = app.listen(PORT, () => {
-      logger.info(`Server is running on port ${PORT}`);
+      logger.info(`Onboarding HR Server is running on port ${PORT}`);
+      logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
     
     // Graceful Shutdown
