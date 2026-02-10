@@ -16,14 +16,18 @@ const Login = () => {
 
   const handleAuth = async (e) => {
     e.preventDefault();
+    console.log("Attempting login with:", email);
     setError("");
     setLoading(true);
 
     try {
+      console.log("Sending request to /api/auth/login...");
       const response = await axios.post("/api/auth/login", {
         username: email,
         password: password,
-      });
+      }, { timeout: 10000 }); // 10s timeout to prevent hanging
+
+      console.log("Login success:", response.data);
 
       const { token, user } = response.data;
 
@@ -38,17 +42,24 @@ const Login = () => {
         navigate("/employee");
       }
     } catch (err) {
-      console.error("Auth Error:", err);
+      console.error("Auth Error details:", err);
+
       if (err.response) {
         // Backend responded (401, 400, 500, etc.)
+        console.log("Backend error response:", err.response.data);
         setError(err.response.data?.message || "Invalid credentials");
       } else if (err.request) {
-        // server down)
+        // Request sent but no response (server down)
+        console.log("No response received (request made)");
         setError("Server is unreachable. Please try again later.");
       } else {
         // Something else went wrong
-        setError("Something went wrong.");
+        console.log("Error setting up request:", err.message);
+        setError("Something went wrong. Please try again.");
       }
+    } finally {
+      console.log("Finally block executed. Setting loading to false.");
+      setLoading(false);
     }
   };
 
