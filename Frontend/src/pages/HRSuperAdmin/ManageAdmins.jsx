@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import {
-  UserCog,
-  Search,
-  Trash2,
-  Download,
-  Filter,
-  RotateCcw,
-} from "lucide-react";
+import { UserCog, Search, Trash2, Download, Filter, RotateCcw,} from "lucide-react";
 import AddAdminModal from "../../Components/Admin/AddAdminModal";
 import PageHeader from "../../Components/Shared/PageHeader";
 import Pagination from "../../Components/UI/Pagination";
@@ -17,7 +10,6 @@ import { getUniqueOptions } from "../../utils/employeeUtils";
 import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import ExportModal from "../../Components/Shared/ExportModal";
 import { useAlert } from "../../context/AlertContext";
-
 const ManageAdmins = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,11 +25,9 @@ const ManageAdmins = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const itemsPerPage = 5;
-
   useEffect(() => {
     fetchAdmins();
   }, []);
-
   const fetchAdmins = async () => {
     try {
       const userInfo = localStorage.getItem("userInfo");
@@ -45,13 +35,10 @@ const ManageAdmins = () => {
         ? JSON.parse(userInfo).token
         : localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-
       const { data } = await axios.get("/api/employees", config);
-
       const strictAdmins = data.filter((emp) =>
         ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(emp.role),
       );
-
       setAdmins(strictAdmins);
     } catch (error) {
       console.error("Error fetching admins:", error);
@@ -59,7 +46,6 @@ const ManageAdmins = () => {
       setLoading(false);
     }
   };
-
   const handleAddAdmin = async (formData) => {
     try {
       const userInfo = localStorage.getItem("userInfo");
@@ -92,7 +78,6 @@ const ManageAdmins = () => {
       });
     }
   };
-
   const handleActivateAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to activate this admin?",
@@ -116,19 +101,16 @@ const ManageAdmins = () => {
         `/api/employees/${id}`,
         {
           accountStatus: newStatus,
-          // Do NOT reset firstLoginAt/lastLoginAt if they exist
         },
         config,
       );
 
-      // Optimistic update
       setAdmins((prev) =>
         prev.map((admin) =>
           admin.id === id
             ? {
                 ...admin,
                 accountStatus: newStatus,
-                // Maintain existing dates locally too
               }
             : admin,
         ),
@@ -140,14 +122,12 @@ const ManageAdmins = () => {
       await showAlert("Failed to activate admin", { type: "error" });
     }
   };
-
   const handleDeleteAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to deactivate this admin?",
       { type: "warning" },
     );
     if (!isConfirmed) return;
-
     try {
       const userInfoStr = localStorage.getItem("userInfo");
       let token = userInfoStr
@@ -187,12 +167,10 @@ const ManageAdmins = () => {
       }
     }
   };
-
   // Extract Unique Options
   const jobTitles = getUniqueOptions(admins, "jobTitle");
   const locations = getUniqueOptions(admins, "location");
   const statuses = ["ACTIVE", "Inactive", "INVITED"];
-
   // Filter & Pagination
   let filteredAdmins = admins.filter((admin) => {
     const matchesSearch =
@@ -212,16 +190,13 @@ const ManageAdmins = () => {
 
     return matchesSearch && matchesJob && matchesLocation && matchesStatus;
   });
-
-  // Apply Sorting - Inactive Last by default, unless specific sort overrides
+  // Apply Sorting
   filteredAdmins.sort((a, b) => {
     // 1. Primary Sort: Inactive to bottom
     const statusA = a.accountStatus || "ACTIVE";
     const statusB = b.accountStatus || "ACTIVE";
-
     if (statusA === "Inactive" && statusB !== "Inactive") return 1;
     if (statusA !== "Inactive" && statusB === "Inactive") return -1;
-
     // 2. Secondary Sort: User Selected Config
     if (sortConfig.key) {
       let aValue, bValue;
@@ -235,19 +210,16 @@ const ManageAdmins = () => {
         aValue = a[sortConfig.key] || "";
         bValue = b[sortConfig.key] || "";
       }
-
       if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
     }
     return 0;
   });
-
   const totalItems = filteredAdmins.length;
   const currentAdmins = filteredAdmins.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
-
   return (
     <DashboardLayout>
       <PageHeader
@@ -265,7 +237,6 @@ const ManageAdmins = () => {
           <span>Export</span>
         </button>
       </PageHeader>
-
       {/* Sidebar Drawer */}
       <EmployeeFilters
         filters={{
@@ -299,7 +270,6 @@ const ManageAdmins = () => {
           { label: "Assigned: High to Low", value: "assignedCount-desc" },
         ]}
       />
-
       {/* Main Content */}
       <div className="w-full">
         {/* Top Bar: Search & Sort */}
@@ -336,7 +306,6 @@ const ManageAdmins = () => {
             />
           </div>
         )}
-
         {loading ? (
           <div className="text-center py-10 text-gray-500">
             Loading admins...
@@ -366,7 +335,6 @@ const ManageAdmins = () => {
                       <th className="hidden xl:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                         Onboarded
                       </th>
-
                       <th className="hidden xl:table-cell px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                         Not Joined
                       </th>
@@ -497,13 +465,11 @@ const ManageAdmins = () => {
           </>
         )}
       </div>
-
       <AddAdminModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddAdmin}
       />
-
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}

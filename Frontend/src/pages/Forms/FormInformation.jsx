@@ -1,24 +1,27 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
-import axios from "axios";
-import FormLayout from "../../Components/Forms/FormLayout";
-import FormInput from "../../Components/Forms/FormInput";
-import useAutoFill from "../../hooks/useAutoFill";
 import {
+  React,
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useForm,
+  useNavigate,
+  yupResolver,
+  Yup,
+  axios,
+  FormLayout,
+  useAutoFill,
+  useAlert,
   commonSchemas,
   createSignatureSchema,
-} from "../../utils/validationSchemas";
-import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
+  onValidationFail,
+} from "../../utils/formDependencies";
+import FormInput from "../../Components/Forms/FormInput";
 import PersonalDetails from "./InformationSections/PersonalDetails";
 import ContactDetails from "./InformationSections/ContactDetails";
 import EducationDetails from "./InformationSections/EducationDetails";
 import EmploymentDetails from "./InformationSections/EmploymentDetails";
 import ReferenceDetails from "./InformationSections/ReferenceDetails";
-
-import { useAlert } from "../../context/AlertContext";
 
 const FormInformation = () => {
   const { id } = useParams();
@@ -38,7 +41,7 @@ const FormInformation = () => {
   );
 
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
-    autoFillData?.employeeInfoStatus
+    autoFillData?.employeeInfoStatus,
   );
 
   // --- Validation Schema ---
@@ -55,8 +58,11 @@ const FormInformation = () => {
         middle_name: commonSchemas.nameStringOptional.label("Middle Name"),
         last_name: commonSchemas.nameString.label("Last Name"),
         father_name: commonSchemas.nameStringOptional.label("Father's Name"),
-        father_middle_name: commonSchemas.nameStringOptional.label("Father's Middle Name"),
-        father_last_name: commonSchemas.nameStringOptional.label("Father's Last Name"),
+        father_middle_name: commonSchemas.nameStringOptional.label(
+          "Father's Middle Name",
+        ),
+        father_last_name:
+          commonSchemas.nameStringOptional.label("Father's Last Name"),
         date_of_birth: commonSchemas.datePast,
         birth_city: commonSchemas.stringRequired,
         birth_state: commonSchemas.stringRequired,
@@ -67,9 +73,9 @@ const FormInformation = () => {
 
         // IDs (Optional but validated if present)
         passport_number: commonSchemas.passport
-        .nullable()
-        .transform((value) => (value === "" ? null : value))
-        .optional(),
+          .nullable()
+          .transform((value) => (value === "" ? null : value))
+          .optional(),
         passport_date_of_issue: commonSchemas.datePast.nullable().optional(),
         passport_expiry_date: commonSchemas.dateFuture.nullable().optional(),
 
@@ -117,7 +123,8 @@ const FormInformation = () => {
             state: Yup.string().required("Required"),
             pin: commonSchemas.pincode,
             university: Yup.string().required("Required"),
-            universityAddress: commonSchemas.addressStringOptional.label("University Address"),
+            universityAddress:
+              commonSchemas.addressStringOptional.label("University Address"),
             universitystate: Yup.string().optional(),
             universitypin: Yup.string()
               .optional()
@@ -125,57 +132,62 @@ const FormInformation = () => {
               .test("len", "Must be 6 digits", (v) => !v || v.length === 6),
             startDate: commonSchemas.dateRequired,
             endDate: Yup.date()
-              .min(1900,"Enter a valid date")
-              .max(3000,"Enter a vlaid date")
+              .min(1900, "Enter a valid date")
+              .max(3000, "Enter a vlaid date")
               .required("Required"),
             status: Yup.string().required("Required"),
             marks: Yup.number()
-            .min(0,"Enter a valid number")
-            .max(100,"Enter a valid number")
-            .required("Required"),
+              .min(0, "Enter a valid number")
+              .max(100, "Enter a valid number")
+              .required("Required"),
             educationType: Yup.string().required("Required"),
             rollNo: Yup.string().required(),
             enrollmentNo: Yup.string().optional(),
-            anyOther: Yup.string().optional(), 
-            achievements: Yup.string().optional(), 
-            documentsAttached: Yup.string().optional(), 
-          })
+            anyOther: Yup.string().optional(),
+            achievements: Yup.string().optional(),
+            documentsAttached: Yup.string().optional(),
+          }),
         ),
 
         // Employment Details
         employment_details: Yup.array().of(
           Yup.object().shape({
             companyName: Yup.string()
-            .min(2, "Min 2 chars")
-            .max(30, "Max 30 chars")
-            .nullable().optional(),
+              .min(2, "Min 2 chars")
+              .max(30, "Max 30 chars")
+              .nullable()
+              .optional(),
             address: commonSchemas.addressStringOptional.label("Address"),
             empType: Yup.string().nullable().optional(),
             empCode: Yup.string().optional(),
             startDate: Yup.string().nullable().optional(),
             endDate: Yup.string().nullable().optional(),
             position: Yup.string()
-            .nullable()
-            .transform((value) => (value === "" ? null : value))
-            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
+              .nullable()
+              .transform((value) => (value === "" ? null : value))
+              .min(2, "Min 2 chars")
+              .max(30, "Max 30 chars"),
             compensation: commonSchemas.currency.optional(),
-            city: Yup.string().nullable()
-            .transform((value) => (value === "" ? null : value))
-            .min(3,"Min 3 chars").max(40,"Max 40 chars"),
+            city: Yup.string()
+              .nullable()
+              .transform((value) => (value === "" ? null : value))
+              .min(3, "Min 3 chars")
+              .max(40, "Max 40 chars"),
 
             hrRep: commonSchemas.nameStringOptional,
             hrTel: commonSchemas.mobileOptional,
             hrMob: commonSchemas.mobileOptional,
-            hrEmail:  commonSchemas.emailOptional,
+            hrEmail: commonSchemas.emailOptional,
 
             supervisorName: commonSchemas.nameStringOptional,
             supTel: commonSchemas.mobileOptional,
             supMob: commonSchemas.mobileOptional,
             supEmail: commonSchemas.emailOptional,
             designation: Yup.string()
-            .nullable()
-            .transform((value) => (value === "" ? null : value))
-            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
+              .nullable()
+              .transform((value) => (value === "" ? null : value))
+              .min(2, "Min 2 chars")
+              .max(30, "Max 30 chars"),
             reportStartDate: commonSchemas.datePastOptional,
             reportEndDate: commonSchemas.dateOptional,
 
@@ -184,15 +196,21 @@ const FormInformation = () => {
             supMob2: commonSchemas.mobileOptional,
             supEmail2: commonSchemas.emailOptional,
             designation2: Yup.string()
-            .nullable()
-            .transform((value) => (value === "" ? null : value))
-            .min(2,"Min 2 chars").max(30,"Max 30 chars"),
+              .nullable()
+              .transform((value) => (value === "" ? null : value))
+              .min(2, "Min 2 chars")
+              .max(30, "Max 30 chars"),
             reportStartDate2: commonSchemas.datePastOptional,
             reportEndDate2: commonSchemas.dateOptional,
-            duties: Yup.string().max(400,"Max 400 chars").nullable().optional(),
+            duties: Yup.string()
+              .max(400, "Max 400 chars")
+              .nullable()
+              .optional(),
             reasonLeaving: Yup.string()
-            .max(300,"Max 300 chars").nullable().optional(),
-          })
+              .max(300, "Max 300 chars")
+              .nullable()
+              .optional(),
+          }),
         ),
 
         // References - Min 2
@@ -200,16 +218,17 @@ const FormInformation = () => {
           .max(2, "At Max 2 references are required")
           .of(
             Yup.object().shape({
-              name:commonSchemas.nameStringOptional,
+              name: commonSchemas.nameStringOptional,
               address: commonSchemas.addressStringOptional.label("Address"),
               tel: commonSchemas.mobileOptional,
               mob: commonSchemas.mobileOptional,
               email: commonSchemas.emailOptional,
-              designation:Yup.string()
-              .nullable()
-              .transform((value) => (value === "" ? null : value))
-              .min(2,"Min 2 chars").max(30,"Max 30 chars"),
-            })
+              designation: Yup.string()
+                .nullable()
+                .transform((value) => (value === "" ? null : value))
+                .min(2, "Min 2 chars")
+                .max(30, "Max 30 chars"),
+            }),
           ),
 
         signature: Yup.mixed().when("isDraft", {
@@ -218,7 +237,7 @@ const FormInformation = () => {
           otherwise: (schema) => createSignatureSchema(hasSavedSignature),
         }),
       }),
-    [hasSavedSignature]
+    [hasSavedSignature],
   );
 
   const {
@@ -262,7 +281,7 @@ const FormInformation = () => {
 
       current_residence_type: "",
       current_building_name: "",
-      current_landlord_name:"",
+      current_landlord_name: "",
       current_flat_house_no: "",
       current_block_street_no: "",
       current_street_name: "",
@@ -351,15 +370,11 @@ const FormInformation = () => {
     },
   });
 
-  const {
-    fields: eduFields,
-  } = useFieldArray({
+  const { fields: eduFields } = useFieldArray({
     control,
     name: "educational_details",
   });
-  const {
-    fields: empFields,
-  } = useFieldArray({
+  const { fields: empFields } = useFieldArray({
     control,
     name: "employment_details",
   });
@@ -412,7 +427,7 @@ const FormInformation = () => {
       const base = autoFillData; // Fallback to base user data
 
       reset({
-        designation: saved.designation || base.designation ||"",
+        designation: saved.designation || base.designation || "",
         first_name: saved.first_name || base.firstname || "",
         middle_name: saved.middle_name || base.middlename || "",
         last_name: saved.last_name || base.lastname || "",
@@ -498,9 +513,7 @@ const FormInformation = () => {
       if (saved.signature_path || autoFillData.signature) {
         const path = saved.signature_path || autoFillData.signature;
         setSignaturePreview(
-          path.startsWith("http")
-            ? path
-            : `/uploads/signatures/${path}`
+          path.startsWith("http") ? path : `/uploads/signatures/${path}`,
         );
       }
     }
@@ -560,13 +573,9 @@ const FormInformation = () => {
       });
 
       const token = localStorage.getItem("token");
-      await axios.post(
-        "/api/forms/save-employee-info",
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.post("/api/forms/save-employee-info", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (isPreview) {
         const saved = autoFillData?.employeeInfoData || {};
@@ -581,14 +590,18 @@ const FormInformation = () => {
           },
         });
       } else if (values.isDraft) {
-        await showAlert("Draft Saved!", { type: 'success' });
+        await showAlert("Draft Saved!", { type: "success" });
       } else {
-         // Should not reach here if logic is correct, but fallback to preview or alert
-         navigate(`/forms/information/preview/${employeeId}`, { state: { formData: values, signaturePreview, employeeId } });
+        // Should not reach here if logic is correct, but fallback to preview or alert
+        navigate(`/forms/information/preview/${employeeId}`, {
+          state: { formData: values, signaturePreview, employeeId },
+        });
       }
     } catch (error) {
       console.error("Submission Error:", error);
-      await showAlert("Failed to save form. Check console for details.", { type: 'error' });
+      await showAlert("Failed to save form. Check console for details.", {
+        type: "error",
+      });
     }
   };
 
@@ -688,5 +701,3 @@ const FormInformation = () => {
 };
 
 export default FormInformation;
-
-

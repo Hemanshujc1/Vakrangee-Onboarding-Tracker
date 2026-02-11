@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
+import {
+  React,
+  useEffect,
+  useState,
+  useForm,
+  useFieldArray,
+  useNavigate,
+  yupResolver,
+  Yup,
+  FormLayout,
+  useAutoFill,
+  useAlert,
+  commonSchemas,
+  createSignatureSchema,
+  onValidationFail,
+  formatDateForAPI,
+} from "../../utils/formDependencies";
+
 import { DocumentFields } from "../../Components/Forms/Shared";
-import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
-import { commonSchemas, createSignatureSchema } from "../../utils/validationSchemas";
-import FormLayout from "../../Components/Forms/FormLayout";
-import useAutoFill from "../../hooks/useAutoFill";
-import { useAlert } from "../../context/AlertContext";
 import PersonalInformation from "./ApplicationSections/PersonalInformation";
 import AddressDetails from "./ApplicationSections/AddressDetails";
 import EducationAndTraining from "./ApplicationSections/EducationAndTraining";
@@ -18,10 +26,10 @@ import OtherDetails from "./ApplicationSections/OtherDetails";
 const FormApplication = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const { employeeId } = user.id ? { employeeId: user.id } : { employeeId: null };
+  const employeeId = user.id || null;
 
   const { showAlert } = useAlert();
-  
+
   useEffect(() => {
     if (!employeeId) navigate("/login");
   }, [employeeId, navigate]);
@@ -43,14 +51,13 @@ const FormApplication = () => {
     Maidenname: commonSchemas.nameStringOptional.label("Maiden Name"),
     currentAddress: commonSchemas.addressString.label("Current Address"),
     permanentAddress: commonSchemas.addressString.label("Permanent Address"),
-    
     mobileNo: commonSchemas.mobile,
     alternateNo: commonSchemas.mobile,
     email: commonSchemas.email,
     emergencyNo: commonSchemas.mobile,
     gender: commonSchemas.stringRequired,
     dob: commonSchemas.datePast,
-    
+
     // Conditional Documents
     hasPan: Yup.string().oneOf(["Yes", "No"]),
     panNo: Yup.string().when("hasPan", {
@@ -65,33 +72,45 @@ const FormApplication = () => {
       then: (schema) => commonSchemas.license.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    licenseIssueDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasLicense", {
+    licenseIssueDate: Yup.date()
+      .nullable()
+      .transform((v, ov) => (ov === "" ? null : v))
+      .when("hasLicense", {
         is: "Yes",
         then: (schema) => commonSchemas.datePast.required("Required"),
-        otherwise: (schema) => schema.notRequired()
-    }),
-    licenseExpiryDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasLicense", {
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    licenseExpiryDate: Yup.date()
+      .nullable()
+      .transform((v, ov) => (ov === "" ? null : v))
+      .when("hasLicense", {
         is: "Yes",
         then: (schema) => commonSchemas.dateFuture.required("Required"),
-        otherwise: (schema) => schema.notRequired()
-    }),
-    
+        otherwise: (schema) => schema.notRequired(),
+      }),
+
     hasPassport: Yup.string().oneOf(["Yes", "No"]),
     passportNo: Yup.string().when("hasPassport", {
       is: "Yes",
       then: (schema) => commonSchemas.passport.required("Required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    passportIssueDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasPassport", {
+    passportIssueDate: Yup.date()
+      .nullable()
+      .transform((v, ov) => (ov === "" ? null : v))
+      .when("hasPassport", {
         is: "Yes",
         then: (schema) => commonSchemas.datePast.required("Required"),
-        otherwise: (schema) => schema.notRequired()
-    }),
-    passportExpiryDate: Yup.date().nullable().transform((v, ov) => ov === "" ? null : v).when("hasPassport", {
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    passportExpiryDate: Yup.date()
+      .nullable()
+      .transform((v, ov) => (ov === "" ? null : v))
+      .when("hasPassport", {
         is: "Yes",
         then: (schema) => commonSchemas.dateFuture.required("Required"),
-        otherwise: (schema) => schema.notRequired()
-    }),
+        otherwise: (schema) => schema.notRequired(),
+      }),
 
     // Arrays
     education: Yup.array()
@@ -101,29 +120,42 @@ const FormApplication = () => {
         Yup.object().shape({
           qualification: commonSchemas.stringRequired,
           institute: commonSchemas.stringRequired,
-          year: commonSchemas.numberOptional.min(1900).max(new Date().getFullYear()).required("Required"),
-          percentage: commonSchemas.numberOptional.min(0).max(100).required("Required"),
+          year: commonSchemas.numberOptional
+            .min(1900)
+            .max(new Date().getFullYear())
+            .required("Required"),
+          percentage: commonSchemas.numberOptional
+            .min(0)
+            .max(100)
+            .required("Required"),
           location: Yup.string(),
         })
       ),
 
-    otherTraining: Yup.array().max(4).of(
+    otherTraining: Yup.array()
+      .max(4)
+      .of(
         Yup.object().shape({
-            institute: Yup.string(),
-            location: Yup.string(),
-            duration: Yup.string(),
-            details: Yup.string(),
+          institute: Yup.string(),
+          location: Yup.string(),
+          duration: Yup.string(),
+          details: Yup.string(),
         })
-    ),
+      ),
 
-    achievements: Yup.array().max(4).of(
+    achievements: Yup.array()
+      .max(4)
+      .of(
         Yup.object().shape({
-            year: commonSchemas.numberOptional.min(1900).max(new Date().getFullYear()),
-            details: Yup.string(),
+          year: commonSchemas.numberOptional
+            .min(1900)
+            .max(new Date().getFullYear()),
+          details: Yup.string(),
         })
-    ),
-  
-    employmentHistory: Yup.array().max(5).of(
+      ),
+    employmentHistory: Yup.array()
+      .max(5)
+      .of(
         Yup.object().shape({
           employer: commonSchemas.stringOptional,
           designation: commonSchemas.stringOptional,
@@ -133,7 +165,6 @@ const FormApplication = () => {
           reportingOfficer: Yup.string(),
         })
       ),
-
     workExperience: Yup.array().of(
       Yup.object().shape({
         employer: commonSchemas.stringOptional,
@@ -147,34 +178,37 @@ const FormApplication = () => {
         joiningDate: commonSchemas.dateOptional,
       })
     ),
-
-    references: Yup.array().max(2).of(
+    references: Yup.array()
+      .max(2)
+      .of(
         Yup.object().shape({
           name: commonSchemas.nameStringOptional,
           company: commonSchemas.stringOptional,
-          contact: commonSchemas.mobileOptional, 
+          contact: commonSchemas.mobileOptional,
           position: Yup.string(),
           address: commonSchemas.addressStringOptional,
         })
       ),
-      
+
     family: Yup.array().of(
-        Yup.object().shape({
-            name: commonSchemas.nameStringOptional,
-            relationship: commonSchemas.stringOptional,
-            age: commonSchemas.age.optional(),
-            occupation: Yup.string(),
-        })
+      Yup.object().shape({
+        name: commonSchemas.nameStringOptional,
+        relationship: commonSchemas.stringOptional,
+        age: commonSchemas.age.optional(),
+        occupation: Yup.string(),
+      })
     ),
-    
-    languages: Yup.array().max(4).of(
+
+    languages: Yup.array()
+      .max(4)
+      .of(
         Yup.object().shape({
-            language: commonSchemas.stringOptional,
-            speak: Yup.boolean(),
-            read: Yup.boolean(),
-            write: Yup.boolean(),
+          language: commonSchemas.stringOptional,
+          speak: Yup.boolean(),
+          read: Yup.boolean(),
+          write: Yup.boolean(),
         })
-    ),
+      ),
 
     // Signature
     signature: createSignatureSchema(hasSavedSignature),
@@ -187,7 +221,6 @@ const FormApplication = () => {
     reset,
     setValue,
     watch,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(validationSchema),
@@ -304,17 +337,6 @@ const FormApplication = () => {
     remove: removeRef,
   } = useFieldArray({ control, name: "references" });
 
-  // Watchers
-  const currentAddressValue = watch("currentAddress");
-
-  const copyAddress = (e) => {
-    if (e.target.checked) {
-      setValue("permanentAddress", currentAddressValue);
-    } else {
-      setValue("permanentAddress", "");
-    }
-  };
-
   useEffect(() => {
     if (autoFillData) {
       const saved = autoFillData.applicationData || {};
@@ -327,23 +349,18 @@ const FormApplication = () => {
         currentAddress:
           saved.currentAddress || autoFillData.currentAddress || "",
         permanentAddress: saved.permanentAddress || "",
-
         mobileNo:
           saved.mobileNo || autoFillData.mobileNo || autoFillData.phone || "",
         email: saved.email || autoFillData.email || "",
         dob: saved.dob || autoFillData.dateOfBirth || autoFillData.dob || "",
         gender: saved.gender || autoFillData.gender || "",
         age: saved.age || autoFillData.age || "",
-
         positionApplied:
           saved.positionApplied || autoFillData.positionApplied || "",
-
         panNo: saved.panNo || autoFillData.panNo || "",
         hasPan: saved.hasPan || autoFillData.hasPan || "No",
-
         passportNo: saved.passportNo || autoFillData.passportNo || "",
         hasPassport: saved.hasPassport || autoFillData.hasPassport || "No",
-
         ...saved,
 
         // Ensure arrays have at least one row if empty and required
@@ -381,9 +398,7 @@ const FormApplication = () => {
       });
 
       if (saved.signature_path) {
-        setSignaturePreview(
-          `/uploads/signatures/${saved.signature_path}`
-        );
+        setSignaturePreview(`/uploads/signatures/${saved.signature_path}`);
       }
     }
   }, [autoFillData, reset]);
@@ -391,29 +406,29 @@ const FormApplication = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   const onFormSubmit = async (values) => {
-    // Dates are handled by formatDateForAPI utility
-
-
-    // Clean top-level dates
-    const dateFields = ['dob', 'licenseIssueDate', 'licenseExpiryDate', 'passportIssueDate', 'passportExpiryDate'];
-    dateFields.forEach(field => {
-        if (values[field]) values[field] = formatDateForAPI(values[field]);
+    const dateFields = [
+      "dob",
+      "licenseIssueDate",
+      "licenseExpiryDate",
+      "passportIssueDate",
+      "passportExpiryDate",
+    ];
+    dateFields.forEach((field) => {
+      if (values[field]) values[field] = formatDateForAPI(values[field]);
     });
-
-    // Clean nested arrays
     if (values.employmentHistory && Array.isArray(values.employmentHistory)) {
-        values.employmentHistory = values.employmentHistory.map(item => ({
-            ...item,
-            fromDate: formatDateForAPI(item.fromDate),
-            toDate: formatDateForAPI(item.toDate)
-        }));
+      values.employmentHistory = values.employmentHistory.map((item) => ({
+        ...item,
+        fromDate: formatDateForAPI(item.fromDate),
+        toDate: formatDateForAPI(item.toDate),
+      }));
     }
 
     if (values.workExperience && Array.isArray(values.workExperience)) {
-        values.workExperience = values.workExperience.map(item => ({
-            ...item,
-            joiningDate: formatDateForAPI(item.joiningDate)
-        }));
+      values.workExperience = values.workExperience.map((item) => ({
+        ...item,
+        joiningDate: formatDateForAPI(item.joiningDate),
+      }));
     }
 
     const token = localStorage.getItem("token");
@@ -430,44 +445,47 @@ const FormApplication = () => {
             formData.append("signature", values.signature);
           }
         } else {
-          formData.append(key, values[key] === null || values[key] === undefined ? "" : values[key]);
+          formData.append(
+            key,
+            values[key] === null || values[key] === undefined ? "" : values[key]
+          );
         }
       });
 
-      // Assuming endpoint exists or will exist
-      const response = await fetch(
-        "/api/forms/application",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
-      );
+      const response = await fetch("/api/forms/application", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
       if (response.ok) {
         if (values.isDraft) {
           const resData = await response.json();
           // If in Preview Mode, don't alert, just navigate
           if (isPreviewMode) {
-             const savedData = autoFillData?.applicationData || {};
-             // We need to pass the saved form ID if possible, or just rely on autoFill
-             navigate(`/forms/application/preview/${employeeId}`, {
-                state: {
-                  formData: {
-                    ...values,
-                    signature_path: savedData.signature_path || autoFillData?.signature,
-                  },
-                  signaturePreview: signaturePreview,
-                  employeeId: employeeId,
-                  isHR: false,
-                  fromPreviewSubmit: true // Flag to enable submit button in preview
+            const savedData = autoFillData?.applicationData || {};
+            // We need to pass the saved form ID if possible, or just rely on autoFill
+            navigate(`/forms/application/preview/${employeeId}`, {
+              state: {
+                formData: {
+                  ...values,
+                  signature_path:
+                    savedData.signature_path || autoFillData?.signature,
                 },
-             });
+                signaturePreview: signaturePreview,
+                employeeId: employeeId,
+                isHR: false,
+                fromPreviewSubmit: true, // Flag to enable submit button in preview
+              },
+            });
           } else {
-             await showAlert(`Draft Saved Successfully! Status: ${resData.status}`, { type: 'success' });
+            await showAlert(
+              `Draft Saved Successfully! Status: ${resData.status}`,
+              { type: "success" }
+            );
           }
         } else {
-          await showAlert("Form Submitted!", { type: 'success' });
+          await showAlert("Form Submitted!", { type: "success" });
           const savedData = autoFillData?.applicationData || {};
           navigate(`/forms/application/preview/${employeeId}`, {
             state: {
@@ -484,13 +502,17 @@ const FormApplication = () => {
         }
       } else {
         const err = await response.json();
-        await showAlert(`Error: ${err.message || "Submission failed"}`, { type: 'error' });
+        await showAlert(`Error: ${err.message || "Submission failed"}`, {
+          type: "error",
+        });
       }
     } catch (error) {
       console.error(error);
-      await showAlert("An error occurred during submission.", { type: 'error' });
+      await showAlert("An error occurred during submission.", {
+        type: "error",
+      });
     } finally {
-        setIsPreviewMode(false);
+      setIsPreviewMode(false);
     }
   };
 
@@ -504,7 +526,9 @@ const FormApplication = () => {
       showSignature={true}
       signaturePreview={signaturePreview}
       isLocked={isLocked}
-      onSubmit={handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))}
+      onSubmit={handleSubmit(onFormSubmit, (e) =>
+        onValidationFail(e, showAlert)
+      )}
       actions={{
         isSubmitting,
         onSaveDraft: () => {
@@ -512,9 +536,9 @@ const FormApplication = () => {
           handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
         },
         onSubmit: () => {
-            setIsPreviewMode(true);
-            setValue("isDraft", true);
-        }, 
+          setIsPreviewMode(true);
+          setValue("isDraft", true);
+        },
       }}
       signature={{
         setValue,
@@ -526,13 +550,23 @@ const FormApplication = () => {
       }}
     >
       {/* Personal Information & Address */}
-      <PersonalInformation register={register} errors={errors} autoFillData={autoFillData} />
-      <AddressDetails register={register} errors={errors} autoFillData={autoFillData} setValue={setValue} watch={watch} />
+      <PersonalInformation
+        register={register}
+        errors={errors}
+        autoFillData={autoFillData}
+      />
+      <AddressDetails
+        register={register}
+        errors={errors}
+        autoFillData={autoFillData}
+        setValue={setValue}
+        watch={watch}
+      />
 
       {/* Education & Training */}
-      <EducationAndTraining 
-        register={register} 
-        errors={errors} 
+      <EducationAndTraining
+        register={register}
+        errors={errors}
         control={control}
         educationFields={educationFields}
         appendEdu={appendEdu}
@@ -546,27 +580,27 @@ const FormApplication = () => {
       />
 
       {/* Documents */}
-      <DocumentFields 
-        register={register} 
-        errors={errors} 
-        watch={watch} 
+      <DocumentFields
+        register={register}
+        errors={errors}
+        watch={watch}
         setValue={setValue}
         autoFillData={autoFillData}
       />
 
       {/* Work Experience & Employment History */}
-      <WorkExperience 
-        register={register} 
-        errors={errors} 
+      <WorkExperience
+        register={register}
+        errors={errors}
         historyFields={historyFields}
         appendHistory={appendHistory}
         removeHistory={removeHistory}
       />
 
       {/* Other Details */}
-      <OtherDetails 
-        register={register} 
-        errors={errors} 
+      <OtherDetails
+        register={register}
+        errors={errors}
         languageFields={languageFields}
         appendLang={appendLang}
         removeLang={removeLang}
@@ -596,4 +630,3 @@ const FormApplication = () => {
 };
 
 export default FormApplication;
-

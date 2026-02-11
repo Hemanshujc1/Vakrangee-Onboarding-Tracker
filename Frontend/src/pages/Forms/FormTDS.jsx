@@ -1,25 +1,34 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
-import axios from "axios";
-import FormLayout from "../../Components/Forms/FormLayout";
-import FormInput from "../../Components/Forms/FormInput";
-import FormSection from "../../Components/Forms/FormSection";
-import useAutoFill from "../../hooks/useAutoFill";
-import { useAlert } from "../../context/AlertContext";
 import {
+  React,
+  useState,
+  useEffect,
+  useMemo,
+  useParams,
+  useNavigate,
+  useForm,
+  yupResolver,
+  Yup,
+  axios,
+  FormLayout,
+  useAutoFill,
+  useAlert,
   commonSchemas,
   createSignatureSchema,
-} from "../../utils/validationSchemas";
-import { onValidationFail } from "../../utils/formUtils";
+  onValidationFail,
+} from "../../utils/formDependencies";
+import TaxRegimeSelection from "./TDSSections/TaxRegimeSelection";
+import EducationLoanSection from "./TDSSections/EducationLoanSection";
+import HousingLoanSection from "./TDSSections/HousingLoanSection";
+import NPSSection from "./TDSSections/NPSSection";
+import HRASection from "./TDSSections/HRASection";
+import MedicalInsuranceSection from "./TDSSections/MedicalInsuranceSection";
+import OtherInvestmentsSection from "./TDSSections/OtherInvestmentsSection";
+import EmployeeDeclaration from "./TDSSections/EmployeeDeclaration";
 
 const FormTDS = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  // Get logged-in user ID from localStorage if not in URL (which is for admins usually)
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const targetId = employeeId || user.id;
 
@@ -32,7 +41,6 @@ const FormTDS = () => {
     autoFillData?.tdsData?.signature_path || autoFillData?.signature
   );
 
-  // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData) {
       // navigate('/forms/tds-form/preview', { state: { formData: autoFillData.tdsData } });
@@ -80,13 +88,13 @@ const FormTDS = () => {
             "year-or-zero",
             "Enter a valid year (YYYY), 0, or leave empty",
             (val) => {
-              if (!val || val === "") return true; // empty allowed
-              if (val === "0") return true; // zero allowed
+              if (!val || val === "") return true;
+              if (val === "0") return true;
               if (!/^(19|20)\d{2}$/.test(val)) return false;
 
               const year = parseInt(val, 10);
               return year >= 1900 && year <= new Date().getFullYear();
-            }
+            },
           )
           .nullable(),
 
@@ -97,14 +105,13 @@ const FormTDS = () => {
           .matches(/^\d{4}-\d{2}$/, "Invalid Assessment Year (YYYY-YY)")
           .optional(),
 
-        // Signature
         signature: Yup.mixed().when("isDraft", {
           is: true,
           then: (schema) => Yup.mixed().nullable().optional(),
           otherwise: (schema) => createSignatureSchema(hasSavedSignature),
         }),
       }),
-    [hasSavedSignature]
+    [hasSavedSignature],
   );
 
   const {
@@ -138,7 +145,6 @@ const FormTDS = () => {
   });
 
   const watchRelatedLandlord = watch("hra_is_related_landlord");
-  const watchTaxRegime = watch("tax_regime");
 
   useEffect(() => {
     if (autoFillData) {
@@ -154,7 +160,6 @@ const FormTDS = () => {
         employee_name: savedData.employee_name || autoFillData.fullName || "",
         employee_code:
           savedData.employee_code || autoFillData.employeeCode || "",
-
         address_line1: savedData.address_line1 || address.line1 || "",
         address_line2: savedData.address_line2 || address.line2 || "",
         landmark: savedData.landmark || address.landmark || "",
@@ -176,7 +181,7 @@ const FormTDS = () => {
         setSignaturePreview(
           `/uploads/signatures/${
             savedData.signature_path || autoFillData.signature
-          }`
+          }`,
         );
       }
     }
@@ -185,7 +190,6 @@ const FormTDS = () => {
   const isPreviewRef = React.useRef(false);
 
   const onFormSubmit = async (values) => {
-    // Disabled fields are excluded from 'values', so fetch them manually
     const allValues = {
       ...values,
       employee_name: getValues("employee_name"),
@@ -222,7 +226,6 @@ const FormTDS = () => {
       if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: "success" });
       } else {
-        // Navigate to Preview
         const savedData = autoFillData?.tdsData || {};
         navigate(`/forms/tds-form/preview/${targetId}`, {
           state: {
@@ -234,7 +237,7 @@ const FormTDS = () => {
             signaturePreview: signaturePreview,
             employeeId: targetId,
             isHR: false,
-            status: "DRAFT", // Still Draft
+            status: "DRAFT",
             fromPreviewSubmit: true,
           },
         });
@@ -245,7 +248,7 @@ const FormTDS = () => {
         `Failed to save form: ${
           error.response?.data?.message || error.message
         }`,
-        { type: "error" }
+        { type: "error" },
       );
     }
   };
@@ -261,7 +264,7 @@ const FormTDS = () => {
       signaturePreview={signaturePreview}
       isLocked={isLocked}
       onSubmit={handleSubmit(onFormSubmit, (e) =>
-        onValidationFail(e, showAlert)
+        onValidationFail(e, showAlert),
       )}
       actions={{
         isSubmitting,
@@ -271,7 +274,7 @@ const FormTDS = () => {
           handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
         },
         onSubmit: () => {
-          setValue("isDraft", true); // Save as draft first
+          setValue("isDraft", true);
           isPreviewRef.current = true;
           handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
         },
@@ -285,378 +288,25 @@ const FormTDS = () => {
         fieldName: "signature",
       }}
     >
-      {/* Content */}
+      <TaxRegimeSelection register={register} errors={errors} />
 
-      {/* Tax Regime */}
-      <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Select Tax Regime
-        </h2>
-        <div className="flex gap-8">
-          <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-lg shadow-sm border hover:border-blue-400 transition-colors w-full sm:w-auto">
-            <input
-              type="radio"
-              value="new"
-              {...register("tax_regime")}
-              className="w-5 h-5 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="font-medium text-gray-700">New Tax Regime</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-lg shadow-sm border hover:border-blue-400 transition-colors w-full sm:w-auto">
-            <input
-              type="radio"
-              value="old"
-              {...register("tax_regime")}
-              className="w-5 h-5 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="font-medium text-gray-700">Old Tax Regime</span>
-          </label>
-        </div>
-        {errors.tax_regime && (
-          <p className="text-red-500 text-sm mt-2">
-            {errors.tax_regime.message}
-          </p>
-        )}
-      </div>
+      <EducationLoanSection register={register} errors={errors} />
 
-      {/* Section 1: Education Loan */}
-      <FormSection title="1. Education Loan">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Education Loan Amount"
-            type="number"
-            register={register}
-            name="education_loan_amt"
-            error={errors.education_loan_amt}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Start Year (Loan Taken)"
-            placeholder="YYYY"
-            register={register}
-            name="education_loan_start_year"
-            error={errors.education_loan_start_year}
-          />
-          <FormInput
-            label={`Interest Payable (Apr-Mar)`}
-            type="number"
-            register={register}
-            name="education_interest"
-            error={errors.education_interest}
-            min={0}
-            max={9999999999}
-          />
-        </div>
-      </FormSection>
+      <HousingLoanSection register={register} errors={errors} />
 
-      {/* Section 2: Housing Loan */}
-      <FormSection title="2. Housing Loan">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Principal Amount Payable"
-            type="number"
-            register={register}
-            name="housing_loan_principal"
-            error={errors.housing_loan_principal}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Interest Amount Payable"
-            type="number"
-            register={register}
-            name="housing_loan_interest"
-            error={errors.housing_loan_interest}
-            min={0}
-            max={9999999999}
-          />
-        </div>
-      </FormSection>
+      <NPSSection register={register} errors={errors} />
 
-      {/* Section 3: NPS */}
-      <FormSection title="3. Contribution to National Pension Scheme (NPS)">
-        <FormInput
-          label="Amount"
-          type="number"
-          register={register}
-          name="nps_contribution"
-          className="max-w-xs"
-          error={errors.nps_contribution}
-          min={0}
-          max={9999999999}
-        />
-      </FormSection>
+      <HRASection
+        register={register}
+        errors={errors}
+        watchRelatedLandlord={watchRelatedLandlord}
+      />
 
-      {/* Section 4: HRA */}
-      <FormSection title="4. House Rent Allowance (HRA)">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Rent Per Month (Rs.)"
-            type="number"
-            register={register}
-            name="hra_rent_per_month"
-            error={errors.hra_rent_per_month}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="No. of Months"
-            type="number"
-            register={register}
-            name="hra_months"
-            error={errors.hra_months}
-            min={0}
-            max={9999999999}
-          />
-        </div>
-        <div className="mt-4 border-t pt-4">
-          <div className="flex gap-6 items-center flex-wrap">
-            <span className="text-sm font-medium text-gray-700">
-              Related to Landlord?
-            </span>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                value="yes"
-                {...register("hra_is_related_landlord")}
-              />{" "}
-              <span>Yes</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                value="no"
-                {...register("hra_is_related_landlord")}
-              />{" "}
-              <span>No</span>
-            </label>
-          </div>
-          {watchRelatedLandlord === "yes" && (
-            <div className="mt-4">
-              <FormInput
-                label="Relationship with Landlord"
-                register={register}
-                name="hra_landlord_relationship"
-                placeholder="e.g. Father/Mother"
-                error={errors.hra_landlord_relationship}
-              />
-              <p className="text-xs text-red-500 mt-1">
-                In case of Parents, Registered Agreement is compulsory.
-              </p>
-            </div>
-          )}
-        </div>
-      </FormSection>
+      <MedicalInsuranceSection register={register} errors={errors} />
 
-      {/* Section 5: Medical Insurance */}
-      <FormSection title="5. Medical Insurance Premium">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Contribution to Medical Insurance Premium"
-            type="number"
-            register={register}
-            name="medical_total_contribution"
-            error={errors.medical_total_contribution}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="For Self & Family"
-            type="number"
-            register={register}
-            name="medical_self_family"
-            error={errors.medical_self_family}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="For Parents"
-            type="number"
-            register={register}
-            name="medical_parents"
-            error={errors.medical_parents}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="For Senior Citizen Parents"
-            type="number"
-            register={register}
-            name="medical_senior_parents"
-            error={errors.medical_senior_parents}
-            min={0}
-            max={9999999999}
-          />
-        </div>
-      </FormSection>
+      <OtherInvestmentsSection register={register} errors={errors} />
 
-      {/* Section 6-15: Other Investments */}
-      <FormSection title="Other Investments">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Life Insurance Premium"
-            type="number"
-            register={register}
-            name="life_insurance_premium"
-            error={errors.life_insurance_premium}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Contribution to PPF"
-            type="number"
-            register={register}
-            name="ppf_contribution"
-            error={errors.ppf_contribution}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Contribution to SSY"
-            type="number"
-            register={register}
-            name="ssy_contribution"
-            error={errors.ssy_contribution}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Subscription to N.S.C."
-            type="number"
-            register={register}
-            name="nsc_subscription"
-            error={errors.nsc_subscription}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Subscription to ULIP"
-            type="number"
-            register={register}
-            name="united_link_subsciption"
-            error={errors.united_link_subsciption}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="IDBI / ICICI Bonds"
-            type="number"
-            register={register}
-            name="banks_bonds"
-            error={errors.banks_bonds}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Fixed Deposit (> 5 Years)"
-            type="number"
-            register={register}
-            name="fd_bank"
-            error={errors.fd_bank}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Tuition Fees (Children)"
-            type="number"
-            register={register}
-            name="children_tuition_fees"
-            error={errors.children_tuition_fees}
-            min={0}
-            max={9999999999}
-          />
-          <FormInput
-            label="Mutual Fund ELSS"
-            type="number"
-            register={register}
-            name="mf_investment"
-            error={errors.mf_investment}
-            min={0}
-            max={9999999999}
-          />
-        </div>
-        <div className="mt-6 border-t pt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Any other allowable investment
-          </label>
-          <div className="flex gap-4">
-            <div className="grow">
-              <FormInput
-                register={register}
-                name="other_investment_details"
-                placeholder="Mention Details"
-                error={errors.other_investment_details}
-              />
-            </div>
-            <div className="w-32">
-              <FormInput
-                type="number"
-                register={register}
-                name="other_investment_amt"
-                placeholder="Amount"
-                error={errors.other_investment_amt}
-                min={0}
-                max={9999999999}
-              />
-            </div>
-          </div>
-        </div>
-      </FormSection>
-
-      {/* Declaration Text */}
-      <div className="p-4 bg-gray-50 rounded text-sm text-justify">
-        <p className="mb-2">
-          I declare that I will contribute to the above tax saving schemes
-          during the F.Y. {watch("financial_year") || "2024-25"}. The same may
-          be taken for my Income Tax computation for TDS purpose.
-        </p>
-      </div>
-
-      {/* Confirm Details Section */}
-      <FormSection title="Employee Declaration">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Name"
-            register={register}
-            name="employee_name"
-            disabled
-            error={errors.employee_name}
-          />
-          <FormInput
-            label="Designation"
-            register={register}
-            name="job_title"
-            disabled
-            error={errors.job_title}
-          />
-          <div className="md:col-span-2">
-            <FormInput
-              label="Residence Address"
-              register={register}
-              name="address_line1"
-              disabled
-              error={errors.address_line1}
-            />
-          </div>
-          <FormInput
-            label="PAN No."
-            register={register}
-            name="pan_no"
-            disabled
-            error={errors.pan_no}
-          />
-          <FormInput
-            label="Contact No."
-            register={register}
-            name="contact_no"
-            disabled
-            error={errors.contact_no}
-          />
-        </div>
-      </FormSection>
-
-      {/* Signature moved to Layout Footer */}
+      <EmployeeDeclaration register={register} errors={errors} watch={watch} />
     </FormLayout>
   );
 };
