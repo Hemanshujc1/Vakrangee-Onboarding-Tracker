@@ -4,7 +4,7 @@ import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 
-const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
+const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -24,7 +24,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
 
   const [managers, setManagers] = useState([]);
   const [sendingEmail, setSendingEmail] = useState(false);
-  
+
   useEffect(() => {
     if (isOpen) {
       fetchManagers();
@@ -34,7 +34,9 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
   const fetchManagers = async () => {
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      const token = userInfo
+        ? JSON.parse(userInfo).token
+        : localStorage.getItem("token");
       if (!token) {
         console.error("No authentication token found");
         return;
@@ -42,11 +44,17 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const { data } = await axios.get("/api/employees", config);
-      
-      const adminRoles = ['HR_ADMIN', 'HR_SUPER_ADMIN'];
-      const filteredManagers = data.filter(emp => adminRoles.includes(emp.role) && emp.accountStatus?.toUpperCase() === 'ACTIVE');
-      
-      const sortedManagers = filteredManagers.sort((a, b) => a.firstName.localeCompare(b.firstName));
+
+      const adminRoles = ["HR_ADMIN", "HR_SUPER_ADMIN"];
+      const filteredManagers = data.filter(
+        (emp) =>
+          adminRoles.includes(emp.role) &&
+          emp.accountStatus?.toUpperCase() === "ACTIVE",
+      );
+
+      const sortedManagers = filteredManagers.sort((a, b) =>
+        a.firstName.localeCompare(b.firstName),
+      );
       setManagers(sortedManagers);
     } catch (error) {
       console.error("Error fetching managers:", error);
@@ -63,23 +71,25 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     let hrName = "";
     let hrDesignation = "";
     if (formData.managerId) {
-        // Use userId for comparison as the value is now userId
-        const selectedManager = managers.find(m => m.userId === parseInt(formData.managerId));
-        if (selectedManager) {
-            hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
-            hrDesignation = selectedManager.role;
-        }
+      // Use userId for comparison as the value is now userId
+      const selectedManager = managers.find(
+        (m) => m.userId === parseInt(formData.managerId),
+      );
+      if (selectedManager) {
+        hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
+        hrDesignation = selectedManager.role;
+      }
     }
 
     onAdd({
-        ...formData,
-        hrName,
-        hrDesignation,
-        onboarding_hr_id: formData.managerId // This will now be the User ID
+      ...formData,
+      hrName,
+      hrDesignation,
+      onboarding_hr_id: formData.managerId, // This will now be the User ID
     });
 
     setFormData({
@@ -101,56 +111,73 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
 
   const handleSendEmail = async () => {
     if (!formData.email || !formData.firstName || !formData.password) {
-      await showAlert("Please fill in First Name, Email and Password before sending Letter of Selection email.", { type: 'warning' });
+      await showAlert(
+        "Please fill in First Name, Email and Password before sending Letter of Selection email.",
+        { type: "warning" },
+      );
       return;
     }
 
     setSendingEmail(true);
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      const token = userInfo
+        ? JSON.parse(userInfo).token
+        : localStorage.getItem("token");
       if (!token) {
-        await showAlert("Authentication token missing. Please login again.", { type: 'error' });
+        await showAlert("Authentication token missing. Please login again.", {
+          type: "error",
+        });
         setSendingEmail(false);
         return;
       }
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      
+
       let hrName = "";
       let hrDesignation = "";
       if (formData.managerId) {
-          // Use userId for comparison
-          const selectedManager = managers.find(m => m.userId === parseInt(formData.managerId));
-          if (selectedManager) {
-              hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
-              hrDesignation = selectedManager.jobTitle; 
-          }
+        // Use userId for comparison
+        const selectedManager = managers.find(
+          (m) => m.userId === parseInt(formData.managerId),
+        );
+        if (selectedManager) {
+          hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
+          hrDesignation = selectedManager.jobTitle;
+        }
       }
 
-      await axios.post("/api/email/send-welcome", {
-        email: formData.email,
-        firstName: formData.firstName,
-        password: formData.password,
-        jobTitle: formData.jobTitle,
-        startDate: formData.startDate,
-        location: formData.location || 'Mumbai',
-        hrName: hrName,
-        hrDesignation: hrDesignation,
-        cc: formData.cc
-      }, config);
+      await axios.post(
+        "/api/email/send-welcome",
+        {
+          email: formData.email,
+          firstName: formData.firstName,
+          password: formData.password,
+          jobTitle: formData.jobTitle,
+          startDate: formData.startDate,
+          location: formData.location || "Mumbai",
+          hrName: hrName,
+          hrDesignation: hrDesignation,
+          cc: formData.cc,
+        },
+        config,
+      );
 
-      await showAlert("Letter of Selection email sent successfully!", { type: 'success' });
+      await showAlert("Letter of Selection email sent successfully!", {
+        type: "success",
+      });
     } catch (error) {
       console.error("Error sending email:", error);
-      await showAlert(error.response?.data?.message || "Failed to send Letter of Selection email.", { type: 'error' });
+      await showAlert(
+        error.response?.data?.message ||
+          "Failed to send Letter of Selection email.",
+        { type: "error" },
+      );
     } finally {
       setSendingEmail(false);
     }
   };
 
   if (!isOpen) return null;
-
-  const isAdminType = type === 'admin';
 
   return (
     <AnimatePresence>
@@ -163,7 +190,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
         >
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-blue-600" /> {isAdminType ? 'Add New Admin' : 'Add New Employee'}
+              <UserPlus className="w-5 h-5 text-blue-600" /> Add New Employee
             </h2>
             <button
               onClick={onClose}
@@ -234,8 +261,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
                 />
               </div>
             </div>
-            
-
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -266,26 +291,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
                   placeholder="Software Engineer"
                 />
               </div>
-              {isAdminType ? (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role
-                    </label>
-                    <select
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all bg-white"
-                        required
-                    >
-                        <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
-                        <option value="hr-admin">HR Admin</option>
-                        <option value="manager-admin">Manager Admin</option>
-                        <option value="it-admin">IT Admin</option>
-                    </select>
-                  </div>
-              ) : null} 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -318,47 +323,44 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, type = 'employee' }) => {
               </div>
             </div>
 
-            {!isAdminType && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    HR Name
-                  </label>
-                  <select
-                    name="managerId"
-                    value={formData.managerId}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all bg-white"
-                    required
-                  >
-                    <option value="">Select HR</option>
-                    {managers.map((manager) => (
-                      <option key={manager.id} value={manager.userId}>
-                        {manager.firstName} {manager.lastName} ({manager.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                HR Name
+              </label>
+              <select
+                name="managerId"
+                value={formData.managerId}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all bg-white"
+                required
+              >
+                <option value="">Select HR</option>
+                {managers.map((manager) => (
+                  <option key={manager.id} value={manager.userId}>
+                    {manager.firstName} {manager.lastName} ({manager.role})
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
               <button
-                 type="button"
-                 onClick={handleSendEmail}
-                 disabled={sendingEmail}
-                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                type="button"
+                onClick={handleSendEmail}
+                disabled={sendingEmail}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
-                  <Mail className="w-4 h-4" />
-                  {sendingEmail ? "Sending..." : "Send Email"}
+                <Mail className="w-4 h-4" />
+                {sendingEmail ? "Sending..." : "Send Email"}
               </button>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-             
                 <button
                   type="submit"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
                 >
                   <Plus className="w-4 h-4" />
-                  {isAdminType ? 'Add Admin' : 'Add Employee'}
+                  Add Employee
                 </button>
                 <button
                   type="button"

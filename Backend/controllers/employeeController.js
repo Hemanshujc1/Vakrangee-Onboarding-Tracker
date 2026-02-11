@@ -33,7 +33,7 @@ exports.getAllEmployees = async (req, res) => {
       include: [
         {
           model: EmployeeMaster,
-          attributes: ["onboarding_stage"],
+          attributes: ["onboarding_stage", "account_status"],
         },
       ],
     });
@@ -56,10 +56,12 @@ exports.getAllEmployees = async (req, res) => {
         adminStats[record.onboarding_hr_id].assigned += 1;
 
         const stage = record.EmployeeMaster?.onboarding_stage;
-        if (stage === "ONBOARDED" || stage === "POST_JOINING") {
+        const status = record.EmployeeMaster?.account_status;
+
+        if (status === "Inactive") {
+             adminStats[record.onboarding_hr_id].notJoined += 1;
+        } else if (stage === "ONBOARDED" || stage === "POST_JOINING") {
           adminStats[record.onboarding_hr_id].onboarded += 1;
-        } else if (stage === "Not_joined") {
-          adminStats[record.onboarding_hr_id].notJoined += 1;
         }
       }
     });
@@ -409,23 +411,31 @@ exports.getEmployeeById = async (req, res) => {
             "onboarding_stage",
             "first_login_at",
             "last_login_at",
+            "account_status"
           ],
         },
       ],
     });
 
-    const activeCount = assignedRecords.filter((r) =>
-      ["PRE_JOINING_VERIFIED", "POST_JOINING"].includes(
-        r.EmployeeMaster?.onboarding_stage,
-      ),
-    ).length;
+    const activeCount = assignedRecords.filter((r) => {
+      const master = r.EmployeeMaster;
+      if (!master || master.account_status === 'Inactive') return false; // Exclude Inactive
+
+      const stage = master.onboarding_stage;
+      // Check if employee has never logged in (login_pending) or is in active onboarding stages
+      const hasNotLoggedIn = !master.first_login_at;
+      return (
+        hasNotLoggedIn ||
+        ["BASIC_INFO", "PRE_JOINING", "PRE_JOINING_VERIFIED", "POST_JOINING"].includes(stage)
+      );
+    }).length;
 
     const completedCount = assignedRecords.filter(
-      (r) => r.EmployeeMaster?.onboarding_stage === "ONBOARDED",
+      (r) => r.EmployeeMaster?.onboarding_stage === "ONBOARDED" && r.EmployeeMaster?.account_status !== 'Inactive',
     ).length;
 
     const notJoinedCount = assignedRecords.filter(
-      (r) => r.EmployeeMaster?.onboarding_stage === "Not_joined",
+      (r) => r.EmployeeMaster?.account_status === 'Inactive',
     ).length;
 
     // Fetch the list of assigned employees for the details view
@@ -445,6 +455,7 @@ exports.getEmployeeById = async (req, res) => {
       stage: r.EmployeeMaster?.onboarding_stage,
       firstLoginAt: r.EmployeeMaster?.first_login_at,
       lastLoginAt: r.EmployeeMaster?.last_login_at,
+      accountStatus: r.EmployeeMaster?.account_status, // Add accountStatus
       assignedDate: r.onboarding_hr_assigned_at,
     }));
 
@@ -618,17 +629,12 @@ exports.updateEmployeeDetails = async (req, res) => {
     if (accountStatus !== undefined) {
         employee.account_status = accountStatus;
         
-        // If reactivating, clear deletion flags
-        if (['ACTIVE', 'INVITED'].includes(accountStatus)) {
-             employee.is_deleted = false;
-             employee.deleted_at = null;
-             employee.deleted_by = null;
-
-             // If stage was cleared to Not_joined, reset to safe start
-             if (employee.onboarding_stage === 'Not_joined') {
-                 employee.onboarding_stage = 'BASIC_INFO';
+             // If reactivating, clear deletion flags
+             if (['ACTIVE', 'INVITED'].includes(accountStatus)) {
+                  employee.is_deleted = false;
+                  employee.deleted_at = null;
+                  employee.deleted_by = null;
              }
-        }
         masterChanged = true;
     }
     if (onboarding_stage !== undefined) {
@@ -811,7 +817,6 @@ exports.deleteEmployee = async (req, res) => {
 
     // Perform Soft Delete
     employee.account_status = "Inactive";
-    employee.onboarding_stage = "Not_joined";
     employee.is_deleted = true;
     employee.deleted_at = new Date();
     employee.deleted_by = requestingAdminId;

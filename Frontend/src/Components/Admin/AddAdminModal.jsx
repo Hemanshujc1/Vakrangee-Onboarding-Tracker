@@ -11,12 +11,12 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     lastName: "",
     email: "",
     cc: "",
-    phone: null,   // Default to null
+    phone: null,
     role: "HR_ADMIN",
     department: "HR",
     jobTitle: "",
     location: "",
-    startDate: null, // Default to null
+    startDate: null,
     password: "admin@123",
   });
 
@@ -52,73 +52,90 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
 
   useEffect(() => {
     if (isOpen) {
-        fetchCurrentUserDetails();
+      fetchCurrentUserDetails();
     }
   }, [isOpen]);
 
   const fetchCurrentUserDetails = async () => {
     try {
-        let token = null;
-        let user = null;
+      let token = null;
+      let user = null;
 
-        const userInfo = localStorage.getItem("userInfo");
-        const storedUser = localStorage.getItem("user");
-        const storedToken = localStorage.getItem("token");
+      const userInfo = localStorage.getItem("userInfo");
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("token");
 
-        if (userInfo) {
-            const parsed = JSON.parse(userInfo);
-            token = parsed.token;
-            user = parsed.user;
-        } else if (storedUser && storedToken) {
-            token = storedToken;
-            user = JSON.parse(storedUser);
-        }
-        
-        if (!token || !user || !user.employeeId) {
-            console.error("Missing user info or employeeId", { user });
-            return;
-        }
+      if (userInfo) {
+        const parsed = JSON.parse(userInfo);
+        token = parsed.token;
+        user = parsed.user;
+      } else if (storedUser && storedToken) {
+        token = storedToken;
+        user = JSON.parse(storedUser);
+      }
 
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const { data } = await axios.get(`/api/employees/${user.employeeId}`, config);
-        
-        if (data) {
-            setHrDetails({
-                name: `${data.firstName} ${data.lastName}`,
-                designation: data.jobTitle || data.role || "HR Admin"
-            });
-        }
+      if (!token || !user || !user.employeeId) {
+        console.error("Missing user info or employeeId", { user });
+        return;
+      }
+
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const { data } = await axios.get(
+        `/api/employees/${user.employeeId}`,
+        config,
+      );
+
+      if (data) {
+        setHrDetails({
+          name: `${data.firstName} ${data.lastName}`,
+          designation: data.jobTitle || data.role || "HR Admin",
+        });
+      }
     } catch (error) {
-        console.error("Error fetching current user details:", error);
+      console.error("Error fetching current user details:", error);
     }
   };
 
   const handleSendEmail = async () => {
     if (!formData.email || !formData.firstName) {
-      await showAlert("Please fill in First Name and Email before sending Admin welcome email.", { type: 'warning' });
+      await showAlert(
+        "Please fill in First Name and Email before sending Admin welcome email.",
+        { type: "warning" },
+      );
       return;
     }
 
     setSendingEmail(true);
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      const token = userInfo
+        ? JSON.parse(userInfo).token
+        : localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      await axios.post("/api/email/send-admin-welcome", {
-        email: formData.email,
-        firstName: formData.firstName,
-        password: formData.password,
-        cc: formData.cc,
-        portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
-        hrName: hrDetails.name,
-        hrDesignation: hrDetails.designation
-      }, config);
 
-      await showAlert("Admin welcome email sent successfully!", { type: 'success' });
+      await axios.post(
+        "/api/email/send-admin-welcome",
+        {
+          email: formData.email,
+          firstName: formData.firstName,
+          password: formData.password,
+          cc: formData.cc,
+          portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
+          hrName: hrDetails.name,
+          hrDesignation: hrDetails.designation,
+        },
+        config,
+      );
+
+      await showAlert("Admin welcome email sent successfully!", {
+        type: "success",
+      });
     } catch (error) {
       console.error("Error sending email:", error);
-      await showAlert(error.response?.data?.message || "Failed to send Admin Welocome email.", { type: 'error' });
+      await showAlert(
+        error.response?.data?.message || "Failed to send Admin Welocome email.",
+        { type: "error" },
+      );
     } finally {
       setSendingEmail(false);
     }
@@ -194,7 +211,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   placeholder="admin@vakrangee.in"
                 />
               </div>
-               <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department
                 </label>
@@ -210,8 +227,8 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
             </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   CC (Optional)
                 </label>
@@ -224,7 +241,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   placeholder="hr@vakrangee.in"
                 />
               </div>
-               <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Job Title
                 </label>
@@ -239,34 +256,32 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
             </div>
 
-             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="Mumbai"
-                />
-              </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                placeholder="Mumbai"
+              />
+            </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
               <button
-                 type="button"
-                 onClick={handleSendEmail}
-                 disabled={sendingEmail}
-                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                type="button"
+                onClick={handleSendEmail}
+                disabled={sendingEmail}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
-                  <Mail className="w-4 h-4" />
-                  {sendingEmail ? "Sending..." : "Send Email"}
+                <Mail className="w-4 h-4" />
+                {sendingEmail ? "Sending..." : "Send Email"}
               </button>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-               
                 <button
                   type="submit"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"

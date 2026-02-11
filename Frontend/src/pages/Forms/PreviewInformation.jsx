@@ -29,7 +29,7 @@ const PreviewInformation = () => {
   // Variables for PreviewActions
   const status = autoFillData?.employeeInfoStatus || "PENDING";
   const rejectionReason = autoFillData?.employeeInfoRejectionReason;
-  const isHR = ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+  const isHR = ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
 
   if (loading)
     return <div className="p-10 text-center">Loading Preview...</div>;

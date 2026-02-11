@@ -48,8 +48,8 @@ const ManageAdmins = () => {
 
       const { data } = await axios.get("/api/employees", config);
 
-      const strictAdmins = data.filter(
-        (emp) => ["HR_ADMIN", "HR_SUPER_ADMIN", "ADMIN"].includes(emp.role) //
+      const strictAdmins = data.filter((emp) =>
+        ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(emp.role),
       );
 
       setAdmins(strictAdmins);
@@ -96,7 +96,7 @@ const ManageAdmins = () => {
   const handleActivateAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to activate this admin?",
-      { type: "info" }
+      { type: "info" },
     );
     if (!isConfirmed) return;
 
@@ -107,15 +107,18 @@ const ManageAdmins = () => {
         : localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
+      const hasLoggedIn =
+        admins.find((a) => a.id === id)?.firstLoginAt ||
+        admins.find((a) => a.id === id)?.lastLoginAt;
+      const newStatus = hasLoggedIn ? "ACTIVE" : "INVITED";
+
       await axios.put(
         `/api/employees/${id}`,
         {
-          accountStatus: "INVITED",
-          onboarding_stage: "BASIC_INFO",
-          firstLoginAt: null,
-          lastLoginAt: null,
+          accountStatus: newStatus,
+          // Do NOT reset firstLoginAt/lastLoginAt if they exist
         },
-        config
+        config,
       );
 
       // Optimistic update
@@ -124,14 +127,11 @@ const ManageAdmins = () => {
           admin.id === id
             ? {
                 ...admin,
-                accountStatus: "INVITED",
-                onboarding_stage: "BASIC_INFO",
-                firstLoginAt: null,
-                lastLoginAt: null,
-
+                accountStatus: newStatus,
+                // Maintain existing dates locally too
               }
-            : admin
-        )
+            : admin,
+        ),
       );
 
       await showAlert("Admin activated successfully!", { type: "success" });
@@ -144,7 +144,7 @@ const ManageAdmins = () => {
   const handleDeleteAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to deactivate this admin?",
-      { type: "warning" }
+      { type: "warning" },
     );
     if (!isConfirmed) return;
 
@@ -157,7 +157,7 @@ const ManageAdmins = () => {
       if (!token) {
         await showAlert(
           "Authentication error: No token found. Please login again.",
-          { type: "error" }
+          { type: "error" },
         );
         return;
       }
@@ -169,8 +169,8 @@ const ManageAdmins = () => {
       // Optimistic update
       setAdmins((prev) =>
         prev.map((admin) =>
-          admin.id === id ? { ...admin, accountStatus: "Inactive" } : admin
-        )
+          admin.id === id ? { ...admin, accountStatus: "Inactive" } : admin,
+        ),
       );
 
       await showAlert("Admin deactivated successfully", { type: "success" });
@@ -245,7 +245,7 @@ const ManageAdmins = () => {
   const totalItems = filteredAdmins.length;
   const currentAdmins = filteredAdmins.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   return (
@@ -323,7 +323,6 @@ const ManageAdmins = () => {
             className="flex items-center gap-2 text-gray-700 font-medium border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 w-fit sm:w-auto justify-center transition-colors"
           >
             <Filter size={18} />
-            {/* <span>Filters</span> */}
           </button>
         </div>
 
@@ -419,8 +418,8 @@ const ManageAdmins = () => {
                                 admin.accountStatus === "Inactive"
                                   ? "bg-red-100 text-red-800"
                                   : admin.accountStatus === "ACTIVE"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {admin.accountStatus || "ACTIVE"}
@@ -526,8 +525,6 @@ const ManageAdmins = () => {
           assignedCount: "Assigned Count",
           notJoinedCount: "Not Joined Count",
           accountStatus: "Status",
-
-          // role: "Role"
         }}
       />
     </DashboardLayout>

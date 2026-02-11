@@ -33,8 +33,7 @@ const PreviewEPF = () => {
           const user = JSON.parse(userStr);
           if (
             user.role === "HR_ADMIN" ||
-            user.role === "HR_SUPER_ADMIN" ||
-            user.role === "admin"
+            user.role === "HR_SUPER_ADMIN"
           ) {
             setIsHR(true);
           }

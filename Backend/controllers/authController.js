@@ -118,10 +118,7 @@ exports.login = async (req, res) => {
     }
 
     // Check Access Control
-    if (employeeRecord.onboarding_stage === 'Not_joined') {
-        logger.warn(`Login failed: User ${username} no longer has access (Not_joined).`);
-        return res.status(403).json({ message: 'You no longer have access. Please contact HR.' });
-    }
+
 
     if (employeeRecord.account_status === 'Inactive' || employeeRecord.is_deleted) {
         logger.warn(`Login failed: User ${username} account is inactive or deleted.`);

@@ -16,8 +16,8 @@ const ManageEmployees = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const employeeListProps = useEmployeeList({
-      filterPredicate: (emp) => emp.role === "EMPLOYEE",
-      itemsPerPage: 5
+    filterPredicate: (emp) => emp.role === "EMPLOYEE",
+    itemsPerPage: 5,
   });
 
   const { fetchEmployees, employees, options } = employeeListProps;
@@ -25,7 +25,9 @@ const ManageEmployees = () => {
   const handleAddEmployee = async (formData) => {
     try {
       const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo ? JSON.parse(userInfo).token : localStorage.getItem("token");
+      const token = userInfo
+        ? JSON.parse(userInfo).token
+        : localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const payload = {
@@ -43,13 +45,16 @@ const ManageEmployees = () => {
       };
 
       await axios.post("/api/auth/register", payload, config);
-      await showAlert("Employee added successfully!", { type: 'success' });
+      await showAlert("Employee added successfully!", { type: "success" });
 
       setIsModalOpen(false);
       fetchEmployees(); // Refresh employee list after adding
     } catch (error) {
       console.error("Error adding employee:", error);
-      await showAlert(error.response?.data?.message || "Failed to add employee.", { type: 'error' });
+      await showAlert(
+        error.response?.data?.message || "Failed to add employee.",
+        { type: "error" },
+      );
     }
   };
 
@@ -80,13 +85,12 @@ const ManageEmployees = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddEmployee}
-        type="employee"
       />
 
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        data={employees.map((emp) => ({ 
+        data={employees.map((emp) => ({
           ...emp,
           status: getEmployeeStatus(emp),
         }))}

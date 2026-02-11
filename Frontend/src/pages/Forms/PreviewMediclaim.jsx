@@ -33,7 +33,7 @@ const PreviewMediclaim = () => {
     useAutoFill(targetId);
 
   const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.mediclaimStatus;
 
   // 3. Derive form data: prefer state (for unsaved changes), fallback to backend

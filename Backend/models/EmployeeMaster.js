@@ -29,8 +29,7 @@ const EmployeeMaster = sequelize.define(
         "PRE_JOINING",
         "PRE_JOINING_VERIFIED",
         "POST_JOINING",
-        "ONBOARDED",
-        "Not_joined"
+        "ONBOARDED"
       ),
       defaultValue: "BASIC_INFO",
     },

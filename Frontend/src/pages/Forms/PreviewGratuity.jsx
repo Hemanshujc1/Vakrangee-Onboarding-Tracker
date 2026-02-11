@@ -25,7 +25,7 @@ const PreviewGratuity = () => {
 
   const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
   const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
 
   const { data: autoFillData, loading: autoFillLoading } =
     useAutoFill(targetId);

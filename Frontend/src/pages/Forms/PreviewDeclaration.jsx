@@ -32,7 +32,7 @@ const PreviewDeclaration = () => {
     useAutoFill(targetId);
 
   const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.declarationStatus;
   const data = stateData || autoFillData?.declarationData;
 

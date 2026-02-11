@@ -1,5 +1,5 @@
 export const getEmployeeStatus = (emp) => {
-    if (emp.onboarding_stage === 'Not_joined') return "Not Joined";
+    if (emp.accountStatus === 'Inactive') return "Not Joined";
     if (!emp.firstLoginAt && !emp.lastLoginAt) return "Login Pending";
     switch (emp.onboarding_stage) {
         case 'BASIC_INFO': return "Profile Pending";

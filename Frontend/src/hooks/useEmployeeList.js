@@ -69,25 +69,25 @@ const useEmployeeList = ({
     const isConfirmed = await showConfirm(`Are you sure you want to activate ${emp.firstName} ${emp.lastName}?`, { type: 'info' });
     if(!isConfirmed) return;
 
+    // Check for previous login activity
+    const hasLoggedIn = emp.firstLoginAt || emp.lastLoginAt;
+    const newStatus = hasLoggedIn ? "ACTIVE" : "INVITED";
+
     try {
         const token = localStorage.getItem("token");
         const config = { headers: { Authorization: `Bearer ${token}` } };
         
         await axios.put(`/api/employees/${emp.id}`, { 
-           accountStatus: "INVITED", 
-           onboarding_stage: "BASIC_INFO",
-           firstLoginAt: null,
-           lastLoginAt: null
+           accountStatus: newStatus,
+           // Do NOT reset firstLoginAt/lastLoginAt
          }, config);
 
         // Optimistic update
         setEmployees(prev => prev.map(p => 
            p.id === emp.id ? { 
                ...p, 
-               accountStatus: "INVITED", 
-               onboarding_stage: "BASIC_INFO",
-               firstLoginAt: null,
-               lastLoginAt: null
+               accountStatus: newStatus,
+               // Maintain existing dates
            } : p
         ));
         await showAlert("Employee activated successfully!", { type: 'success' });
@@ -107,7 +107,7 @@ const useEmployeeList = ({
             
             // Optimistic update
             setEmployees(prev => prev.map(p => 
-                p.id === emp.id ? { ...p, onboarding_stage: 'Not_joined', accountStatus: 'Inactive' } : p
+                p.id === emp.id ? { ...p, accountStatus: 'Inactive' } : p
             ));
             await showAlert("Employee removed successfully.", { type: 'success' });
         } catch (err) {

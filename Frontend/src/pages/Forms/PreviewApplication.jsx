@@ -27,7 +27,7 @@ const PreviewApplication = () => {
   const { employeeId } = useParams();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const targetId = stateEmployeeId || employeeId || user.employeeId;
-  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
 
   // 2. Fetch backend data (fallback/robustness)
   const { data: autoFillData, loading, error } = useAutoFill(targetId);

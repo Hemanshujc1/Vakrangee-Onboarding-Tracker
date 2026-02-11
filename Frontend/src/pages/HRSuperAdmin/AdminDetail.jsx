@@ -134,9 +134,7 @@ const AdminDetail = () => {
     let matchesStatus = true;
     if (filterStatus) {
       if (filterStatus === "Not Joined") {
-        matchesStatus =
-          emp.onboarding_stage === "Not_joined" ||
-          emp.accountStatus === "Inactive";
+        matchesStatus = emp.accountStatus === "Inactive";
       } else {
         const currentStatus = getEmployeeStatus(emp);
         matchesStatus = currentStatus === filterStatus;
@@ -155,10 +153,8 @@ const AdminDetail = () => {
   // Sorting
   filteredEmployees.sort((a, b) => {
     // 1. Primary Sort: "Not Joined" / Inactive always at bottom
-    const isNotJoinedA =
-      a.onboarding_stage === "Not_joined" || a.accountStatus === "Inactive";
-    const isNotJoinedB =
-      b.onboarding_stage === "Not_joined" || b.accountStatus === "Inactive";
+    const isNotJoinedA = a.accountStatus === "Inactive";
+    const isNotJoinedB = b.accountStatus === "Inactive";
 
     if (isNotJoinedA && !isNotJoinedB) return 1;
     if (!isNotJoinedA && isNotJoinedB) return -1;
@@ -195,8 +191,8 @@ const AdminDetail = () => {
                 admin.accountStatus === "Inactive"
                   ? "bg-red-50 text-red-600 border-red-500"
                   : admin.accountStatus === "INVITED"
-                  ? "bg-yellow-50 text-yellow-600 border-yellow-500"
-                  : "bg-green-50 text-green-600 border-green-500"
+                    ? "bg-yellow-50 text-yellow-600 border-yellow-500"
+                    : "bg-green-50 text-green-600 border-green-500"
               }`}
             >
               {admin.accountStatus || "ACTIVE"}
@@ -360,7 +356,9 @@ const AdminDetail = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium text-sm">Assigned Employees</h3>
+              <h3 className="text-gray-500 font-medium text-sm">
+                Assigned Employees
+              </h3>
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                 <Users size={20} />
               </div>
@@ -371,7 +369,9 @@ const AdminDetail = () => {
           </div>
           <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium text-sm">Onboarding Active</h3>
+              <h3 className="text-gray-500 font-medium text-sm">
+                Onboarding Active
+              </h3>
               <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
                 <Clock size={20} />
               </div>
@@ -382,7 +382,9 @@ const AdminDetail = () => {
           </div>
           <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-500 font-medium text-sm">Fully Onboarded</h3>
+              <h3 className="text-gray-500 font-medium text-sm">
+                Fully Onboarded
+              </h3>
               <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                 <CheckCircle size={20} />
               </div>
@@ -419,7 +421,7 @@ const AdminDetail = () => {
               setFilterJobTitle("");
               setFilterLocation("");
               setFilterStatus("");
-            setSearchTerm("");
+              setSearchTerm("");
               setSortConfig({ key: null, direction: "asc" });
             },
           }}
@@ -483,9 +485,13 @@ const AdminDetail = () => {
             onActivate={async (emp) => {
               const isConfirmed = await showConfirm(
                 `Are you sure you want to activate ${emp.firstName} ${emp.lastName}?`,
-                { type: "info" }
+                { type: "info" },
               );
               if (!isConfirmed) return;
+
+              // Check if employee has previously logged in
+              const hasLoggedIn = emp.firstLoginAt || emp.lastLoginAt;
+              const newStatus = hasLoggedIn ? "ACTIVE" : "INVITED";
 
               try {
                 const token = localStorage.getItem("token");
@@ -496,12 +502,10 @@ const AdminDetail = () => {
                 await axios.put(
                   `/api/employees/${emp.id}`,
                   {
-                    accountStatus: "INVITED",
-                    onboarding_stage: "BASIC_INFO",
-                    firstLoginAt: null,
-                    lastLoginAt: null,
+                    accountStatus: newStatus,
+                    // Do NOT reset firstLoginAt/lastLoginAt if they exist
                   },
-                  config
+                  config,
                 );
 
                 // Optimistic update
@@ -511,13 +515,23 @@ const AdminDetail = () => {
                     p.id === emp.id
                       ? {
                           ...p,
-                          accountStatus: "INVITED",
-                          onboarding_stage: "BASIC_INFO",
-                          firstLoginAt: null,
-                          lastLoginAt: null,
+                          accountStatus: newStatus,
+                          // Maintain existing dates locally too
                         }
-                      : p
+                      : p,
                   ),
+                  stats: {
+                    ...prev.stats,
+                    notJoined: Math.max(0, (prev.stats?.notJoined || 0) - 1),
+                    completed:
+                      emp.onboarding_stage === "COMPLETED"
+                        ? (prev.stats?.completed || 0) + 1
+                        : prev.stats?.completed || 0,
+                    activeOnboarding:
+                      emp.onboarding_stage !== "COMPLETED"
+                        ? (prev.stats?.activeOnboarding || 0) + 1
+                        : prev.stats?.activeOnboarding || 0,
+                  },
                 }));
                 await showAlert("Employee activated successfully!", {
                   type: "success",
@@ -532,7 +546,7 @@ const AdminDetail = () => {
             onDelete={async (emp) => {
               const isConfirmed = await showConfirm(
                 `Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`,
-                { type: "warning" }
+                { type: "warning" },
               );
               if (isConfirmed) {
                 try {
@@ -549,15 +563,21 @@ const AdminDetail = () => {
                       p.id === emp.id
                         ? {
                             ...p,
-                            onboarding_stage: "Not_joined",
                             accountStatus: "Inactive",
                           }
-                        : p
+                        : p,
                     ),
-                    // Also update stats nicely if possible
                     stats: {
                       ...prev.stats,
-                      notJoined: prev.stats.notJoined + 1,
+                      notJoined: (prev.stats?.notJoined || 0) + 1,
+                      completed:
+                        emp.onboarding_stage === "COMPLETED"
+                          ? Math.max(0, (prev.stats?.completed || 0) - 1)
+                          : prev.stats?.completed || 0,
+                      activeOnboarding:
+                        emp.onboarding_stage !== "COMPLETED"
+                          ? Math.max(0, (prev.stats?.activeOnboarding || 0) - 1)
+                          : prev.stats?.activeOnboarding || 0,
                     },
                   }));
                   await showAlert("Employee removed successfully.", {

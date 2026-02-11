@@ -26,7 +26,7 @@ const PreviewNDA = () => {
     useAutoFill(targetId);
 
   const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN", "admin"].includes(user.role);
+    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.ndaStatus;
   const data = stateData || autoFillData?.ndaData;
   const [actionLoading, setActionLoading] = useState(false);
