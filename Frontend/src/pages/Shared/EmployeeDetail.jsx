@@ -109,10 +109,10 @@ const EmployeeDetail = () => {
 
       await fetchEmployeeDetails();
       setIsEditing(false);
-      await showAlert("Details updated successfully!", { type: 'success' });
+      await showAlert("Details updated successfully!", { type: "success" });
     } catch (error) {
       console.error("Error updating details:", error);
-      await showAlert("Failed to update details.", { type: 'error' });
+      await showAlert("Failed to update details.", { type: "error" });
     } finally {
       setActionLoading(false);
     }
@@ -120,19 +120,25 @@ const EmployeeDetail = () => {
 
   const handleVerificationAction = async (status, reason = null) => {
     const isConfirmed = await showConfirm(
-        `Are you sure you want to ${status === "VERIFIED" ? "verify" : "reject"} this profile?`, 
-        { type: status === "VERIFIED" ? "info" : "warning" }
+      `Are you sure you want to ${
+        status === "VERIFIED" ? "verify" : "reject"
+      } this profile?`,
+      { type: status === "VERIFIED" ? "info" : "warning" }
     );
     if (!isConfirmed) return;
 
     if (status === "REJECTED" && !reason) {
-      reason = await showPrompt("Please provide a detailed reason for rejecting this profile:", {
-        title: "Rejection Reason",
-        type: "warning",
-        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
-        confirmText: "Submit Rejection",
-        cancelText: "Cancel"
-      });
+      reason = await showPrompt(
+        "Please provide a detailed reason for rejecting this profile:",
+        {
+          title: "Rejection Reason",
+          type: "warning",
+          placeholder:
+            "Enter the reason for rejection (minimum 10 characters)...",
+          confirmText: "Submit Rejection",
+          cancelText: "Cancel",
+        }
+      );
       if (!reason) return; // Cancelled if no reason provided
     }
 
@@ -149,10 +155,15 @@ const EmployeeDetail = () => {
       );
 
       await fetchEmployeeDetails();
-      await showAlert(`Profile ${status === "VERIFIED" ? "verified" : "rejected"} successfully.`, { type: 'success' });
+      await showAlert(
+        `Profile ${
+          status === "VERIFIED" ? "verified" : "rejected"
+        } successfully.`,
+        { type: "success" }
+      );
     } catch (error) {
       console.error("Error verifying profile:", error);
-      await showAlert("Failed to update status.", { type: 'error' });
+      await showAlert("Failed to update status.", { type: "error" });
     } finally {
       setActionLoading(false);
     }
@@ -160,20 +171,26 @@ const EmployeeDetail = () => {
 
   const handleDocumentVerification = async (docId, status) => {
     const isConfirmed = await showConfirm(
-        `Are you sure you want to ${status === "VERIFIED" ? "verify" : "reject"} this document?`,
-        { type: status === "VERIFIED" ? "info" : "warning" }
+      `Are you sure you want to ${
+        status === "VERIFIED" ? "verify" : "reject"
+      } this document?`,
+      { type: status === "VERIFIED" ? "info" : "warning" }
     );
     if (!isConfirmed) return;
 
     let reason = null;
     if (status === "REJECTED") {
-      reason = await showPrompt("Please provide a detailed reason for rejecting this document:", {
-        title: "Rejection Reason",
-        type: "warning",
-        placeholder: "Enter the reason for rejection (minimum 10 characters)...",
-        confirmText: "Submit Rejection",
-        cancelText: "Cancel"
-      });
+      reason = await showPrompt(
+        "Please provide a detailed reason for rejecting this document:",
+        {
+          title: "Rejection Reason",
+          type: "warning",
+          placeholder:
+            "Enter the reason for rejection (minimum 10 characters)...",
+          confirmText: "Submit Rejection",
+          cancelText: "Cancel",
+        }
+      );
       if (!reason) return;
     }
 
@@ -189,15 +206,22 @@ const EmployeeDetail = () => {
       );
 
       await fetchDocuments();
-      await showAlert(`Document ${status === "VERIFIED" ? "verified" : "rejected"} successfully.`, { type: 'success' });
+      await showAlert(
+        `Document ${
+          status === "VERIFIED" ? "verified" : "rejected"
+        } successfully.`,
+        { type: "success" }
+      );
     } catch (error) {
       console.error("Error verifying document:", error);
-      await showAlert("Failed to update document status.", { type: 'error' });
+      await showAlert("Failed to update document status.", { type: "error" });
     }
   };
 
   const handleAdvanceStage = async (newStage) => {
-    const isConfirmed = await showConfirm(`Are you sure you want to advance this employee to ${newStage}?`);
+    const isConfirmed = await showConfirm(
+      `Are you sure you want to advance this employee to ${newStage}?`
+    );
     if (!isConfirmed) return;
 
     setActionLoading(true);
@@ -209,10 +233,10 @@ const EmployeeDetail = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchEmployeeDetails();
-      await showAlert(`Stage advanced to ${newStage}`, { type: 'success' });
+      await showAlert(`Stage advanced to ${newStage}`, { type: "success" });
     } catch (error) {
       console.error("Error advancing stage:", error);
-      await showAlert("Failed to advance stage.", { type: 'error' });
+      await showAlert("Failed to advance stage.", { type: "error" });
     } finally {
       setActionLoading(false);
     }
@@ -220,8 +244,10 @@ const EmployeeDetail = () => {
 
   const handleToggleFormAccess = async (formType, category, currentStatus) => {
     const isConfirmed = await showConfirm(
-        `Are you sure you want to ${currentStatus ? "ENABLE" : "DISABLE"} this form for the employee?`,
-        { type: 'warning' }
+      `Are you sure you want to ${
+        currentStatus ? "ENABLE" : "DISABLE"
+      } this form for the employee?`,
+      { type: "warning" }
     );
     if (!isConfirmed) return;
 
@@ -239,10 +265,13 @@ const EmployeeDetail = () => {
       );
 
       await fetchEmployeeDetails(); // Refresh to get new status
-      await showAlert(`Form access ${newStatus ? "DISABLED" : "ENABLED"} successfully.`, { type: 'success' });
+      await showAlert(
+        `Form access ${newStatus ? "DISABLED" : "ENABLED"} successfully.`,
+        { type: "success" }
+      );
     } catch (error) {
       console.error("Error toggling form access:", error);
-      await showAlert("Failed to update form access.", { type: 'error' });
+      await showAlert("Failed to update form access.", { type: "error" });
     }
   };
 
@@ -338,33 +367,34 @@ const EmployeeDetail = () => {
           handleVerificationAction={handleVerificationAction}
           actionLoading={actionLoading}
         />
-        
+
         {/* Stage Progression Control */}
-        {employee.onboardingStage === 'PRE_JOINING_VERIFIED' && (
-             <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 flex justify-between items-center">
-                 <div>
-                     <h3 className="text-lg font-bold text-gray-800">Ready for Joining</h3>
-                     <p className="text-sm text-gray-500">Employee has completed all Pre-Joining requirements.</p>
-                 </div>
-                 <button 
-                    onClick={() => handleAdvanceStage('POST_JOINING')}
-                    disabled={actionLoading}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
-                 >
-                    Start Post-Joining
-                 </button>
-             </div>
+        {employee.onboardingStage === "PRE_JOINING_VERIFIED" && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold text-gray-800">
+                Ready for Joining
+              </h3>
+              <p className="text-sm text-gray-500">
+                Employee has completed all Pre-Joining requirements.
+              </p>
+            </div>
+            <button
+              onClick={() => handleAdvanceStage("POST_JOINING")}
+              disabled={actionLoading}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
+            >
+              Start Post-Joining
+            </button>
+          </div>
         )}
-        
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <AddressCard employee={employee} />
           <EducationIdentityCard employee={employee} />
         </div>
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6 mb-6">
-
-          <FormSection title="Pre-Joining Forms" icon={Briefcase}>        
-
+          <FormSection title="Pre-Joining Forms" icon={Briefcase}>
             <FormRow
               title="Employment Application Form"
               status={employee.applicationStatus}
@@ -398,8 +428,12 @@ const EmployeeDetail = () => {
                   state: {
                     formData: {
                       ...(employee.mediclaimData || {}),
-                      signature_path: employee.mediclaimData?.signature_path || employee.signature,
-                      employee_full_name: employee.mediclaimData?.employee_full_name || employee.fullName
+                      signature_path:
+                        employee.mediclaimData?.signature_path ||
+                        employee.signature,
+                      employee_full_name:
+                        employee.mediclaimData?.employee_full_name ||
+                        employee.fullName,
                     },
                     status: employee.mediclaimStatus,
                     isHR: true,
@@ -412,7 +446,7 @@ const EmployeeDetail = () => {
             <FormRow
               title="Gratuity Form (Form F)"
               status={employee.gratuityStatus}
-              isDisabled={employee.gratuityDisabled} 
+              isDisabled={employee.gratuityDisabled}
               onToggle={() =>
                 handleToggleFormAccess(
                   "GRATUITY",
@@ -425,8 +459,12 @@ const EmployeeDetail = () => {
                   state: {
                     formData: {
                       ...(employee.gratuityData || {}),
-                      signature_path: employee.gratuityData?.signature_path || employee.signature,
-                      employee_full_name: employee.gratuityData?.employee_full_name || employee.fullName
+                      signature_path:
+                        employee.gratuityData?.signature_path ||
+                        employee.signature,
+                      employee_full_name:
+                        employee.gratuityData?.employee_full_name ||
+                        employee.fullName,
                     },
                     status: employee.gratuityStatus,
                     isHR: true,
@@ -447,10 +485,11 @@ const EmployeeDetail = () => {
                   employee.employeeInfoDisabled
                 )
               }
-              onView={() => navigate(`/forms/information/preview/${employee.id}`)}
+              onView={() =>
+                navigate(`/forms/information/preview/${employee.id}`)
+              }
               verifiedByName={employee.employeeInfoVerifiedByName}
             />
-            
           </FormSection>
 
           <FormSection title="Post-Joining Forms" icon={Briefcase}>
@@ -462,18 +501,25 @@ const EmployeeDetail = () => {
                 handleToggleFormAccess("NDA", "POST", employee.ndaDisabled)
               }
               onView={() =>
-                navigate(`/forms/non-disclosure-agreement/preview/${employee.id}`, {
-                  state: {
-                    formData: {
-                      ...(employee.ndaData || {}),
-                      signature_path: employee.ndaData?.signature_path || employee.signature,
-                      employee_full_name: employee.ndaData?.employee_full_name || employee.fullName
+                navigate(
+                  `/forms/non-disclosure-agreement/preview/${employee.id}`,
+                  {
+                    state: {
+                      formData: {
+                        ...(employee.ndaData || {}),
+                        signature_path:
+                          employee.ndaData?.signature_path ||
+                          employee.signature,
+                        employee_full_name:
+                          employee.ndaData?.employee_full_name ||
+                          employee.fullName,
+                      },
+                      status: employee.ndaStatus,
+                      isHR: true,
+                      employeeId: employee.id,
                     },
-                    status: employee.ndaStatus,
-                    isHR: true,
-                    employeeId: employee.id,
-                  },
-                })
+                  }
+                )
               }
               verifiedByName={employee.ndaVerifiedByName}
             />
@@ -494,8 +540,12 @@ const EmployeeDetail = () => {
                   state: {
                     formData: {
                       ...(employee.declarationData || {}),
-                      signature_path: employee.declarationData?.signature_path || employee.signature,
-                      employee_full_name: employee.declarationData?.employee_full_name || employee.fullName
+                      signature_path:
+                        employee.declarationData?.signature_path ||
+                        employee.signature,
+                      employee_full_name:
+                        employee.declarationData?.employee_full_name ||
+                        employee.fullName,
                     },
                     status: employee.declarationStatus,
                     isHR: true,
@@ -518,8 +568,11 @@ const EmployeeDetail = () => {
                   state: {
                     formData: {
                       ...(employee.tdsData || {}),
-                      signature_path: employee.tdsData?.signature_path || employee.signature,
-                      employee_full_name: employee.tdsData?.employee_full_name || employee.fullName
+                      signature_path:
+                        employee.tdsData?.signature_path || employee.signature,
+                      employee_full_name:
+                        employee.tdsData?.employee_full_name ||
+                        employee.fullName,
                     },
                     status: employee.tdsStatus,
                     isHR: true,
@@ -544,8 +597,12 @@ const EmployeeDetail = () => {
                     state: {
                       formData: {
                         ...(employee.epfData || {}),
-                        signature_path: employee.epfData?.signature_path || employee.signature,
-                        member_name_aadhar: employee.epfData?.member_name_aadhar || employee.fullName
+                        signature_path:
+                          employee.epfData?.signature_path ||
+                          employee.signature,
+                        member_name_aadhar:
+                          employee.epfData?.member_name_aadhar ||
+                          employee.fullName,
                       },
                       status: employee.epfStatus,
                       isHR: true,

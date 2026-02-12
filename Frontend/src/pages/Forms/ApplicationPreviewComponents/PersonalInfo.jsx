@@ -3,7 +3,7 @@ import React from "react";
 const PersonalInfo = ({ formData, formatDate }) => {
   return (
     <>
-      {/* Name Section - Desktop/Print Table */}
+      {/* Name Section*/}
       <div className="hidden md:block print:block overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full mb-4">
         <table className="w-full min-w-125 print:min-w-0">
           <tbody>

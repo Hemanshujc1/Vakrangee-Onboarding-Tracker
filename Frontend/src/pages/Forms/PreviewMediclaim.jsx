@@ -27,8 +27,7 @@ const PreviewMediclaim = () => {
   const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
   const { data: autoFillData, loading: autoFillLoading } =
     useAutoFill(targetId);
-  const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
+  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.mediclaimStatus;
   const data = stateData || autoFillData?.mediclaimData;
   const derivedSignature =
@@ -64,7 +63,7 @@ const PreviewMediclaim = () => {
           }
           submissionData.append(
             "dependents",
-            JSON.stringify(formattedDependents || []),
+            JSON.stringify(formattedDependents || [])
           );
         } else if (key === "signature") {
           if (data.signature instanceof File) {
@@ -125,7 +124,7 @@ const PreviewMediclaim = () => {
             "Enter the reason for rejection (minimum 10 characters)...",
           confirmText: "Submit Rejection",
           cancelText: "Cancel",
-        },
+        }
       );
       if (!reason) return;
     }
@@ -133,7 +132,7 @@ const PreviewMediclaim = () => {
     const isConfirmed = await showConfirm(
       `Are you sure you want to ${
         status === "VERIFIED" ? "Approve" : "Reject"
-      } this form?`,
+      } this form?`
     );
     if (!isConfirmed) return;
 
@@ -148,7 +147,7 @@ const PreviewMediclaim = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status, remarks: reason }),
-        },
+        }
       );
 
       if (response.ok) {
@@ -156,7 +155,7 @@ const PreviewMediclaim = () => {
           `Form ${
             status === "VERIFIED" ? "Approved" : "Rejected"
           } Successfully!`,
-          { type: "success" },
+          { type: "success" }
         );
         navigate(-1); // Back to Employee Detail
       } else {
@@ -305,7 +304,6 @@ const PreviewMediclaim = () => {
                   Address:
                 </div>
                 <div className="flex-1 flex w-full md:max-w-[80%] print:max-w-[80%]">
-                 
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="border-b border-black border-dotted min-h-[1.5em]">
                       {data.address_line1}
@@ -400,14 +398,22 @@ const PreviewMediclaim = () => {
                       </td>
                       <td className="px-4 py-2 border border-black text-left">
                         {data.dependents?.find(
-                          (d) => d.relationship.toLowerCase() === "spouse",
+                          (d) => d.relationship.toLowerCase() === "spouse"
                         )?.name || ""}
                       </td>
                       <td className="px-4 py-2 border border-black">
                         {data.dependents?.find(
-                          (d) => d.relationship.toLowerCase() === "spouse",
+                          (d) => d.relationship.toLowerCase() === "spouse"
                         )
-                          ? `${data.dependents.find((d) => d.relationship.toLowerCase() === "spouse").age} (${formatDate(data.dependents.find((d) => d.relationship.toLowerCase() === "spouse").dob)})`
+                          ? `${
+                              data.dependents.find(
+                                (d) => d.relationship.toLowerCase() === "spouse"
+                              ).age
+                            } (${formatDate(
+                              data.dependents.find(
+                                (d) => d.relationship.toLowerCase() === "spouse"
+                              ).dob
+                            )})`
                           : ""}
                       </td>
                     </tr>
@@ -421,7 +427,7 @@ const PreviewMediclaim = () => {
                           (d) =>
                             d.relationship.toLowerCase().includes("child") ||
                             d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter"),
+                            d.relationship.toLowerCase().includes("daughter")
                         )[0]?.name || ""}
                       </td>
                       <td className="px-4 py-2 border border-black">
@@ -429,9 +435,35 @@ const PreviewMediclaim = () => {
                           (d) =>
                             d.relationship.toLowerCase().includes("child") ||
                             d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter"),
+                            d.relationship.toLowerCase().includes("daughter")
                         )[0]
-                          ? `${data.dependents.filter((d) => d.relationship.toLowerCase().includes("child") || d.relationship.toLowerCase().includes("son") || d.relationship.toLowerCase().includes("daughter"))[0].age} (${formatDate(data.dependents.filter((d) => d.relationship.toLowerCase().includes("child") || d.relationship.toLowerCase().includes("son") || d.relationship.toLowerCase().includes("daughter"))[0].dob)})`
+                          ? `${
+                              data.dependents.filter(
+                                (d) =>
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("child") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("son") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("daughter")
+                              )[0].age
+                            } (${formatDate(
+                              data.dependents.filter(
+                                (d) =>
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("child") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("son") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("daughter")
+                              )[0].dob
+                            )})`
                           : ""}
                       </td>
                     </tr>
@@ -445,7 +477,7 @@ const PreviewMediclaim = () => {
                           (d) =>
                             d.relationship.toLowerCase().includes("child") ||
                             d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter"),
+                            d.relationship.toLowerCase().includes("daughter")
                         )[1]?.name || ""}
                       </td>
                       <td className="px-4 py-2 border border-black">
@@ -453,9 +485,35 @@ const PreviewMediclaim = () => {
                           (d) =>
                             d.relationship.toLowerCase().includes("child") ||
                             d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter"),
+                            d.relationship.toLowerCase().includes("daughter")
                         )[1]
-                          ? `${data.dependents.filter((d) => d.relationship.toLowerCase().includes("child") || d.relationship.toLowerCase().includes("son") || d.relationship.toLowerCase().includes("daughter"))[1].age} (${formatDate(data.dependents.filter((d) => d.relationship.toLowerCase().includes("child") || d.relationship.toLowerCase().includes("son") || d.relationship.toLowerCase().includes("daughter"))[1].dob)})`
+                          ? `${
+                              data.dependents.filter(
+                                (d) =>
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("child") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("son") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("daughter")
+                              )[1].age
+                            } (${formatDate(
+                              data.dependents.filter(
+                                (d) =>
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("child") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("son") ||
+                                  d.relationship
+                                    .toLowerCase()
+                                    .includes("daughter")
+                              )[1].dob
+                            )})`
                           : ""}
                       </td>
                     </tr>

@@ -157,7 +157,7 @@ const FormEPF = () => {
           otherwise: (schema) => createSignatureSchema(hasSavedSignature),
         }),
       }),
-    [hasSavedSignature],
+    [hasSavedSignature]
   );
 
   const {
@@ -219,18 +219,18 @@ const FormEPF = () => {
 
         passport_no: savedData.passport_no || appData.passportNo || "",
         passport_valid_from: formatDateForAPI(
-          savedData.passport_valid_from || appData.passportIssueDate || "",
+          savedData.passport_valid_from || appData.passportIssueDate || ""
         ),
         passport_valid_to: formatDateForAPI(
-          savedData.passport_valid_to || appData.passportExpiryDate || "",
+          savedData.passport_valid_to || appData.passportExpiryDate || ""
         ),
 
         present_joining_date: formatDateForAPI(
-          savedData.present_joining_date || autoFillData.joiningDate || "",
+          savedData.present_joining_date || autoFillData.joiningDate || ""
         ),
         date_of_exit_prev: formatDateForAPI(savedData.date_of_exit_prev || ""),
         first_epf_enrolled_date: formatDateForAPI(
-          savedData.first_epf_enrolled_date || "",
+          savedData.first_epf_enrolled_date || ""
         ),
         signature_path:
           savedData.signature_path || autoFillData.signature || "",
@@ -322,7 +322,7 @@ const FormEPF = () => {
           `Failed to save draft: ${
             error.response?.data?.message || error.message
           }`,
-          { type: "error" },
+          { type: "error" }
         );
       } finally {
         setIsPreviewMode(false);
@@ -361,7 +361,7 @@ const FormEPF = () => {
       signaturePreview={signaturePreview}
       isLocked={isLocked}
       onSubmit={handleSubmit(onFormSubmit, (e) =>
-        onValidationFail(e, showAlert),
+        onValidationFail(e, showAlert)
       )}
       actions={{
         isSubmitting,

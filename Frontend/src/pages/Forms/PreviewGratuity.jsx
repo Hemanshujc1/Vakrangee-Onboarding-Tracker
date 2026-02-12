@@ -129,7 +129,7 @@ const PreviewGratuity = () => {
             "Enter the reason for rejection (minimum 10 characters)...",
           confirmText: "Submit Rejection",
           cancelText: "Cancel",
-        },
+        }
       );
 
       if (!reason) return;
@@ -138,7 +138,7 @@ const PreviewGratuity = () => {
     const isConfirmed = await showConfirm(
       `Are you sure you want to ${
         verifyStatus === "VERIFIED" ? "Approve" : "Reject"
-      } this form?`,
+      } this form?`
     );
     if (!isConfirmed) return;
 
@@ -158,7 +158,7 @@ const PreviewGratuity = () => {
           `Form ${
             verifyStatus === "VERIFIED" ? "Approved" : "Rejected"
           } Successfully!`,
-          { type: "success" },
+          { type: "success" }
         );
         navigate(-1); // Back to Employee Detail
       } else {
@@ -182,7 +182,7 @@ const PreviewGratuity = () => {
           const val = formData[key];
           submitData.append(
             key,
-            typeof val === "string" ? val : JSON.stringify(val),
+            typeof val === "string" ? val : JSON.stringify(val)
           );
         } else if (key === "signature") {
           if (formData.signature instanceof File) {
@@ -209,7 +209,7 @@ const PreviewGratuity = () => {
         const err = await response.json();
         await showAlert(
           "Failed to submit form: " + (err.message || "Unknown error"),
-          { type: "error" },
+          { type: "error" }
         );
       }
     } catch (error) {

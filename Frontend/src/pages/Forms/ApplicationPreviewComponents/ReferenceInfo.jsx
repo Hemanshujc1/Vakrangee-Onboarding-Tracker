@@ -10,7 +10,7 @@ const ReferenceInfo = ({ references }) => {
       {references
         .map((item, idx) => (
           <div key={idx} className="mb-4 last:mb-0">
-            {/* Implementing simpler stack as per data structure */}
+    
             <div className="grid grid-cols-2 gap-4 mt-2 border-black pb-2">
               <div>
                 <div className="bg-[#b3b3b3] font-bold px-2 py-1">

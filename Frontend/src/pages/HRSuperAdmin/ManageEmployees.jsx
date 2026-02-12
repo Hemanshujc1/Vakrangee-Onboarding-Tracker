@@ -53,7 +53,7 @@ const ManageEmployees = () => {
       console.error("Error adding employee:", error);
       await showAlert(
         error.response?.data?.message || "Failed to add employee.",
-        { type: "error" },
+        { type: "error" }
       );
     }
   };

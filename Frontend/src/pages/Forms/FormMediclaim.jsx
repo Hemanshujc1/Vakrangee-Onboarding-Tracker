@@ -68,7 +68,7 @@ const FormMediclaim = () => {
 
   // Determine if form is locked (Submitted or Verified)
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
-    autoFillData?.mediclaimStatus,
+    autoFillData?.mediclaimStatus
   );
 
   // Determine if a signature is already saved on the server
@@ -108,13 +108,13 @@ const FormMediclaim = () => {
                 relationship: commonSchemas.stringRequired,
                 age: commonSchemas.age.required("Required"),
                 dob: commonSchemas.datePast.required("DOB is required"),
-              }),
+              })
             ),
           otherwise: (schema) => schema.notRequired().nullable(),
         }),
         signature: createSignatureSchema(hasSavedSignature),
       }),
-    [hasSavedSignature],
+    [hasSavedSignature]
   );
 
   const validationSchemaRef = React.useRef(validationSchema);
@@ -210,7 +210,7 @@ const FormMediclaim = () => {
             }
             formData.append(
               "dependents",
-              JSON.stringify(formattedDependents || []),
+              JSON.stringify(formattedDependents || [])
             );
           } else if (key === "signature") {
             if (values.signature instanceof File) {
@@ -236,7 +236,7 @@ const FormMediclaim = () => {
           const errorData = await response.json().catch(() => ({}));
           await showAlert(
             `Error: ${errorData.message || response.statusText}`,
-            { type: "error" },
+            { type: "error" }
           );
         }
       } catch (error) {
@@ -276,7 +276,7 @@ const FormMediclaim = () => {
       signaturePreview={signaturePreview}
       isLocked={isLocked}
       onSubmit={handleSubmit(onFormSubmit, (e) =>
-        onValidationFail(e, showAlert),
+        onValidationFail(e, showAlert)
       )}
       actions={{
         isSubmitting,

@@ -29,7 +29,7 @@ const Login = () => {
           username: email,
           password: password,
         },
-        { timeout: 10000 },
+        { timeout: 10000 }
       ); // 10s timeout to prevent hanging
 
       Logger.log("Login success:", response.data);
@@ -70,7 +70,7 @@ const Login = () => {
 
   return (
     <div className="flex w-full bg-white font-sans min-h-screen lg:h-screen lg:overflow-hidden">
-      {/* Left Side - Image (Desktop Only) */}
+      {/* Left Side*/}
       <div className="hidden lg:flex w-1/2 relative bg-gray-950 text-white flex-col justify-between p-16 h-full isolate">
         <div className="absolute inset-0 z-0">
           <img

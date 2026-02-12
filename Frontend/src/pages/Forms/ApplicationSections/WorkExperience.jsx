@@ -6,7 +6,7 @@ import { Trash2 } from "lucide-react";
 const WorkExperience = ({ register, errors, historyFields, appendHistory, removeHistory }) => {
   return (
     <>
-      {/* Work Experience with Custom Manual Table */}
+      {/* Work Experience */}
       <FormSection title="Work Experience">
         <p className="mb-4">
           Please list your work experience beginning with your most recent job.

@@ -11,63 +11,57 @@ const OtherEmployees = () => {
 
   // Hook initialization
   const employeeListProps = useEmployeeList({
-      filterPredicate: (emp, user) => {
-        if (!currentUserLocation) return false;
-        
-        const isEmployee = emp.role === "EMPLOYEE";
-        // Logic from original file: 
-        // matchesLocation = emp.assignedHRLocation === myLocation
-        // isNotAssignedToMe = emp.onboardingHrId !== user.id
-        
-        const matchesLocation = emp.assignedHRLocation === currentUserLocation;
-        // User id is available in the 'user' object passed to predicate (fetched from regex/localStorage inside hook)
-        // But hook passes 'user' object which is { ... } from localStorage.
-        // Let's assume user.id is correct.
-        const isNotAssignedToMe = emp.onboardingHrId !== user.id;
+    filterPredicate: (emp, user) => {
+      if (!currentUserLocation) return false;
 
-        return isEmployee && matchesLocation && isNotAssignedToMe;
-      },
-      itemsPerPage: 5
+      const isEmployee = emp.role === "EMPLOYEE";
+
+      const matchesLocation = emp.assignedHRLocation === currentUserLocation;
+      const isNotAssignedToMe = emp.onboardingHrId !== user.id;
+
+      return isEmployee && matchesLocation && isNotAssignedToMe;
+    },
+    itemsPerPage: 5,
   });
 
   const { fetchEmployees, loading: hookLoading } = employeeListProps;
 
   // Fetch Current User Location
   useEffect(() => {
-      const fetchLocation = async () => {
-          try {
-              const userInfoStr = localStorage.getItem("userInfo");
-              const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-              const token = userInfo?.token || localStorage.getItem("token");
-              const user = userInfo?.user || JSON.parse(localStorage.getItem("user"));
-              
-              if (!user || !user.employeeId) {
-                  console.error("User ID missing");
-                  setIsLocationLoading(false);
-                  return;
-              }
+    const fetchLocation = async () => {
+      try {
+        const userInfoStr = localStorage.getItem("userInfo");
+        const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+        const token = userInfo?.token || localStorage.getItem("token");
+        const user = userInfo?.user || JSON.parse(localStorage.getItem("user"));
 
-              const config = { headers: { Authorization: `Bearer ${token}` } };
-              const myProfileRes = await axios.get(
-                  `/api/employees/${user.employeeId}`,
-                  config
-              );
-              setCurrentUserLocation(myProfileRes.data.location);
-          } catch (error) {
-              console.error("Error fetching user location:", error);
-          } finally {
-              setIsLocationLoading(false);
-          }
-      };
+        if (!user || !user.employeeId) {
+          console.error("User ID missing");
+          setIsLocationLoading(false);
+          return;
+        }
 
-      fetchLocation();
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const myProfileRes = await axios.get(
+          `/api/employees/${user.employeeId}`,
+          config
+        );
+        setCurrentUserLocation(myProfileRes.data.location);
+      } catch (error) {
+        console.error("Error fetching user location:", error);
+      } finally {
+        setIsLocationLoading(false);
+      }
+    };
+
+    fetchLocation();
   }, []);
 
   // Re-fetch employees when location is available
   useEffect(() => {
-      if (currentUserLocation) {
-          fetchEmployees();
-      }
+    if (currentUserLocation) {
+      fetchEmployees();
+    }
   }, [currentUserLocation]);
 
   const loading = isLocationLoading || hookLoading;

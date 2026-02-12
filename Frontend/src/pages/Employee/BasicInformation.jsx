@@ -6,8 +6,6 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { commonSchemas } from "../../utils/validationSchemas";
-
-// Imported Sub-Components
 import BasicInfoHeader from "../../Components/Employee/BasicInfo/BasicInfoHeader";
 import ProfilePhotoSection from "../../Components/Employee/BasicInfo/ProfilePhotoSection";
 import PersonalDetailsSection from "../../Components/Employee/BasicInfo/PersonalDetailsSection";

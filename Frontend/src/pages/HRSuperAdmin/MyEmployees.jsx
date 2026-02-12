@@ -11,10 +11,10 @@ const MyEmployees = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const employeeListProps = useEmployeeList({
-      filterPredicate: (emp, user) => {
-        return emp.role === "EMPLOYEE" && emp.onboardingHrId == user.id;
-      },
-      itemsPerPage: 5
+    filterPredicate: (emp, user) => {
+      return emp.role === "EMPLOYEE" && emp.onboardingHrId == user.id;
+    },
+    itemsPerPage: 5,
   });
 
   const { employees, options } = employeeListProps;
@@ -24,9 +24,7 @@ const MyEmployees = () => {
       <EmployeeManagementPage
         title="My Employees"
         subtitle={
-          <>
-            Track and manage onboarding for employees assigned to you.
-          </>
+          <>Track and manage onboarding for employees assigned to you.</>
         }
         headerChildren={
           <button
