@@ -14,9 +14,7 @@ exports.saveForm = async (req, res, formType) => {
 
     // 2. Prepare Data
     let formData = { ...req.body };
-
     // This ensures specific fields like 'nominees', 'witnesses', 'education' are stored as JSON Arrays/Objects
-    // instead of strings in the JSONB column.
     for (const key in formData) {
         if (typeof formData[key] === 'string') {
             const val = formData[key].trim();
