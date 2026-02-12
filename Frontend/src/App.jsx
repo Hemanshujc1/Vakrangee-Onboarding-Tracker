@@ -46,6 +46,7 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import PreviewInformation from "./pages/Forms/PreviewInformation";
 import { AlertProvider } from "./context/AlertContext";
 import CustomAlert from "./components/UI/CustomAlert";
+import NotFound from "./pages/NotFound";
 
 const App = () => {
   return (
@@ -160,6 +161,7 @@ const App = () => {
             element={<PreviewEPF />}
           />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AlertProvider>
   );
