@@ -6,7 +6,7 @@ import { getEmployeeStatus } from '../../utils/employeeUtils';
 const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssignedDate = false, emptyMessage = "No employees found." }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden">
         <table className="w-full text-center">
           <thead className="bg-gray-50 border-b border-gray-100 text-center">
             <tr>

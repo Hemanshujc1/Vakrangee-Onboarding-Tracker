@@ -1,3 +1,4 @@
+import { useFieldArray } from "react-hook-form";
 import {
   React,
   useEffect,
@@ -6,6 +7,7 @@ import {
   useRef,
   useForm,
   useNavigate,
+  useParams,
   yupResolver,
   Yup,
   axios,
@@ -15,6 +17,7 @@ import {
   commonSchemas,
   createSignatureSchema,
   onValidationFail,
+  formatDateForAPI,
 } from "../../utils/formDependencies";
 import FormInput from "../../Components/Forms/FormInput";
 import PersonalDetails from "./InformationSections/PersonalDetails";
@@ -153,10 +156,11 @@ const FormInformation = () => {
         employment_details: Yup.array().of(
           Yup.object().shape({
             companyName: Yup.string()
-              .min(2, "Min 2 chars")
-              .max(30, "Max 30 chars")
               .nullable()
-              .optional(),
+              .transform((v) => (v === "" ? null : v))
+              .optional()
+              .min(2, "Min 2 chars")
+              .max(30, "Max 30 chars"),
             address: commonSchemas.addressStringOptional.label("Address"),
             empType: Yup.string().nullable().optional(),
             empCode: Yup.string().optional(),
@@ -486,7 +490,6 @@ const FormInformation = () => {
               ],
         employment_details:
           saved.employment_details?.length > 0 ? saved.employment_details : [],
-        // If empty employment, maybe default 1 empty is okay or let user add? Previous code had 1 default.
         references:
           saved.references?.length >= 2
             ? saved.references

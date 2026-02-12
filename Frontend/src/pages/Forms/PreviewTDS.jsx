@@ -255,7 +255,7 @@ const PreviewTDS = () => {
           </div>
 
           {/* Table Container for Mobile Scroll */}
-          <div className="mt-0 overflow-x-auto print:overflow-visible w-full">
+          <div className="mt-0 overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
             <table className="w-full min-w-150 mt-6 border border-black table-fixed text-center text-sm border-collapse print:w-full print:min-w-0">
               <thead>
                 <tr className="bg-gray-100">

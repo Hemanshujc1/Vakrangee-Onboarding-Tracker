@@ -14,8 +14,6 @@ const PreviewMediclaim = () => {
   const { employeeId: paramEmployeeId } = useParams(); // Get from URL
   const { showAlert, showConfirm, showPrompt } = useAlert();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 1. Get identifiers from state or user (fallback)
   const {
     formData: stateData,
     signaturePreview: stateSig,
@@ -27,19 +25,12 @@ const PreviewMediclaim = () => {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
-
-  // 2. Fetch backend data (fallback/robustness)
   const { data: autoFillData, loading: autoFillLoading } =
     useAutoFill(targetId);
-
   const isHR =
     stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.mediclaimStatus;
-
-  // 3. Derive form data: prefer state (for unsaved changes), fallback to backend
   const data = stateData || autoFillData?.mediclaimData;
-
-  // 4. Derive signature URL robustly
   const derivedSignature =
     stateSig ||
     (data?.signature instanceof File
@@ -386,7 +377,7 @@ const PreviewMediclaim = () => {
               </div>
 
               {/* Family Details Table */}
-              <div className="overflow-x-auto print:overflow-visible w-full">
+              <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
                 <table className="w-full border-collapse border border-black text-sm text-center">
                   <thead>
                     <tr className="bg-[#dcd6b6]">

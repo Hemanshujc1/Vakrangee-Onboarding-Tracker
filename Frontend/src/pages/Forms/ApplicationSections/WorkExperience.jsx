@@ -224,7 +224,7 @@ const WorkExperience = ({ register, errors, historyFields, appendHistory, remove
 
       {/* Employment History */}
       <FormSection title="Employment History">
-        <div className="overflow-x-auto mb-2">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden mb-2">
           <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-gray-100">

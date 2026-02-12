@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Trash2 } from "lucide-react";
 
 export const DynamicTable = ({ headers, fields = [], onRemove, renderRow, colWidths }) => (
-    <div className="overflow-x-auto mb-2">
+    <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden mb-2">
         <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead>
                 <tr className="bg-gray-100">

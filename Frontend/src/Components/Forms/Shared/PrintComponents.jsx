@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const PrintText = ({ value = "", className = "" }) => {
   return (
@@ -46,22 +46,20 @@ export const PrintDateBlock = ({ date }) => {
 };
 
 export const LinedTextArea = ({ value = "", minLines = 3, className = "" }) => {
-  return (
-    <div className={`relative ${className}`}>
-      {/* Background Lines */}
-      <div className="absolute inset-0 flex flex-col pointer-events-none">
-        {Array.from({ length: minLines }).map((_, i) => (
-          <div
-            key={i}
-            className="border-b border-gray-800 h-8 box-border w-full"
-          ></div>
-        ))}
-      </div>
+  const lineHeight = 32; // 2rem = 32px (h-8)
 
-      <div 
-        className="relative z-10 p-0 text-sm leading-8 whitespace-pre-wrap pt-0.5 pl-1"
-        style={{ minHeight: `${minLines * 2}rem` }}
-      >
+  return (
+    <div
+      className={`w-full ${className}`}
+      style={{
+        // Create lines using gradient: transparent for most of the height, then a 1px border line
+        backgroundImage:
+          "linear-gradient(transparent calc(2rem - 1px), #1f2937 calc(2rem - 1px))",
+        backgroundSize: "100% 2rem", // Repeat every 2rem
+        minHeight: `${minLines * 2}rem`,
+      }}
+    >
+      <div className="w-full h-full whitespace-pre-wrap px-1 leading-8 text-sm">
         {value || ""}
       </div>
     </div>

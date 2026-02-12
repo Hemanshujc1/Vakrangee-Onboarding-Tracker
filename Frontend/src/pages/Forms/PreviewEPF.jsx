@@ -331,7 +331,7 @@ const PreviewEPF = () => {
               </div>
 
               {/* Main Table */}
-              <div className="overflow-x-auto print:overflow-visible w-full">
+              <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
                 <table className="w-full min-w-150 border-collapse border border-black text-xs print:w-full print:min-w-0">
                   <tbody>
                     {/* 1. Name */}
@@ -634,7 +634,7 @@ const PreviewEPF = () => {
               </div>
 
               {/* Section 12 Table */}
-              <div className="overflow-x-auto print:overflow-visible w-full">
+              <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
                 <table className="w-full min-w-150 border border-black border-t-0 text-xs text-center mt-4 print:w-full print:min-w-0">
                   <tbody>
                     <tr className="h-10">

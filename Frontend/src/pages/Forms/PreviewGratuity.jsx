@@ -24,8 +24,7 @@ const PreviewGratuity = () => {
   } = location.state || {};
 
   const targetId = paramEmployeeId || stateEmployeeId || user.employeeId;
-  const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
+  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
 
   const { data: autoFillData, loading: autoFillLoading } =
     useAutoFill(targetId);
@@ -217,7 +216,7 @@ const PreviewGratuity = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 print:p-0 print:bg-white print:min-h-0">
-      <div className="max-w-[210mm] mx-auto bg-white shadow-lg p-8 md:p-12 print:shadow-none print:w-full print:max-w-full print:p-0 print:m-0 flex flex-col print:a4-print-container">
+      <div className="max-w-[210mm] mx-auto bg-white shadow-lg p-4 md:p-12 print:shadow-none print:w-full print:max-w-full print:p-0 print:m-0 flex flex-col print:a4-print-container">
         {/* Header Actions */}
         <div className="print:hidden mb-8">
           <PreviewActions
@@ -367,7 +366,7 @@ const PreviewGratuity = () => {
               {/* Nominee Table */}
               <div className="mt-8 page-break">
                 <h4 className="font-semibold text-center mb-2">Nominee(s)</h4>
-                <div className="overflow-x-auto print:overflow-visible w-full">
+                <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
                   <table className="w-full border-collapse border border-black text-xs min-w-150 print:min-w-0">
                     <thead>
                       <tr className="bg-gray-50 text-center">
@@ -444,13 +443,15 @@ const PreviewGratuity = () => {
                 </div>
               </div>
 
+              <div className="print:break-before-page mt-8"></div>
+
               {/* Statement */}
               <div className="mt-8">
                 <h4 className="font-semibold text-center mb-6">Statement</h4>
                 <div className="space-y-3">
                   {/*full name */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
                       1. Name of employee in full
                     </span>
                     <span className="flex-1 border-b border-black px-2 font-bold uppercase w-full">
@@ -460,21 +461,25 @@ const PreviewGratuity = () => {
                   </div>
                   {/* Sex */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">2. Sex</span>
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
+                      2. Sex
+                    </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
                       {formData.gender}
                     </span>
                   </div>
                   {/* regilion*/}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">3. Religion</span>
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
+                      3. Religion
+                    </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
                       {formData.religion}
                     </span>
                   </div>
                   {/* marital status */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
                       4. Whether unmarried/married/widow/widower
                     </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
@@ -483,7 +488,7 @@ const PreviewGratuity = () => {
                   </div>
                   {/*department */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
                       5. Department/Branch/Section where employed
                     </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
@@ -492,7 +497,7 @@ const PreviewGratuity = () => {
                   </div>
                   {/*post held */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
                       6. Post held with Ticket No. or Serial No., if any
                     </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
@@ -501,7 +506,7 @@ const PreviewGratuity = () => {
                   </div>
                   {/* date of appointment */}
                   <div className="flex flex-col md:flex-row print:flex-row items-start md:items-end print:items-end gap-2">
-                    <span className="whitespace-nowrap">
+                    <span className="md:whitespace-nowrap print:whitespace-nowrap text-left">
                       7. Date of appointment
                     </span>
                     <span className="flex-1 border-b border-black px-2 uppercase w-full">
@@ -664,6 +669,8 @@ const PreviewGratuity = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="print:break-before-page mt-8"></div>
 
               {/* Certificate by Employer */}
               <div className="mt-12 page-break-inside-avoid">
