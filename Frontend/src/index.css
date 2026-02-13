@@ -127,7 +127,7 @@ body,
   body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
-    background: white;
+    background: white !important;
   }
 
   /* Utility to force A4 dimensions */

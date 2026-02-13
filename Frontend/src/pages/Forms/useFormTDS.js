@@ -20,13 +20,8 @@ const useFormTDS = () => {
     signaturePreview,
     setSignaturePreview,
     setIsPreviewMode,
-    isRef: isPreviewRef, // Use ref from shared hook or create new one here since `isRef` was general
+    isRef: isPreviewRef, 
   } = useOnboardingForm();
-
-  // Note: TDS logic used a ref `isPreviewRef` for submit detection. 
-  // We can use that or the state `isPreviewMode`.
-  // Original TDS used `isPreviewRef.current = true`.
-
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(autoFillData?.tdsStatus);
   const hasSavedSignature = !!(
     autoFillData?.tdsData?.signature_path || autoFillData?.signature
@@ -205,9 +200,6 @@ const useFormTDS = () => {
       await axios.post("/api/forms/tds", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Check if we are in preview mode trigger (using ref or state)
-      // The shared hook provides `isPreviewMode` state, but let's stick to the ref if that's what we used in the actions
       if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: "success" });
       } else {
@@ -253,9 +245,7 @@ const useFormTDS = () => {
     isSubmitting,
     onFormSubmit,
     showAlert,
-    // Expose specific elements
     watchRelatedLandlord,
-    // Ref for preview mode trigger
     isPreviewRef,
   };
 };

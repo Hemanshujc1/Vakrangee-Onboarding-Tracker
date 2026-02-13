@@ -61,7 +61,7 @@ const useFormMediclaim = () => {
   // Redirect if locked (Optional)
   useEffect(() => {
     if (isLocked) {
-      // navigate('/forms/mediclaim/preview', { state: { formData: autoFillData.mediclaimData } });
+     navigate('/forms/mediclaim/preview', { state: { formData: autoFillData.mediclaimData } });
     }
   }, [isLocked, autoFillData, navigate]);
 
@@ -126,7 +126,7 @@ const useFormMediclaim = () => {
     name: "dependents",
   });
 
-  const maritalStatus = watch("marital_status");
+  // const maritalStatus = watch("marital_status");
 
   useEffect(() => {
     if (autoFillData) {

@@ -232,21 +232,6 @@ const useFormEPF = () => {
 
     const isDraft = allValues.isDraft;
 
-    // To differentiate between strictly 'Draft save' vs 'Preview/Submit' flow
-    // Current logic: if isDraft=true, it could still be a 'Submit to Preview' if triggered by the submit button
-    // which sets isPreviewMode=true in the UI handler.
-    
-    // However, the state `isPreviewMode` is updated asynchronously? No, it's set in the handler.
-    // We should rely on a passed argument or ref if we want to be 100% sure, 
-    // but the `useOnboardingForm` exposes `isPreviewMode`.
-    
-    // IMPORTANT: The `onFormSubmit` in original code used `isPreviewMode` state which was set in the `onSubmit` handler in `actions`.
-    // We need to ensure we have access to the latest `isPreviewMode`. Be careful with closures.
-    // Actually, `handleSubmit(onFormSubmit)` is called. If `isPreviewMode` changes, `onFormSubmit` (defined here) might close over old value.
-    // Ideally we use a Ref for `isPreviewMode` in `useOnboardingForm` or pass it.
-    // But since we are moving logic to a hook, `onFormSubmit` will be recreated on re-renders, so it might capture fresh state?
-    // Let's rely on standard behavior first.
-
     try {
       const formData = new FormData();
       Object.keys(allValues).forEach((key) => {
@@ -288,7 +273,6 @@ const useFormEPF = () => {
       if (isDraft && !isPreviewMode) {
          await showAlert("Draft Saved!", { type: "success" });
       } else {
-         // Preview/Submit flow (even if isDraft is true technically, we are proceeding to preview)
          navigate(`/forms/employees-provident-fund/preview/${targetId}`, {
           state: {
             formData: {

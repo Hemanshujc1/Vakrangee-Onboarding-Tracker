@@ -18,11 +18,6 @@ const useFormApplication = () => {
     user,
     targetId: employeeId,
     autoFillData,
-    loading, // Note: Shared hook returns 'autoFillLoading', ensure compatibility. 'useAutoFill' returns 'loading', but shared hook aliases it.
-    // Actually shared hook returns `autoFillData` and `autoFillLoading`.
-    // Let's check shared hook definition again. Yes: `autoFillLoading`
-    // However, original useFormApplication returned `loading`.
-    // We should adapt it.
     autoFillLoading,
     signaturePreview,
     setSignaturePreview,
@@ -252,7 +247,7 @@ const useFormApplication = () => {
 
   return {
     autoFillData,
-    loading: autoFillLoading, // Map back to loading
+    loading: autoFillLoading,
     signaturePreview,
     setSignaturePreview,
     isLocked,

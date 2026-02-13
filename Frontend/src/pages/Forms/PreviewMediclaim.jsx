@@ -7,6 +7,9 @@ import {
 } from "../../Components/Forms/Shared";
 import useAutoFill from "../../hooks/useAutoFill";
 import { useAlert } from "../../context/AlertContext";
+import PersonalDetails from "./PreviewMediclaimSections/PersonalDetails";
+import FamilyDetails from "./PreviewMediclaimSections/FamilyDetails";
+import SignatureSection from "./PreviewMediclaimSections/SignatureSection";
 
 const PreviewMediclaim = () => {
   const location = useLocation();
@@ -63,7 +66,7 @@ const PreviewMediclaim = () => {
           }
           submissionData.append(
             "dependents",
-            JSON.stringify(formattedDependents || [])
+            JSON.stringify(formattedDependents || []),
           );
         } else if (key === "signature") {
           if (data.signature instanceof File) {
@@ -124,7 +127,7 @@ const PreviewMediclaim = () => {
             "Enter the reason for rejection (minimum 10 characters)...",
           confirmText: "Submit Rejection",
           cancelText: "Cancel",
-        }
+        },
       );
       if (!reason) return;
     }
@@ -132,7 +135,7 @@ const PreviewMediclaim = () => {
     const isConfirmed = await showConfirm(
       `Are you sure you want to ${
         status === "VERIFIED" ? "Approve" : "Reject"
-      } this form?`
+      } this form?`,
     );
     if (!isConfirmed) return;
 
@@ -145,9 +148,9 @@ const PreviewMediclaim = () => {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            body: JSON.stringify({ status, remarks: reason }),
           },
-          body: JSON.stringify({ status, remarks: reason }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -155,7 +158,7 @@ const PreviewMediclaim = () => {
           `Form ${
             status === "VERIFIED" ? "Approved" : "Rejected"
           } Successfully!`,
-          { type: "success" }
+          { type: "success" },
         );
         navigate(-1); // Back to Employee Detail
       } else {
@@ -222,7 +225,6 @@ const PreviewMediclaim = () => {
         />
 
         {/* Rejection Alert */}
-        {/* Rejection Alert */}
         {(derivedStatus === "REJECTED" ||
           (derivedStatus === "DRAFT" &&
             (stateRejectionReason ||
@@ -267,286 +269,12 @@ const PreviewMediclaim = () => {
             {/* Instructions*/}
             <InstructionBlock />
 
-            {/* Personal Details Heading */}
-            <div className="text-center font-bold underline mb-6 text-lg">
-              Personal Details
-            </div>
-
-            {/* Personal Details - Specific Layout */}
-            <div className="space-y-4 text-sm mb-8 px-2 md:px-0">
-              {/* Employee Full Name */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0">
-                  Employee Full Name:
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[80%] print:max-w-[80%]">
-                  <div className="flex-1 border-b border-black border-dotted leading-none pt-1 uppercase">
-                    {data.employee_full_name}
-                  </div>
-                </div>
-              </div>
-
-              {/* Date Of Birth */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0">
-                  Date Of birth:
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[50%] print:max-w-[50%]">
-                  <div className="flex-1 border-b border-black border-dotted leading-none pt-1">
-                    {formatDate(data.date_of_birth)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0 mt-0 md:mt-1 print:mt-1">
-                  Address:
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[80%] print:max-w-[80%]">
-                  <div className="flex-1 flex flex-col gap-1">
-                    <div className="border-b border-black border-dotted min-h-[1.5em]">
-                      {data.address_line1}
-                    </div>
-                    {(data.address_line2 || data.landmark || data.city) && (
-                      <div className="border-b border-black border-dotted min-h-[1.5em]">
-                        {[data.address_line2, data.landmark, data.post_office]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </div>
-                    )}
-                    <div className="border-b border-black border-dotted min-h-[1.5em]">
-                      {`${data.city}, ${data.district}, ${data.state} - ${data.pincode}`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gender */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0">
-                  Gender:
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[50%] print:max-w-[50%]">
-                  <div className="flex-1 border-b border-black border-dotted leading-none pt-1">
-                    {data.gender}
-                  </div>
-                </div>
-              </div>
-
-              {/* Marital Status */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0">
-                  Marital Status:
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[50%] print:max-w-[50%]">
-                  <div className="flex-1 border-b border-black border-dotted leading-none pt-1">
-                    {data.marital_status}
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile No. */}
-              <div className="flex flex-col md:flex-row md:items-start print:flex-row print:items-start">
-                <div className="w-full md:w-48 print:w-48 font-bold shrink-0">
-                  Mobile No. :
-                </div>
-                <div className="flex-1 flex w-full md:max-w-[50%] print:max-w-[50%]">
-                  <div className="flex-1 border-b border-black border-dotted leading-none pt-1">
-                    {data.mobile_number}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="break-inside-avoid">
-              {/* Family Details Heading */}
-              <div className="text-center font-bold underline mb-4 text-lg mt-12">
-                <span>Family Details</span>
-              </div>
-
-              {/* Family Details Note */}
-              <div className="text-left font-bold text-sm mb-2">
-                <span className="underline">Note:</span>
-                <span>
-                  {" "}
-                  If Married then specify your Spouse &amp; Children Names.
-                </span>
-              </div>
-
-              {/* Family Details Table */}
-              <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden print:overflow-visible w-full">
-                <table className="w-full border-collapse border border-black text-sm text-center">
-                  <thead>
-                    <tr className="bg-[#dcd6b6]">
-                      <th className="px-4 py-2 border border-black w-1/4 font-bold">
-                        Relationship
-                      </th>
-                      <th className="px-4 py-2 border border-black w-1/2 font-bold">
-                        Name
-                      </th>
-                      <th className="px-4 py-2 border border-black w-1/4 font-bold">
-                        Age (Date Of Birth)
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Row 1: Spouse */}
-                    <tr>
-                      <td className="px-4 py-2 border border-black font-bold">
-                        Spouse
-                      </td>
-                      <td className="px-4 py-2 border border-black text-left">
-                        {data.dependents?.find(
-                          (d) => d.relationship.toLowerCase() === "spouse"
-                        )?.name || ""}
-                      </td>
-                      <td className="px-4 py-2 border border-black">
-                        {data.dependents?.find(
-                          (d) => d.relationship.toLowerCase() === "spouse"
-                        )
-                          ? `${
-                              data.dependents.find(
-                                (d) => d.relationship.toLowerCase() === "spouse"
-                              ).age
-                            } (${formatDate(
-                              data.dependents.find(
-                                (d) => d.relationship.toLowerCase() === "spouse"
-                              ).dob
-                            )})`
-                          : ""}
-                      </td>
-                    </tr>
-                    {/* Row 2: Child -1 */}
-                    <tr>
-                      <td className="px-4 py-2 border border-black font-bold">
-                        Child -1
-                      </td>
-                      <td className="px-4 py-2 border border-black text-left">
-                        {data.dependents?.filter(
-                          (d) =>
-                            d.relationship.toLowerCase().includes("child") ||
-                            d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter")
-                        )[0]?.name || ""}
-                      </td>
-                      <td className="px-4 py-2 border border-black">
-                        {data.dependents?.filter(
-                          (d) =>
-                            d.relationship.toLowerCase().includes("child") ||
-                            d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter")
-                        )[0]
-                          ? `${
-                              data.dependents.filter(
-                                (d) =>
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("child") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("son") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("daughter")
-                              )[0].age
-                            } (${formatDate(
-                              data.dependents.filter(
-                                (d) =>
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("child") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("son") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("daughter")
-                              )[0].dob
-                            )})`
-                          : ""}
-                      </td>
-                    </tr>
-                    {/* Row 3: Child -2 */}
-                    <tr>
-                      <td className="px-4 py-2 border border-black font-bold">
-                        Child -2
-                      </td>
-                      <td className="px-4 py-2 border border-black text-left">
-                        {data.dependents?.filter(
-                          (d) =>
-                            d.relationship.toLowerCase().includes("child") ||
-                            d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter")
-                        )[1]?.name || ""}
-                      </td>
-                      <td className="px-4 py-2 border border-black">
-                        {data.dependents?.filter(
-                          (d) =>
-                            d.relationship.toLowerCase().includes("child") ||
-                            d.relationship.toLowerCase().includes("son") ||
-                            d.relationship.toLowerCase().includes("daughter")
-                        )[1]
-                          ? `${
-                              data.dependents.filter(
-                                (d) =>
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("child") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("son") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("daughter")
-                              )[1].age
-                            } (${formatDate(
-                              data.dependents.filter(
-                                (d) =>
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("child") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("son") ||
-                                  d.relationship
-                                    .toLowerCase()
-                                    .includes("daughter")
-                              )[1].dob
-                            )})`
-                          : ""}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Signature Section - Right Aligned at Bottom */}
-              <div className="mt-16 flex flex-col items-end mr-1 md:mr-0 print:mr-0">
-                <div className="flex items-end gap-2 mb-4 w-64">
-                  <span className="font-bold shrink-0 w-24 text-right pr-2">
-                    Signature :
-                  </span>
-                  <div className="flex-1 border-b border-black border-dotted h-6 flex justify-center items-end">
-                    {derivedSignature ? (
-                      <img
-                        src={derivedSignature}
-                        alt="Signature"
-                        className="h-10 mb-1"
-                      />
-                    ) : null}
-                  </div>
-                </div>
-                <div className="flex items-end gap-2 w-64">
-                  <span className="font-bold shrink-0 w-24 text-right pr-2">
-                    Date :
-                  </span>
-                  <div className="flex-1 border-b border-black border-dotted h-6 text-center leading-none">
-                    {new Date().toLocaleDateString("en-GB")}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PersonalDetails data={data} formatDate={formatDate} />
+            <FamilyDetails data={data} formatDate={formatDate} />
+            <SignatureSection
+              signature={derivedSignature}
+              date={new Date().toLocaleDateString("en-GB")}
+            />
           </div>
         </div>
       </div>
