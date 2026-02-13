@@ -26,7 +26,7 @@ const EPFMemberDetails = ({ getValue, data, formatDate, renderYesNo }) => {
             </div>
             <span className="font-medium mr-2">Spouse's Name</span>
             <div className="border border-black w-4 h-4 flex items-center justify-center">
-              {getValue("relationship_type") === "Husband" && "✓"}
+              {getValue("relationship_type") === "Spouse" && "✓"}
             </div>
           </div>
           <div className="text-[10px] italic mt-1">

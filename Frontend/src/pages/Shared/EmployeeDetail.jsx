@@ -89,7 +89,7 @@ const EmployeeDetail = () => {
         location: empData.location || "",
         dateOfJoining: empData.dateOfJoining || "",
         personalEmail: empData.personalEmail || "",
-        email: empData.email || "",
+        // email: empData.email || "",
         onboardingHrId: empData.assignedHR?.id || "",
       });
     } catch (error) {

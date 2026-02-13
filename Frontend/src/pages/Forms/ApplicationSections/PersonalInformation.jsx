@@ -6,7 +6,7 @@ import FormSelect from "../../../Components/Forms/FormSelect";
 const PersonalInformation = ({ register, errors, autoFillData }) => {
   return (
     <FormSection title="Personal Information">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormInput
           label="First Name"
           register={register}
@@ -35,7 +35,6 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           name="Maidenname"
           error={errors.Maidenname}
         />
-        {/* Contact numbers are part of personal info in original, keeping them here */}
         <FormInput
           label="Mobile No"
           register={register}
@@ -66,8 +65,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           error={errors.emergencyNo}
           required
         />
-
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormSelect
             label="Gender"
             register={register}
@@ -77,12 +75,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
             required
             disabled={!!autoFillData?.gender}
           />
-          <FormInput
-            label="Age"
-            type="number"
-            register={register}
-            name="age"
-          />
+          <FormInput label="Age" type="number" register={register} name="age" />
           <FormInput
             label="Date of Birth"
             type="date"
@@ -95,13 +88,15 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
         <FormInput
           label="Position Applied For"
           register={register}
           name="positionApplied"
           error={errors.positionApplied}
-          disabled={!!(autoFillData?.positionApplied || autoFillData?.positionApplied)}
+          disabled={
+            !!(autoFillData?.positionApplied || autoFillData?.positionApplied)
+          }
         />
         <FormSelect
           label="Currently Employed"

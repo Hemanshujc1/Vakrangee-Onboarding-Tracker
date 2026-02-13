@@ -8,7 +8,6 @@ import {
   CalendarDays,
   Calendar,
   UserCheck,
-
 } from "lucide-react";
 
 const PersonalInfoGrid = ({
@@ -30,15 +29,20 @@ const PersonalInfoGrid = ({
           {isEditing ? (
             <input
               type="email"
-              value={editForm.email}
+              value={editForm.personalEmail}
+              // value={editForm.email}
               onChange={(e) =>
-                setEditForm({ ...editForm, email: e.target.value })
+                // setEditForm({ ...editForm, email: e.target.value })
+                setEditForm({ ...editForm, personalEmail: e.target.value })
               }
               className="border border-gray-300 rounded px-2 py-1 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
               placeholder="Email"
             />
           ) : (
-            <p className="font-medium text-sm">{employee.email}</p>
+            <p className="font-medium text-sm">
+              {employee.personalEmail || "N/A"}
+            </p>
+            // <p className="font-medium text-sm">{employee.email}</p>
           )}
         </div>
       </div>
@@ -116,8 +120,9 @@ const PersonalInfoGrid = ({
         <div>
           <p className="text-xs text-gray-400">Date of Birth</p>
           <p className="font-medium text-sm">
-            {new Date(employee.dateOfBirth).toLocaleDateString("en-GB") ||
-              "N/A"}
+            {employee.dateOfBirth
+              ? new Date(employee.dateOfBirth).toLocaleDateString("en-GB")
+              : "N/A"}
           </p>
         </div>
       </div>
@@ -183,7 +188,6 @@ const PersonalInfoGrid = ({
           )}
         </div>
       </div>
-
     </div>
   );
 };

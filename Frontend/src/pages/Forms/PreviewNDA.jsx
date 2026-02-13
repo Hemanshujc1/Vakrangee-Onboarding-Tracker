@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import useAutoFill from "../../hooks/useAutoFill";
@@ -25,8 +25,7 @@ const PreviewNDA = () => {
   const { data: autoFillData, loading: autoFillLoading } =
     useAutoFill(targetId);
 
-  const isHR =
-    stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
+  const isHR = stateIsHR || ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
   const derivedStatus = stateStatus || autoFillData?.ndaStatus;
   const data = stateData || autoFillData?.ndaData;
   const [actionLoading, setActionLoading] = useState(false);
@@ -59,11 +58,24 @@ const PreviewNDA = () => {
   }
 
   // Derive signature URL if not provided in state (e.g. from Dashboard)
-  const finalSignature =
+  const initialSigPreview =
     signaturePreview ||
-    (formData.signature_path
+    (formData?.signature_path
       ? `/uploads/signatures/${formData.signature_path}`
       : null);
+  const [finalSignature, setFinalSignature] = useState(initialSigPreview);
+
+  useEffect(() => {
+    if (formData) {
+      if (formData.signature instanceof File) {
+        setFinalSignature(URL.createObjectURL(formData.signature));
+      } else if (signaturePreview) {
+        setFinalSignature(signaturePreview);
+      } else if (formData.signature_path) {
+        setFinalSignature(`/uploads/signatures/${formData.signature_path}`);
+      }
+    }
+  }, [formData, signaturePreview]);
 
   const handleFinalSubmit = async () => {
     setActionLoading(true);

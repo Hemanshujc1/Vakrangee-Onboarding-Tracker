@@ -1,11 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
-  useAutoFill,
-  useAlert,
   onValidationFail,
   formatDateForAPI,
 } from "../../utils/formDependencies";
@@ -13,19 +10,20 @@ import {
   getValidationSchema,
   defaultValues,
 } from "./InformationSections/formInformationSchema";
+import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormInformation = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { showAlert } = useAlert();
-
-  // Get logged-in user ID
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const employeeId = id || user.id;
-
-  const { data: autoFillData, loading } = useAutoFill(employeeId);
-  const [signaturePreview, setSignaturePreview] = useState(null);
-  const [isPreview, setIsPreview] = useState(false);
+  const {
+    navigate,
+    showAlert,
+    targetId: employeeId,
+    autoFillData,
+    autoFillLoading: loading,
+    signaturePreview,
+    setSignaturePreview,
+    isPreviewMode: isPreview,
+    setIsPreviewMode: setIsPreview,
+  } = useOnboardingForm();
 
   const hasSavedSignature = !!(
     autoFillData?.employeeInfoData?.signature_path || autoFillData?.signature
@@ -126,11 +124,11 @@ const useFormInformation = () => {
         gender: saved.gender || base.gender || "",
         marital_status: saved.marital_status || base.maritalStatus || "",
 
-        passport_number: saved.passport_number || "",
-        passport_date_of_issue: formatDateForAPI(saved.passport_date_of_issue),
-        passport_expiry_date: formatDateForAPI(saved.passport_expiry_date),
+        passport_number: saved.passport_number || autoFillData.passportNo || "",
+        passport_date_of_issue: formatDateForAPI(saved.passport_date_of_issue || autoFillData.passportIssueDate),
+        passport_expiry_date: formatDateForAPI(saved.passport_expiry_date || autoFillData.passportExpiryDate),
         pan_number: saved.pan_number || base.panNo || "",
-        aadhar_number: saved.aadhar_number || "",
+        aadhar_number: saved.aadhar_number || autoFillData.aadhaar || "",
 
         std_code: saved.std_code || "",
         alternate_no: saved.alternate_no || "",
@@ -164,7 +162,7 @@ const useFormInformation = () => {
         );
       }
     }
-  }, [autoFillData, reset]);
+  }, [autoFillData, reset, setSignaturePreview]);
 
   const onSubmit = async (values) => {
     try {

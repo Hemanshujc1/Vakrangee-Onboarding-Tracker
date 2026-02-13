@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  useAutoFill,
-  useAlert,
   onValidationFail,
   formatDateForAPI,
 } from "../../utils/formDependencies";
@@ -12,21 +9,31 @@ import {
   getValidationSchema,
   defaultValues,
 } from "./ApplicationSections/formApplicationSchema";
+import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormApplication = () => {
-  const navigate = useNavigate();
-  const { showAlert } = useAlert();
+  const {
+    navigate,
+    showAlert,
+    user,
+    targetId: employeeId,
+    autoFillData,
+    loading, // Note: Shared hook returns 'autoFillLoading', ensure compatibility. 'useAutoFill' returns 'loading', but shared hook aliases it.
+    // Actually shared hook returns `autoFillData` and `autoFillLoading`.
+    // Let's check shared hook definition again. Yes: `autoFillLoading`
+    // However, original useFormApplication returned `loading`.
+    // We should adapt it.
+    autoFillLoading,
+    signaturePreview,
+    setSignaturePreview,
+    isPreviewMode,
+    setIsPreviewMode,
+  } = useOnboardingForm();
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const employeeId = user.id || null;
-
+  // Redirect if no employeeId (already handled partially in shared hook via user check, but here specifically)
   useEffect(() => {
     if (!employeeId) navigate("/login");
   }, [employeeId, navigate]);
-
-  const { data: autoFillData, loading } = useAutoFill(employeeId);
-  const [signaturePreview, setSignaturePreview] = useState(null);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
     autoFillData?.applicationStatus
@@ -131,7 +138,7 @@ const useFormApplication = () => {
         setSignaturePreview(`/uploads/signatures/${saved.signature_path}`);
       }
     }
-  }, [autoFillData, reset]);
+  }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
     const dateFields = [
@@ -245,7 +252,7 @@ const useFormApplication = () => {
 
   return {
     autoFillData,
-    loading,
+    loading: autoFillLoading, // Map back to loading
     signaturePreview,
     setSignaturePreview,
     isLocked,

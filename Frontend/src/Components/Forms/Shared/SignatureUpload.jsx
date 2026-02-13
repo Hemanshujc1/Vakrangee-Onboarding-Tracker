@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
-const SignatureUpload = ({ 
-  setValue, 
-  error, 
-  preview, 
-  setPreview, 
+const SignatureUpload = ({
+  setValue,
+  error,
+  preview,
+  setPreview,
   isSaved,
-  fieldName = "signature"
+  fieldName = "signature",
 }) => {
   return (
     <div className="bg-gray-50 p-4 rounded border border-gray-200 print:hidden">
@@ -14,9 +14,7 @@ const SignatureUpload = ({
         Signature
       </h3>
       <div className="flex flex-col gap-4">
-
-        
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
           <input
             id="signature-upload"
             type="file"
@@ -45,15 +43,10 @@ const SignatureUpload = ({
           <span className="text-base">✓</span> Signature already uploaded
         </div>
       )}
-      
 
-      
       {error && (
-        <div className="text-red-500 text-xs mt-2">
-          {error.message}
-        </div>
+        <div className="text-red-500 text-xs mt-2">{error.message}</div>
       )}
-
     </div>
   );
 };

@@ -19,11 +19,11 @@ const FormLayout = ({
   const signatureUrl = signaturePreview
     ? signaturePreview
     : dataSignature
-    ? `/uploads/signatures/${dataSignature}`
-    : null;
+      ? `/uploads/signatures/${dataSignature}`
+      : null;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-10 shadow-lg my-8 print:shadow-none print:my-0 print:w-full print:max-w-none">
+    <div className="max-w-4xl mx-auto bg-white p-4 md:p-10 shadow-lg my-8 print:shadow-none print:my-0 print:w-full print:max-w-none">
       {/* Header */}
       <div className="flex justify-between items-start mb-8 border-b pb-6">
         <div>

@@ -222,16 +222,6 @@ const PreviewApplication = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans print:bg-white print:p-0 print:m-0">
-      <style>
-        {`
-        @media print {
-          @page { margin: 0; size: A4; }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .page-break { page-break-before: always; }
-        }
-        `}
-      </style>
-
       <div className="max-w-[210mm] mx-auto print:max-w-full">
         {/* Actions Bar - Outside Printable Area */}
         <div className="print:hidden mb-6">

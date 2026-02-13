@@ -1,10 +1,26 @@
 import React from "react";
 import FormSection from "../../../Components/Forms/FormSection";
 import FormTextArea from "../../../Components/Forms/FormTextArea";
-import { DynamicTable, TableInput, AddButton } from "../../../Components/Forms/Shared";
+import {
+  DynamicTable,
+  TableInput,
+  AddButton,
+} from "../../../Components/Forms/Shared";
 import { Trash2 } from "lucide-react";
 
-const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang, familyFields, appendFamily, removeFamily, referenceFields, appendRef, removeRef }) => {
+const OtherDetails = ({
+  register,
+  errors,
+  languageFields,
+  appendLang,
+  removeLang,
+  familyFields,
+  appendFamily,
+  removeFamily,
+  referenceFields,
+  appendRef,
+  removeRef,
+}) => {
   return (
     <>
       {/* Family Details */}
@@ -21,9 +37,9 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
                 error={errors.family?.[index]?.relationship}
                 required
               />
-              <TableInput 
-                register={register(`family.${index}.name`)} 
-                error={errors.family?.[index]?.name} 
+              <TableInput
+                register={register(`family.${index}.name`)}
+                error={errors.family?.[index]?.name}
                 required
               />
               <TableInput
@@ -51,7 +67,7 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
 
       {/* Habits */}
       <FormSection title="Do you have following habits:" isRequired="true">
-        <div className="flex gap-8 border p-4 rounded">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8 border p-4 rounded">
           <div className="flex items-center gap-2">
             <span className="font-bold">Smoking:</span>
             <label>
@@ -85,7 +101,7 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
       {/* Languages */}
       <FormSection title="Languages Known" isRequired="true">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden mb-2">
-          <table className="w-full border-collapse border border-gray-300 text-sm">
+          <table className="w-full min-w-[600px] border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 p-2 text-left">
@@ -158,7 +174,11 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
           label="Add Language"
           disabled={languageFields.length >= 4}
         />
-        {languageFields.length >= 4 && <p className="text-xs text-red-500 mt-1">Maximum 4 entries allowed.</p>}
+        {languageFields.length >= 4 && (
+          <p className="text-xs text-red-500 mt-1">
+            Maximum 4 entries allowed.
+          </p>
+        )}
       </FormSection>
 
       {/* References */}
@@ -192,7 +212,7 @@ const OtherDetails = ({ register, errors, languageFields, appendLang, removeLang
           )}
         />
         <p className="text-xs text-gray-500 mt-2">
-           *Please list two professional references other than relatives.
+          *Please list two professional references other than relatives.
         </p>
       </FormSection>
 

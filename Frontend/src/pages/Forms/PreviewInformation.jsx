@@ -15,12 +15,11 @@ import ReferenceDetails from "./InformationPreviewComponents/ReferenceDetails";
 import Declaration from "./InformationPreviewComponents/Declaration";
 
 const PreviewInformation = () => {
-  const { employeeId: paramId } = useParams();
   const navigate = useNavigate();
+  const componentRef = useRef();
   const { showAlert, showConfirm, showPrompt } = useAlert();
   const [actionLoading, setActionLoading] = useState(false);
-  const componentRef = useRef();
-
+  const { employeeId: paramId } = useParams();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const employeeId = paramId || user.employeeId;
 
@@ -61,7 +60,6 @@ const PreviewInformation = () => {
 
       await showAlert("Form Submitted Successfully!", { type: "success" });
       navigate("/employee/pre-joining");
-      // window.location.reload();
     } catch (err) {
       console.error(err);
       await showAlert("Submission failed", { type: "error" });
@@ -111,7 +109,7 @@ const PreviewInformation = () => {
         } Successfully!`,
         { type: "success" },
       );
-      window.location.reload();
+      navigate(-1);
     } catch (error) {
       console.error("Verification Error:", error);
       await showAlert("Failed to update status.", { type: "error" });
