@@ -250,6 +250,14 @@ All form routes support `POST` to save/submit and specific verify endpoints for 
 | **Verified**  | Final HR verification complete. |
 | **Rejected**  | Returned for corrections.       |
 
+### Admin Account Statuses
+
+| Status       | Description                        |
+| :----------- | :--------------------------------- |
+| **INVITED**  | Admin added but not yet logged in. |
+| **ACTIVE**   | Admin has logged in and is active. |
+| **Inactive** | Admin has been deactivated.        |
+
 ---
 
 ## 📝 Validations
