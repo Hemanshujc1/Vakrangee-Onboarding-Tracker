@@ -5,7 +5,7 @@ import FormInput from "../../../Components/Forms/FormInput";
 const EmployeeDeclaration = ({ register, errors, watch }) => {
   return (
     <>
-      <div className="p-4 bg-gray-50 rounded text-sm text-justify">
+      <div className="p-4 bg-gray-50 rounded text-sm text-justify mb-4">
         <p className="mb-2">
           I declare that I will contribute to the above tax saving schemes
           during the F.Y. {watch("financial_year") || "2024-25"}. The same may

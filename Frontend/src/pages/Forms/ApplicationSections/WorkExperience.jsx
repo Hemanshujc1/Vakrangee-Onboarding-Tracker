@@ -21,7 +21,7 @@ const WorkExperience = ({
         </p>
         <div className="mb-6 relative">
           <div className="border border-black overflow-x-auto">
-            <table className="w-full min-w-[600px] text-xs border-collapse">
+            <table className="w-full min-w-150 text-xs border-collapse">
               <tbody>
                 <tr className="border-b border-black">
                   <td className=" font-semibold p-2 w-[20%] border-r border-black">
@@ -231,7 +231,7 @@ const WorkExperience = ({
       {/* Employment History */}
       <FormSection title="Employment History">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden mb-2">
-          <table className="w-full min-w-[600px] border-collapse border border-gray-300 text-sm">
+          <table className="w-full min-w-150 border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-gray-100">
                 <th rowSpan="2" className="border border-gray-300 p-2">

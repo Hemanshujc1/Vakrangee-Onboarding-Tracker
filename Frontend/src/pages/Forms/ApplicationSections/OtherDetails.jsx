@@ -101,7 +101,7 @@ const OtherDetails = ({
       {/* Languages */}
       <FormSection title="Languages Known" isRequired="true">
         <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden mb-2">
-          <table className="w-full min-w-[600px] border-collapse border border-gray-300 text-sm">
+          <table className="w-full min-w-150 border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 p-2 text-left">
