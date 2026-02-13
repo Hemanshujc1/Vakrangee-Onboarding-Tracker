@@ -23,7 +23,7 @@ const FormLayout = ({
       : null;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-4 md:p-10 shadow-lg my-8 print:shadow-none print:my-0 print:w-full print:max-w-none">
+    <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 shadow-lg my-8">
       {/* Header */}
       <div className="flex justify-between items-start mb-8 border-b pb-6">
         <div>
@@ -54,7 +54,7 @@ const FormLayout = ({
 
       {/* Form Content */}
       {onSubmit ? (
-        <form onSubmit={onSubmit} className="space-y-8 font-serif text-sm">
+        <form onSubmit={onSubmit} className="space-y-8 font-serif text-sm overflow-x-auto">
           <fieldset
             disabled={isLocked}
             className="space-y-8 disabled:opacity-75"
