@@ -113,7 +113,7 @@ const PreviewMediclaim = () => {
   };
 
   const handleVerification = async (status) => {
-    if (!location.state?.employeeId)
+    if (!targetId)
       return await showAlert("Missing Employee ID", { type: "error" });
 
     let reason = null;
@@ -141,17 +141,14 @@ const PreviewMediclaim = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `/api/forms/mediclaim/verify/${location.state.employeeId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            body: JSON.stringify({ status, remarks: reason }),
-          },
+      const response = await fetch(`/api/forms/mediclaim/verify/${targetId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ status, remarks: reason }),
+      });
 
       if (response.ok) {
         await showAlert(
