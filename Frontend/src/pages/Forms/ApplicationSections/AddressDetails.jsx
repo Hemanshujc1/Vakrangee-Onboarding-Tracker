@@ -21,7 +21,7 @@ const AddressDetails = ({
 
   return (
     <FormSection title="Address Details">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <FormInput
           label="Current Address"
           register={register}
@@ -61,4 +61,3 @@ const AddressDetails = ({
 };
 
 export default AddressDetails;
-

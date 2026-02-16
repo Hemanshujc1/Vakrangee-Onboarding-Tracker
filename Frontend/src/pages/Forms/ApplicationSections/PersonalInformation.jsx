@@ -65,7 +65,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           error={errors.emergencyNo}
           required
         />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
           <FormSelect
             label="Gender"
             register={register}
@@ -74,6 +74,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
             error={errors.gender}
             required
             disabled={!!autoFillData?.gender}
+            className="col-span-2"
           />
           <FormInput label="Age" type="number" register={register} name="age" />
           <FormInput
@@ -84,6 +85,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
             error={errors.dob}
             required
             disabled={!!(autoFillData?.dob || autoFillData?.dateOfBirth)}
+            className="col-span-2"
           />
         </div>
       </div>
