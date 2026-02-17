@@ -26,7 +26,7 @@ const Dashboard = () => {
 
   const quickActions = [
       {
-          label: "Verify Forms",
+          label: "Assigned Employees",
           icon: FileText,
           link: "/hr-admin/employees",
           borderColor: "hover:border-(--color-primary)",
