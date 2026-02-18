@@ -277,20 +277,39 @@ const BasicInformation = () => {
       });
     }
   };
+  // const fullAddress = [
+  //   formData.address_line1,
+  //   formData.address_line2,
+  //   formData.landmark,
+  //   formData.post_office,
+  //   formData.district,
+  //   formData.city && formData.pincode
+  //     ? `${formData.city} - ${formData.pincode}`
+  //     : formData.city || formData.pincode,
+  //   formData.state,
+  //   formData.country,
+  // ]
+  //   .filter(Boolean)
+  //   .join(", ");
 
-  const fullAddress = [
-    formData.address_line1,
-    formData.address_line2,
-    formData.landmark,
-    formData.post_office ? `PO: ${formData.post_office}` : "",
-    formData.city,
-    formData.district,
-    formData.state,
-    formData.country,
-    formData.pincode ? `Pin: ${formData.pincode}` : "",
-  ]
-    .filter(Boolean)
-    .join(", ");
+    const fullAddress = [
+      formData.address_line1,
+      formData.address_line2,
+      formData.landmark,
+      formData.post_office && formData.district
+        ? `${formData.post_office}, ${formData.district}`
+        : formData.post_office || formData.district,
+      formData.city && formData.pincode
+        ? `${formData.city} - ${formData.pincode}`
+        : formData.city || formData.pincode,
+      formData.state && formData.country
+        ? `${formData.state}, ${formData.country}`
+        : formData.state || formData.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    
+  
 
   if (loading)
     return (

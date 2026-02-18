@@ -3,7 +3,12 @@ import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
 import FormSection from "../../../Components/Forms/FormSection";
 
-const EPFMemberDetails = ({ register, errors, relationshipType }) => {
+const EPFMemberDetails = ({
+  register,
+  errors,
+  relationshipType,
+  autoFillData,
+}) => {
   return (
     <FormSection title="1. Member Details">
       <FormInput
@@ -29,6 +34,7 @@ const EPFMemberDetails = ({ register, errors, relationshipType }) => {
           name="gender"
           options={["Male", "Female", "Transgender"]}
           error={errors.gender}
+          disabled={!!autoFillData?.gender}
         />
         <FormSelect
           label="Marital Status"
@@ -36,6 +42,7 @@ const EPFMemberDetails = ({ register, errors, relationshipType }) => {
           name="marital_status"
           options={["Single", "Married", "Widow", "Widower", "Divorcee"]}
           error={errors.marital_status}
+          disabled={!!autoFillData?.maritalStatus}
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -102,6 +109,7 @@ const EPFMemberDetails = ({ register, errors, relationshipType }) => {
           register={register}
           name="email"
           error={errors.email}
+          disabled={!!autoFillData?.email}
         />
         <FormInput
           label="Mobile No (Aadhar Registered)"
@@ -109,6 +117,7 @@ const EPFMemberDetails = ({ register, errors, relationshipType }) => {
           register={register}
           name="mobile"
           error={errors.mobile}
+          disabled={!!autoFillData?.mobileNo}
         />
       </div>
     </FormSection>

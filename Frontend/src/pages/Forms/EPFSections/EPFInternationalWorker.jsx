@@ -2,7 +2,12 @@ import React from "react";
 import FormInput from "../../../Components/Forms/FormInput";
 import FormSection from "../../../Components/Forms/FormSection";
 
-const EPFInternationalWorker = ({ register, errors, internationalWorker }) => {
+const EPFInternationalWorker = ({
+  register,
+  errors,
+  internationalWorker,
+  autoFillData,
+}) => {
   return (
     <FormSection title="3. International Worker">
       <div
@@ -55,6 +60,10 @@ const EPFInternationalWorker = ({ register, errors, internationalWorker }) => {
             register={register}
             name="passport_no"
             error={errors.passport_no}
+            disabled={
+              !!autoFillData?.applicationData?.passportNo ||
+              !!autoFillData?.passportNo
+            }
           />
           <FormInput
             label="Passport Valid From"
@@ -62,6 +71,7 @@ const EPFInternationalWorker = ({ register, errors, internationalWorker }) => {
             register={register}
             name="passport_valid_from"
             error={errors.passport_valid_from}
+            disabled={!!autoFillData?.applicationData?.passportIssueDate}
           />
           <FormInput
             label="Passport Valid To"
@@ -69,6 +79,7 @@ const EPFInternationalWorker = ({ register, errors, internationalWorker }) => {
             register={register}
             name="passport_valid_to"
             error={errors.passport_valid_to}
+            disabled={!!autoFillData?.applicationData?.passportExpiryDate}
           />
         </div>
       )}

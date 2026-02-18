@@ -366,6 +366,7 @@ exports.getEmployeeById = async (req, res) => {
             "state",
             "country",
             "pincode",
+            "post_office",
             // Education & Identity
             "tenth_percentage",
             "twelfth_percentage",
@@ -533,6 +534,7 @@ exports.getEmployeeById = async (req, res) => {
       state: record.state,
       country: record.country,
       pincode: record.pincode,
+      postOffice: record.post_office,
 
       // Education & Identity
       tenthPercentage: record.tenth_percentage,

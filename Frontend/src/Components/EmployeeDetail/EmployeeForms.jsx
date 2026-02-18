@@ -44,9 +44,18 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
           state: getCommonState(
             "mediclaimData",
             "mediclaimStatus",
-            employee.id,
+            employee.id
           ),
         }),
+    },
+    {
+      title: "Employment Information Form",
+      statusKey: "employeeInfoStatus",
+      disabledKey: "employeeInfoDisabled",
+      formKey: "EMPLOYEE_INFO",
+      category: "PRE",
+      verifiedByNameKey: "employeeInfoVerifiedByName",
+      onView: () => navigate(`/forms/information/preview/${employee.id}`),
     },
     {
       title: "Gratuity Form (Form F)",
@@ -59,15 +68,6 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
         navigate(`/forms/gratuity-form/preview/${employee.id}`, {
           state: getCommonState("gratuityData", "gratuityStatus", employee.id),
         }),
-    },
-    {
-      title: "Employment Information Form",
-      statusKey: "employeeInfoStatus",
-      disabledKey: "employeeInfoDisabled",
-      formKey: "EMPLOYEE_INFO",
-      category: "PRE",
-      verifiedByNameKey: "employeeInfoVerifiedByName",
-      onView: () => navigate(`/forms/information/preview/${employee.id}`),
     },
   ];
 
@@ -85,22 +85,6 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
         }),
     },
     {
-      title: "Declaration Form",
-      statusKey: "declarationStatus",
-      disabledKey: "declarationDisabled",
-      formKey: "DECLARATION",
-      category: "POST",
-      verifiedByNameKey: "declarationVerifiedByName",
-      onView: () =>
-        navigate(`/forms/declaration-form/preview/${employee.id}`, {
-          state: getCommonState(
-            "declarationData",
-            "declarationStatus",
-            employee.id,
-          ),
-        }),
-    },
-    {
       title: "TDS Declaration Form",
       statusKey: "tdsStatus",
       disabledKey: "tdsDisabled",
@@ -112,6 +96,23 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
           state: getCommonState("tdsData", "tdsStatus", employee.id),
         }),
     },
+    {
+      title: "Declaration Form",
+      statusKey: "declarationStatus",
+      disabledKey: "declarationDisabled",
+      formKey: "DECLARATION",
+      category: "POST",
+      verifiedByNameKey: "declarationVerifiedByName",
+      onView: () =>
+        navigate(`/forms/declaration-form/preview/${employee.id}`, {
+          state: getCommonState(
+            "declarationData",
+            "declarationStatus",
+            employee.id
+          ),
+        }),
+    },
+
     {
       title: "Employees Provident Fund (EPF) Form",
       statusKey: "epfStatus",
@@ -137,7 +138,7 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
           handleToggleFormAccess(
             form.formKey,
             form.category,
-            employee[form.disabledKey],
+            employee[form.disabledKey]
           )
         }
         onView={form.onView}

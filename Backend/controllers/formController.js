@@ -107,9 +107,37 @@ exports.getAutoFillData = async (req, res) => {
         pincode: record.pincode,
         country: record.country
       },
+      
       // Address string for FormApplication
-      currentAddress: [record.address_line1, record.address_line2, record.city, record.district, record.pincode].filter(Boolean).join(", "),
-      permanentAddress: [record.address_line1, record.address_line2, record.city, record.district, record.pincode].filter(Boolean).join(", "), // Assume same for now
+      currentAddress: [
+        record.address_line1,
+        record.address_line2,
+        record.landmark,
+        record.post_office,
+        record.district,
+        record.city && record.pincode
+          ? `${record.city} - ${record.pincode}`
+          : record.city || record.pincode,
+        record.state,
+        record.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      
+      permanentAddress: [
+        record.address_line1,
+        record.address_line2,
+        record.landmark,
+        record.post_office,
+        record.district,
+        record.city && record.pincode
+          ? `${record.city} - ${record.pincode}`
+          : record.city || record.pincode,
+        record.state,
+        record.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
       
       // Employment
       designation: record.job_title,
@@ -157,7 +185,7 @@ exports.getAutoFillData = async (req, res) => {
 
     autoFillData.mediclaimData = subMed.data;
     autoFillData.mediclaimStatus = subMed.status; 
-    autoFillData.rejectionReason = subMed.reason;
+    autoFillData.mediclaimRejectionReason = subMed.reason;
     autoFillData.mediclaimVerifiedByName = await resolveVerifierName(subMed.verifiedBy);
     autoFillData.mediclaimDisabled = disabledForms.includes('MEDICLAIM');
 

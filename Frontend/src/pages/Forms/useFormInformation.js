@@ -136,11 +136,13 @@ const useFormInformation = () => {
         emergency_no: saved.emergency_no || "",
         personal_email: saved.personal_email || base.email || "",
 
-        // Address - simplify mapping?
+        // Address
         ...saved, // Spread saved address fields
 
         current_residence_type: saved.current_residence_type || "",
-
+        current_pin_code: saved.current_pin_code || autoFillData.address?.pincode || "",
+        current_post_office: saved.current_post_office || autoFillData.address?.post_office || "",
+        
         educational_details:
           saved.educational_details?.length > 0
             ? saved.educational_details

@@ -125,13 +125,15 @@ const PreviewNDA = () => {
             "Enter the reason for rejection (minimum 10 characters)...",
           confirmText: "Submit Rejection",
           cancelText: "Cancel",
-        },
+        }
       );
       if (!reason) return;
     }
 
     const isConfirmed = await showConfirm(
-      `Are you sure you want to ${newStatus === "VERIFIED" ? "approve" : "reject"} this form?`,
+      `Are you sure you want to ${
+        newStatus === "VERIFIED" ? "approve" : "reject"
+      } this form?`
     );
     if (!isConfirmed) return;
 
@@ -144,12 +146,14 @@ const PreviewNDA = () => {
           status: newStatus,
           remarks: reason,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       await showAlert(
-        `Form ${newStatus === "VERIFIED" ? "Approved" : "Rejected"} Successfully!`,
-        { type: "success" },
+        `Form ${
+          newStatus === "VERIFIED" ? "Approved" : "Rejected"
+        } Successfully!`,
+        { type: "success" }
       );
       navigate(-1);
     } catch (error) {
@@ -241,12 +245,25 @@ const PreviewNDA = () => {
                   An individual with its main address at:
                 </div>
                 <div className="border-b border-black mt-1 px-2 pb-0.5">
-                  {formData.address_line1}, {formData.address_line2},{" "}
-                  {formData.post_office}
+                  {[
+                    formData.address_line1,
+                    formData.address_line2,
+                    formData.landmark,
+                    formData.post_office,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </div>
                 <div className="border-b border-black mt-1 px-2 pb-0.5">
-                  {formData.city}, {formData.district}, Pincode -{" "}
-                  {formData.pincode}
+                  {[
+                    formData.district,
+                    formData.city && formData.pincode
+                      ? `${formData.city} - ${formData.pincode}`
+                      : formData.city || formData.pincode,
+                    formData.state,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </div>
               </div>
             </div>

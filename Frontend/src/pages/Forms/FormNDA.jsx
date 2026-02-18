@@ -99,6 +99,7 @@ const FormNDA = () => {
             <div className="grid grid-cols-1 gap-2">
               <FormInput
                 register={register}
+                label="Address Line 1"
                 name="address_line1"
                 placeholder="Address Line 1"
                 disabled
@@ -107,6 +108,7 @@ const FormNDA = () => {
               />
               <FormInput
                 register={register}
+                label="Address Line 2"
                 name="address_line2"
                 placeholder="Address Line 2"
                 disabled
@@ -115,6 +117,17 @@ const FormNDA = () => {
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
                   register={register}
+                  label="landmark"
+                  name="landmark"
+                  placeholder="Landmark"
+                  disabled
+                  error={errors.landmark}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormInput
+                  register={register}
+                  label="Post Office"
                   name="post_office"
                   placeholder="Post Office"
                   disabled
@@ -123,6 +136,7 @@ const FormNDA = () => {
                 />
                 <FormInput
                   register={register}
+                  label="District"
                   name="district"
                   placeholder="District"
                   disabled
@@ -133,22 +147,23 @@ const FormNDA = () => {
               <div className="flex gap-4">
                 <FormInput
                   register={register}
+                  label="City"
                   name="city"
                   disabled
-                  className="flex-1"
                   error={errors.city}
                   required
                 />
                 <FormInput
                   register={register}
+                  label="State"
                   name="state"
                   disabled
-                  className="flex-1"
                   error={errors.state}
                   required
                 />
                 <FormInput
                   register={register}
+                  label="Pincode"
                   name="pincode"
                   disabled
                   className="w-32"

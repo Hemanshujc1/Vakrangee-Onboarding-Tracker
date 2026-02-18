@@ -19,7 +19,7 @@ const GratuityAcknowledgement = ({
           <div className="flex items-end gap-2">
             <span>Date:</span>
             <span className="flex-1 border-b border-black h-6">
-              {formatDate(formData.date_of_submit)}
+             {formatDate(formData.date_of_submit) || new Date().toLocaleDateString("en-GB")}
             </span>
           </div>
           <p className="text-[10px] mt-2 font-bold">

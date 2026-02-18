@@ -36,6 +36,7 @@ const FormEPF = () => {
     internationalWorker,
     relationshipType,
     isEmployee,
+    autoFillData,
   } = useFormEPF();
 
   if (loading) return <div>Loading Form Data...</div>;
@@ -79,6 +80,7 @@ const FormEPF = () => {
         register={register}
         errors={errors}
         relationshipType={relationshipType}
+        autoFillData={autoFillData}
       />
 
       <EPFPreviousEmployment
@@ -92,9 +94,13 @@ const FormEPF = () => {
         register={register}
         errors={errors}
         internationalWorker={internationalWorker}
+        autoFillData={autoFillData}
       />
 
-      <EPFKYCDetails register={register} errors={errors} />
+      <EPFKYCDetails
+        register={register}
+        errors={errors}
+      />
 
       <EPFPFHistory register={register} errors={errors} />
 

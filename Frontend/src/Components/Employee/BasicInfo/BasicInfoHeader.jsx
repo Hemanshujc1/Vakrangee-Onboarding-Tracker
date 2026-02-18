@@ -41,7 +41,7 @@ const BasicInfoHeader = ({
             <span>
               Verification Rejected
               {verifiedByName && <span className="text-sm"> by {verifiedByName}</span>}
-              {rejectionReason && <> due to: {rejectionReason}</>}
+              {rejectionReason && <> Reason: {rejectionReason}</>}
             </span>
           </div>
         )}
