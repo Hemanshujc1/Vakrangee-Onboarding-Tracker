@@ -28,7 +28,7 @@ const ProfileHeader = ({
 
     if (stage === "BASIC_INFO" && !employee.firstLoginAt) {
       return (
-        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm w-fit text-red-600 bg-red-100">
+        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm w-fit bg-orange-100 text-orange-600">
           <Clock size={16} />
           <span>Login Pending</span>
         </div>
@@ -38,22 +38,22 @@ const ProfileHeader = ({
     const stages = {
       BASIC_INFO: {
         label: "Profile Pending",
-        color: "text-yellow-600 bg-yellow-100",
+        color: "bg-yellow-100 text-yellow-600",
         icon: UserCheck,
       },
       PRE_JOINING: {
         label: "In Progress",
-        color: "text-blue-600 bg-blue-100",
+        color: "bg-blue-100 text-blue-600",
         icon: Clock,
       },
       PRE_JOINING_VERIFIED: {
         label: "Ready to Join",
-        color: "text-green-600 bg-green-100",
+        color: "bg-green-100 text-green-600",
         icon: ShieldCheck,
       },
       POST_JOINING: {
         label: "Joining Formalities",
-        color: "text-yellow-600 bg-yellow-100",
+        color: "bg-purple-100 text-purple-600",
         icon: Building,
       },
       ONBOARDED: {

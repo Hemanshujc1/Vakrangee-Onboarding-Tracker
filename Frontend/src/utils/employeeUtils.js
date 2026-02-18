@@ -17,7 +17,6 @@ export const getStatusColor = (statusText) => {
         case "In Progress": return "bg-blue-100 text-blue-600";
         case "Ready to Join": return "bg-green-100 text-green-600";
         case "Joining Formalities": return "bg-purple-100 text-purple-600";
-        case 'Joining Formalities': return "bg-purple-100 text-purple-600";
         case "Completed": return "text-green-600 bg-green-100";
         case "Not Joined": return "bg-gray-100 text-gray-500 border border-gray-200";
         default: return "bg-gray-100 text-gray-600";

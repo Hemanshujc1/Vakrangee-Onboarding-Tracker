@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import {
   yupResolver,
@@ -22,11 +22,10 @@ const useFormEPF = () => {
     autoFillLoading,
     signaturePreview,
     setSignaturePreview,
-    isPreviewMode,
-    setIsPreviewMode,
   } = useOnboardingForm();
 
   const { formData: stateData } = location.state || {};
+  const isPreviewRef = useRef(false);
   
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(autoFillData?.epfStatus);
   const hasSavedSignature = !!(
@@ -270,8 +269,25 @@ const useFormEPF = () => {
 
       const savedData = autoFillData?.epfData || {};
 
-      if (isDraft && !isPreviewMode) {
-         await showAlert("Draft Saved!", { type: "success" });
+      if (isDraft) {
+        if (isPreviewRef.current) {
+           navigate(`/forms/employees-provident-fund/preview/${targetId}`, {
+            state: {
+              formData: {
+                ...allValues,
+                signature_path:
+                  savedData.signature_path || autoFillData?.signature,
+              },
+              signaturePreview: signaturePreview,
+              employeeId: targetId,
+              isHR: false,
+              status: "DRAFT",
+              fromPreviewSubmit: true,
+            },
+          });
+        } else {
+           await showAlert("Draft Saved!", { type: "success" });
+        }
       } else {
          navigate(`/forms/employees-provident-fund/preview/${targetId}`, {
           state: {
@@ -316,7 +332,7 @@ const useFormEPF = () => {
     onValidationFail,
     showAlert,
     // Expose setters to UI actions
-    setIsPreviewMode,
+    isPreviewRef,
     prevEpfMember,
     prevEpsMember,
     internationalWorker,

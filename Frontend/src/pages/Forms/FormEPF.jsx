@@ -37,6 +37,7 @@ const FormEPF = () => {
     relationshipType,
     isEmployee,
     autoFillData,
+    isPreviewRef,
   } = useFormEPF();
 
   if (loading) return <div>Loading Form Data...</div>;
@@ -56,12 +57,12 @@ const FormEPF = () => {
         isSubmitting,
         onSaveDraft: () => {
           setValue("isDraft", true);
-          setIsPreviewMode(false); // Ensure we are in pure draft mode
+          isPreviewRef.current = false;
           handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
         },
         onSubmit: () => {
-          setIsPreviewMode(true); // Signal we want to preview
           setValue("isDraft", true);
+          isPreviewRef.current = true;
           handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
         },
       }}
@@ -97,10 +98,7 @@ const FormEPF = () => {
         autoFillData={autoFillData}
       />
 
-      <EPFKYCDetails
-        register={register}
-        errors={errors}
-      />
+      <EPFKYCDetails register={register} errors={errors} />
 
       <EPFPFHistory register={register} errors={errors} />
 
