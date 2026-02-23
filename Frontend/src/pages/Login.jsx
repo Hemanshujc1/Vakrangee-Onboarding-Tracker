@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import axios from "axios";
-import { useAlert } from "../context/AlertContext";
+// import { useAlert } from "../context/AlertContext";
 import Logger from "../utils/Logger";
 import OfficeBackground from "../assets/office_image.avif";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { showAlert } = useAlert();
+  // const { showAlert } = useAlert();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
