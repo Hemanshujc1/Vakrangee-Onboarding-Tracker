@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import axios from "axios";
-
 import { useAlert } from "../context/AlertContext";
 import Logger from "../utils/Logger";
+import OfficeBackground from "../assets/office_image.avif";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,8 +14,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -76,8 +74,9 @@ const Login = () => {
       <div className="hidden lg:flex w-1/2 relative bg-gray-950 text-white flex-col justify-between p-16 h-full isolate">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+            src={OfficeBackground}
             alt="Office Background"
+            loading="lazy"
             className="w-full h-full object-cover opacity-60"
           />
           <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/90"></div>
