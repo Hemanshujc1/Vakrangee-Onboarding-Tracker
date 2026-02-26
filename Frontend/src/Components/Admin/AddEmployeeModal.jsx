@@ -21,9 +21,9 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     onboarding_stage: "BASIC_INFO",
     password: "user@123",
   });
+  const [loading, setLoading] = useState(false);
 
   const [managers, setManagers] = useState([]);
-  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -69,56 +69,19 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let hrName = "";
-    let hrDesignation = "";
-    if (formData.managerId) {
-      // Use userId for comparison as the value is now userId
-      const selectedManager = managers.find(
-        (m) => m.userId === parseInt(formData.managerId),
-      );
-      if (selectedManager) {
-        hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
-        hrDesignation = selectedManager.role;
-      }
-    }
-
-    onAdd({
-      ...formData,
-      hrName,
-      hrDesignation,
-      onboarding_hr_id: formData.managerId, // This will now be the User ID
-    });
-
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      cc: "",
-      phone: null,
-      role: "EMPLOYEE",
-      jobTitle: "",
-      department: "",
-      location: "",
-      startDate: "",
-      managerId: "",
-      onboarding_stage: "BASIC_INFO",
-      password: "user@123",
-    });
-  };
-
-  const handleSendEmail = async () => {
     if (!formData.email || !formData.firstName || !formData.password) {
       await showAlert(
-        "Please fill in First Name, Email and Password before sending Letter of Selection email.",
+        "Please fill in First Name, Email and Password before adding employee.",
         { type: "warning" },
       );
       return;
     }
 
-    setSendingEmail(true);
+    setLoading(true);
+
     try {
       const userInfo = localStorage.getItem("userInfo");
       const token = userInfo
@@ -128,7 +91,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         await showAlert("Authentication token missing. Please login again.", {
           type: "error",
         });
-        setSendingEmail(false);
+        setLoading(false);
         return;
       }
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -136,16 +99,16 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       let hrName = "";
       let hrDesignation = "";
       if (formData.managerId) {
-        // Use userId for comparison
         const selectedManager = managers.find(
           (m) => m.userId === parseInt(formData.managerId),
         );
         if (selectedManager) {
           hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
-          hrDesignation = selectedManager.jobTitle;
+          hrDesignation = selectedManager.jobTitle || selectedManager.role;
         }
       }
 
+      // 1. Send Welcome Email
       await axios.post(
         "/api/email/send-welcome",
         {
@@ -162,18 +125,38 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         config,
       );
 
-      await showAlert("Letter of Selection email sent successfully!", {
-        type: "success",
+      // 2. Add Employee
+      await onAdd({
+        ...formData,
+        hrName,
+        hrDesignation,
+        onboarding_hr_id: formData.managerId,
+      });
+
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        cc: "",
+        phone: null,
+        role: "EMPLOYEE",
+        jobTitle: "",
+        department: "",
+        location: "",
+        startDate: "",
+        managerId: "",
+        onboarding_stage: "BASIC_INFO",
+        password: "user@123",
       });
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error adding employee:", error);
       await showAlert(
         error.response?.data?.message ||
-          "Failed to send Letter of Selection email.",
+          "Failed to process employee addition and email.",
         { type: "error" },
       );
     } finally {
-      setSendingEmail(false);
+      setLoading(false);
     }
   };
 
@@ -296,7 +279,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date
+                  Joining Date
                 </label>
                 <input
                   type="date"
@@ -343,33 +326,22 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
               </select>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
+            <div className="flex justify-center items-center gap-3 pt-4">
               <button
                 type="button"
-                onClick={handleSendEmail}
-                disabled={sendingEmail}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <Mail className="w-4 h-4" />
-                {sendingEmail ? "Sending..." : "Send Email"}
+                Cancel
               </button>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Employee
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
-                >
-                  Cancel
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                {loading ? "Processing..." : "Add Employee & Send Email"}
+              </button>
             </div>
           </form>
         </motion.div>

@@ -7,7 +7,7 @@ const MyProfile = () => {
   return (
     <DashboardLayout>
       <PageHeader title="My Profile" />
-    
+
       <div className="max-w-5xl mx-auto">
         <EditProfileForm />
       </div>

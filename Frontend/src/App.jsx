@@ -2,19 +2,18 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/HRSuperAdmin/Dashboard";
-import ManageEmployees from "./pages/HRSuperAdmin/ManageEmployees";
+import ManageEmployees from "./pages/Shared/ManageEmployees";
 import ManageAdmins from "./pages/HRSuperAdmin/ManageAdmins";
 import AdminDetail from "./pages/HRSuperAdmin/AdminDetail";
 import EmployeeDetail from "./pages/Shared/EmployeeDetail";
-import MyProfile from "./pages/HRSuperAdmin/MyProfile";
+import MyProfile from "./pages/Shared/MyProfile";
 import MyEmployees from "./pages/HRSuperAdmin/MyEmployees";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 
 // HR Admin Pages
 import HRAdminDashboard from "./pages/HRAdmin/Dashboard";
-import HRAdminEmployees from "./pages/HRAdmin/ManageEmployees";
-import OtherEmployees from "./pages/HRAdmin/OtherEmployees";
-import HRAdminProfile from "./pages/HRAdmin/MyProfile";
+import HRAdminEmployees from "./pages/HRAdmin/MyEmployees";
+// import OtherEmployees from "./pages/HRAdmin/OtherEmployees";
 
 // Employee Pages
 import EmployeeDashboard from "./pages/Employee/Dashboard";
@@ -80,13 +79,17 @@ const App = () => {
         {/* HR Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["HR_ADMIN"]} />}>
           <Route path="/hr-admin" element={<HRAdminDashboard />} />
-          <Route
+          {/* <Route
             path="/hr-admin/other-employees"
             element={<OtherEmployees />}
-          />
+          /> */}
           <Route path="/hr-admin/employees" element={<HRAdminEmployees />} />
+          <Route
+            path="/hr-admin/manage-employees"
+            element={<ManageEmployees />}
+          />
           <Route path="/hr-admin/employees/:id" element={<EmployeeDetail />} />
-          <Route path="/hr-admin/profile" element={<HRAdminProfile />} />
+          <Route path="/hr-admin/profile" element={<MyProfile />} />
         </Route>
 
         {/* Employee Routes */}

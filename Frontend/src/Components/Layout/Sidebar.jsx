@@ -57,8 +57,13 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const hrAdminItems = [
     { name: "Dashboard", icon: Home, path: "/hr-admin" },
+    {
+      name: "Manage Employees",
+      icon: UserPlus,
+      path: "/hr-admin/manage-employees",
+    },
     { name: "My Employees", icon: Users, path: "/hr-admin/employees" },
-    { name: "Other Employees", icon: Users, path: "/hr-admin/other-employees" },
+    // { name: "Other Employees", icon: Users, path: "/hr-admin/other-employees" },
     { name: "My Profile", icon: UserCircle, path: "/hr-admin/profile" },
   ];
 

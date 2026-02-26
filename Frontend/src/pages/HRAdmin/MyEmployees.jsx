@@ -6,15 +6,15 @@ import ExportModal from "../../Components/Shared/ExportModal";
 import useEmployeeList from "../../hooks/useEmployeeList";
 import EmployeeManagementPage from "../../Components/Shared/EmployeeManagementPage";
 
-const ManageAssignedEmployees = () => {
+const MyEmployees = () => {
   const navigate = useNavigate();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const employeeListProps = useEmployeeList({
-      filterPredicate: (emp, user) => {
-        return emp.role === "EMPLOYEE" && emp.onboardingHrId == user.id;
-      },
-      itemsPerPage: 5
+    filterPredicate: (emp, user) => {
+      return emp.role === "EMPLOYEE" && emp.onboardingHrId == user.id;
+    },
+    itemsPerPage: 5,
   });
 
   const { employees, options } = employeeListProps;
@@ -24,9 +24,7 @@ const ManageAssignedEmployees = () => {
       <EmployeeManagementPage
         title="My Employees"
         subtitle={
-          <>
-            Track and manage onboarding for employees assigned to you.
-          </>
+          <>Track and manage onboarding for employees assigned to you.</>
         }
         headerChildren={
           <button
@@ -70,4 +68,4 @@ const ManageAssignedEmployees = () => {
   );
 };
 
-export default ManageAssignedEmployees;
+export default MyEmployees;

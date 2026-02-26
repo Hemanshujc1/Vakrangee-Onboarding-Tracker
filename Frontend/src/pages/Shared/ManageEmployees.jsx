@@ -53,7 +53,7 @@ const ManageEmployees = () => {
       console.error("Error adding employee:", error);
       await showAlert(
         error.response?.data?.message || "Failed to add employee.",
-        { type: "error" }
+        { type: "error" },
       );
     }
   };
@@ -75,7 +75,13 @@ const ManageEmployees = () => {
             <span>Export</span>
           </button>
         }
-        onRowClick={(emp) => navigate(`/hr-super-admin/employees/${emp.id}`)}
+        onRowClick={(emp) => {
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : null;
+          const basePath =
+            user?.role === "HR_SUPER_ADMIN" ? "/hr-super-admin" : "/hr-admin";
+          navigate(`${basePath}/employees/${emp.id}`);
+        }}
         onActivate={employeeListProps.handleActivate}
         onDelete={employeeListProps.handleDelete}
         {...employeeListProps}

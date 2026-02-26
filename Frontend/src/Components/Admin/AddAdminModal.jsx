@@ -20,7 +20,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     password: "admin@123",
   });
 
-  const [sendingEmail, setSendingEmail] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,22 +30,73 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAdd(formData);
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      cc: "",
-      phone: "",
-      role: "HR_ADMIN",
-      department: "HR",
-      jobTitle: "",
-      location: "",
-      startDate: null,
-      password: "admin@123",
-    });
+
+    if (!formData.email || !formData.firstName) {
+      await showAlert(
+        "Please fill in First Name and Email before adding admin.",
+        { type: "warning" },
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userInfo = localStorage.getItem("userInfo");
+      const token = userInfo
+        ? JSON.parse(userInfo).token
+        : localStorage.getItem("token");
+      if (!token) {
+        await showAlert("Authentication token missing. Please login again.", {
+          type: "error",
+        });
+        setLoading(false);
+        return;
+      }
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      // 1. Send Admin Welcome Email
+      await axios.post(
+        "/api/email/send-admin-welcome",
+        {
+          email: formData.email,
+          firstName: formData.firstName,
+          password: formData.password,
+          cc: formData.cc,
+          portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
+          hrName: hrDetails.name,
+          hrDesignation: hrDetails.designation,
+        },
+        config,
+      );
+
+      // 2. Add Admin
+      await onAdd(formData);
+
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        cc: "",
+        phone: "",
+        role: "HR_ADMIN",
+        department: "HR",
+        jobTitle: "",
+        location: "",
+        startDate: null,
+        password: "admin@123",
+      });
+    } catch (error) {
+      console.error("Error adding admin:", error);
+      await showAlert(
+        error.response?.data?.message ||
+          "Failed to process admin addition and email.",
+        { type: "error" },
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const [hrDetails, setHrDetails] = useState({ name: "", designation: "" });
@@ -93,51 +144,6 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       }
     } catch (error) {
       console.error("Error fetching current user details:", error);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!formData.email || !formData.firstName) {
-      await showAlert(
-        "Please fill in First Name and Email before sending Admin welcome email.",
-        { type: "warning" },
-      );
-      return;
-    }
-
-    setSendingEmail(true);
-    try {
-      const userInfo = localStorage.getItem("userInfo");
-      const token = userInfo
-        ? JSON.parse(userInfo).token
-        : localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      await axios.post(
-        "/api/email/send-admin-welcome",
-        {
-          email: formData.email,
-          firstName: formData.firstName,
-          password: formData.password,
-          cc: formData.cc,
-          portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
-          hrName: hrDetails.name,
-          hrDesignation: hrDetails.designation,
-        },
-        config,
-      );
-
-      await showAlert("Admin welcome email sent successfully!", {
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      await showAlert(
-        error.response?.data?.message || "Failed to send Admin Welocome email.",
-        { type: "error" },
-      );
-    } finally {
-      setSendingEmail(false);
     }
   };
 
@@ -270,33 +276,22 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
+            <div className="flex justify-center items-center gap-3 pt-4">
               <button
                 type="button"
-                onClick={handleSendEmail}
-                disabled={sendingEmail}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <Mail className="w-4 h-4" />
-                {sendingEmail ? "Sending..." : "Send Email"}
+                Cancel
               </button>
-
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors text-center"
-                >
-                  Cancel
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                {loading ? "Processing..." : "Add HR & Send Email"}
+              </button>
             </div>
           </form>
         </motion.div>
