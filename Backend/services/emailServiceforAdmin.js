@@ -69,37 +69,7 @@ const sendHRAdminAssignmentEmail = async (
             <br />
             ${HR_Designation}
         </p>
-
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
-
-           <div style="text-align:left; margin-bottom:20px;">
-            <img
-              src="cid:vakrangeelogo"
-              alt="Vakrangee - A Legacy of 35+ Years"
-              style="width:100%; max-width:560px; border-radius:8px;"
-            />
-          </div>
-          
-        <div style="font-size: 11px; color: #6b7280; line-height: 1.5;">
-          <p>
-            <strong>DISCLAIMER:</strong> The information contained in this electronic message and
-            any attachments to this message are intended for the exclusive use of the
-            addressee(s) and may contain proprietary, confidential or privileged
-            information. If you are not the intended recipient you are notified that
-            disclosing, copying, distributing or taking any action in reliance on the
-            contents of this information is strictly prohibited. Please notify the
-            sender immediately and destroy all copies of this message and any
-            attachments.
-          </p>
-  
-          <p>
-            <strong>WARNING:</strong> Computer viruses can be transmitted via email. The
-            recipient should check this email and any attachments for the presence of
-            viruses. The company accepts no liability for any damage caused by any virus
-            transmitted by this email.
-          </p>
-        </div>
-    </div>
+      </div>
     `;
   
     const mailOptions = {
@@ -128,3 +98,36 @@ const sendHRAdminAssignmentEmail = async (
   
 module.exports = { sendHRAdminAssignmentEmail };
   
+
+
+/*
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+
+ <div style="text-align:left; margin-bottom:20px;">
+            <img
+              src="cid:vakrangeelogo"
+              alt="Vakrangee - A Legacy of 35+ Years"
+              style="width:100%; max-width:560px; border-radius:8px;"
+            />
+          </div>
+          
+        <div style="font-size: 11px; color: #6b7280; line-height: 1.5;">
+          <p>
+            <strong>DISCLAIMER:</strong> The information contained in this electronic message and
+            any attachments to this message are intended for the exclusive use of the
+            addressee(s) and may contain proprietary, confidential or privileged
+            information. If you are not the intended recipient you are notified that
+            disclosing, copying, distributing or taking any action in reliance on the
+            contents of this information is strictly prohibited. Please notify the
+            sender immediately and destroy all copies of this message and any
+            attachments.
+          </p>
+  
+          <p>
+            <strong>WARNING:</strong> Computer viruses can be transmitted via email. The
+            recipient should check this email and any attachments for the presence of
+            viruses. The company accepts no liability for any damage caused by any virus
+            transmitted by this email.
+          </p>
+        </div>
+*/

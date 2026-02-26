@@ -191,6 +191,47 @@ const Login = () => {
               {!loading && <ArrowRight size={20} />}
             </button>
           </form>
+
+          {/* Quick Login for Development */}
+          {import.meta.env.DEV && (
+            <div className="bg-black text-white border-3 border-[red] p-4 rounded-lg">
+              <p className="text-xs text-neutral-light font-bold mb-3 uppercase tracking-wider">
+                Quick Login (Dev Only)
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("superhr@admin.com");
+                    setPassword("admin@123");
+                  }}
+                  className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
+                >
+                  Super HR Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("hr@admin.com");
+                    setPassword("admin@123");
+                  }}
+                  className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
+                >
+                  HR Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("ankit@gmail.com");
+                    setPassword("user@123");
+                  }}
+                  className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
+                >
+                  New Employee
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -52,7 +52,8 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
     const HR_Designation = hrDesignation || 'Human Resources';
     const loc = location || 'Vakrangee Corporate Office';
 
-    const html = `<div style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #ffffff;">
+    const html = `
+    <div style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #ffffff;">
         <div style="color: #333333; line-height: 1.6; font-size: 14px;">
           <p>
             Dear <strong>${firstName}</strong>,
@@ -68,7 +69,7 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
           <p>
             You shall join the services of the Company on or before
             <strong>${joiningDate}</strong>. We shall appreciate your confirmation of acceptance of the above by <strong>${joiningDate}</strong>. Non-acceptance before the stipulated date shall make this offer redundant automatically. 
-        </p>
+          </p>
   
           <p>
             We welcome you to the Vakrangee family and wish you a long rewarding
@@ -117,8 +118,37 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
             ${HR_Designation}
           </p>
         </div>
-  
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+  </div> 
+`;
+
+    const mailOptions = {
+        from: process.env.SMTP_USER,
+        to,
+        cc,
+        subject,
+        html,
+        // attachments: [{
+        //     filename: 'Vakrangee_email_logo.jpg',
+        //     path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
+        //     cid: 'vakrangeelogo' 
+        // }]
+    };
+
+    try {
+        logger.info(`Attempting to send Letter of Selection email to: ${to}`);
+        await transporter.sendMail(mailOptions);
+        logger.info(`Letter of Selection email sent successfully to ${to}`);
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending Letter of Selection email to %s: %o', to, error);
+        return { success: false, error: error.message };
+    }
+};
+
+module.exports = { sendWelcomeEmail };
+
+/*
+ <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
 
         <div style="text-align:left; margin-bottom:20px;">
             <img
@@ -147,31 +177,4 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
             transmitted by this email.
           </p>
         </div>
-      </div> 
-`;
-
-    const mailOptions = {
-        from: process.env.SMTP_USER,
-        to,
-        cc,
-        subject,
-        html,
-        attachments: [{
-            filename: 'Vakrangee_email_logo.jpg',
-            path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
-            cid: 'vakrangeelogo' 
-        }]
-    };
-
-    try {
-        logger.info(`Attempting to send Letter of Selection email to: ${to}`);
-        await transporter.sendMail(mailOptions);
-        logger.info(`Letter of Selection email sent successfully to ${to}`);
-        return { success: true };
-    } catch (error) {
-        logger.error('Error sending Letter of Selection email to %s: %o', to, error);
-        return { success: false, error: error.message };
-    }
-};
-
-module.exports = { sendWelcomeEmail };
+*/
