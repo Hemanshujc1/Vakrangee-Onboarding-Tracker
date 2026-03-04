@@ -147,9 +147,9 @@ const JobDetailsCard = ({
 
         {/* Assigned HR */}
         <div className="flex items-center gap-3 text-gray-600 col-span-1 sm:col-span-2">
-          <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
+          {/* <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
             <UserCheck size={18} />
-          </div>
+          </div> */}
           <div className="w-full min-w-0">
             <p className="text-xs text-gray-400">Assigned Onboarding HR</p>
             {isEditing ? (
