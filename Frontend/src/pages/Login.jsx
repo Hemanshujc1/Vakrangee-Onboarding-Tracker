@@ -29,7 +29,7 @@ const Login = () => {
           username: email,
           password: password,
         },
-        { timeout: 10000 }
+        { timeout: 10000 },
       ); // 10s timeout to prevent hanging
 
       Logger.log("Login success:", response.data);
@@ -212,7 +212,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail("hr@admin.com");
+                    setEmail("hemanshuwork26@gmail.com");
                     setPassword("admin@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
@@ -222,12 +222,33 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail("ankit@gmail.com");
+                    setEmail("hemanshujc01@gmail.com");
                     setPassword("user@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
                   New Employee
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("221220@iiitt.ac.in");
+                    setPassword("user@123");
+                  }}
+                  className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
+                >
+                  New Employee 2
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("laksendra@example.com");
+                    setPassword("user@123");
+                  }}
+                  className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
+                >
+                  New Employee 3
                 </button>
               </div>
             </div>

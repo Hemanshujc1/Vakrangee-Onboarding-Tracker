@@ -1,5 +1,6 @@
-const { FormSubmission, EmployeeMaster } = require("../models");
+const { FormSubmission, EmployeeMaster, EmployeeDocument, EmployeeRecord, User } = require("../models");
 const logger = require("./logger");
+const sendEmail = require("./emailService");
 
 exports.saveForm = async (req, res, formType) => {
   try {
@@ -84,12 +85,68 @@ exports.saveForm = async (req, res, formType) => {
       });
     }
 
+    if (status === "SUBMITTED") {
+        await exports.sendHRSubmissionNotification(employee.id, `Form: ${formType.replace(/_/g, ' ')}`);
+    }
+
     res.json({ message: "Form submitted successfully", formId: form.id, status: form.status });
 
   } catch (error) {
     logger.error(`Error saving ${formType}: %o`, error);
     res.status(500).json({ message: "Server error saving form." });
   }
+};
+
+exports.checkAndUpdateBasicInfoStage = async (employeeId) => {
+    try {
+        const employee = await EmployeeMaster.findByPk(employeeId);
+        if (!employee || employee.onboarding_stage !== 'BASIC_INFO') return;
+
+        if (employee.basic_info_status !== 'VERIFIED') return;
+
+        const documents = await EmployeeDocument.findAll({
+            where: { employee_id: employee.id }
+        });
+
+        const docMap = {};
+        documents.forEach(d => {
+            docMap[d.document_type] = d.status;
+        });
+
+        const requiredDocs = [
+          "PAN Card",
+          "Aadhar Card",
+          "10th Marksheet",
+          "12th Marksheet",
+          "Degree Certificate",
+          "Cancelled Cheque"
+        ];
+        
+        let allVerified = true;
+        for (const reqDoc of requiredDocs) {
+            if (docMap[reqDoc] !== 'VERIFIED') {
+                allVerified = false;
+                break;
+            }
+        }
+        
+        // Also check signature in EmployeeRecord
+        const record = await EmployeeRecord.findOne({ where: { employee_id: employee.id } });
+        if (!record || !record.signature) {
+            allVerified = false;
+        }
+
+        if (allVerified) {
+            employee.onboarding_stage = 'PRE_JOINING';
+            employee.basic_info_rejection_reason = null; 
+            employee.disabled_forms = []; // Enable all forms for pre-joining
+            await employee.save();
+            logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING and enabled forms.`);
+        }
+
+    } catch (err) {
+        logger.error("Error auto-updating basic info stage: %o", err);
+    }
 };
 
 exports.checkAndUpdateOnboardingStage = async (employeeId) => {
@@ -193,6 +250,9 @@ exports.verifyForm = async (req, res, formType) => {
 
         res.json({ message: `Form ${status}`, form });
 
+        // Send Notification
+        await exports.sendVerificationNotification(employeeId, formType.replace(/_/g, ' '), status, finalRejectionReason);
+
         // --- Auto-Update Onboarding Stage Logic ---
         if (status === 'VERIFIED') {
              await exports.checkAndUpdateOnboardingStage(employeeId);
@@ -202,5 +262,95 @@ exports.verifyForm = async (req, res, formType) => {
     } catch (error) {
         logger.error(`Error verifying ${formType}: %o`, error);
         res.status(500).json({ message: "Server error verifying form." });
+    }
+};
+
+exports.sendVerificationNotification = async (employeeId, itemTitle, status, rejectionReason) => {
+    try {
+        const employee = await EmployeeMaster.findByPk(employeeId, {
+            include: [{ model: EmployeeRecord }, { model: User }]
+        });
+
+        if (!employee) {
+            logger.warn(`Could not send notification: Employee ${employeeId} not found.`);
+            return;
+        }
+
+        const emailTo = employee.EmployeeRecord?.personal_email_id || employee.User?.username;
+        if (!emailTo) {
+            logger.warn(`Could not send notification: No email found for employee ${employeeId}.`);
+            return;
+        }
+
+        const employeeName = employee.EmployeeRecord 
+            ? `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim()
+            : "Employee";
+
+        const subject = `Update on your Onboarding: ${itemTitle} is ${status}`;
+        
+        const statusText = status === 'VERIFIED' ? 'successfully verified' : 'rejected';
+        const actionText = status === 'VERIFIED' 
+            ? 'You can now proceed with the next steps of your onboarding.' 
+            : `Please log in to the portal to correct the details and resubmit. \n\nReason for rejection: ${rejectionReason}`;
+
+        const text = `Dear ${employeeName},\n\nYour ${itemTitle} has been ${statusText}.\n\n${actionText}\n\nBest regards,\nVakrangee HR Team`;
+        
+        const html = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: ${status === 'VERIFIED' ? '#2e7d32' : '#d32f2f'};">Onboarding Update</h2>
+                <p>Dear <strong>${employeeName}</strong>,</p>
+                <p>Your <strong>${itemTitle}</strong> has been <strong>${statusText}</strong>.</p>
+                <p>${actionText.replace(/\n\n/g, '<br/><br/>')}</p>
+                <br/>
+                <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
+            </div>
+        `;
+
+        await sendEmail({ to: emailTo, subject, text, html });
+        logger.info(`Verification email sent to ${emailTo} for ${itemTitle} (${status})`);
+
+    } catch (err) {
+        logger.error(`Error sending verification notification: %o`, err);
+    }
+};
+
+exports.sendHRSubmissionNotification = async (employeeId, itemTitle) => {
+    try {
+        const employee = await EmployeeMaster.findByPk(employeeId, {
+            include: [{ model: EmployeeRecord }]
+        });
+
+        if (!employee || !employee.EmployeeRecord || !employee.EmployeeRecord.onboarding_hr_id) {
+            logger.warn(`Could not send HR notification: No HR assigned to employee ${employeeId}.`);
+            return;
+        }
+
+        const hrUser = await User.findByPk(employee.EmployeeRecord.onboarding_hr_id);
+        if (!hrUser || !hrUser.username) {
+            logger.warn(`Could not send HR notification: HR user not found for ID ${employee.EmployeeRecord.onboarding_hr_id}.`);
+            return;
+        }
+
+        const employeeName = `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim();
+        const subject = `New Submission for Review: ${employeeName} - ${itemTitle}`;
+        
+        const text = `Dear HR Admin,\n\nEmployee ${employeeName} has submitted ${itemTitle} for your review.\n\nPlease log in to the portal to verify the submission.\n\nBest regards,\nVakrangee Onboarding System`;
+        
+        const html = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: #1976d2;">New Submission for Review</h2>
+                <p>Dear HR Admin,</p>
+                <p>Employee <strong>${employeeName}</strong> has submitted <strong>${itemTitle}</strong> for your review.</p>
+                <p>Please log in to the portal to verify the submission.</p>
+                <br/>
+                <p>Best regards,<br/><strong>Vakrangee Onboarding System</strong></p>
+            </div>
+        `;
+
+        await sendEmail({ to: hrUser.username, subject, text, html });
+        logger.info(`HR submission notification sent to ${hrUser.username} for ${employeeName}'s ${itemTitle}`);
+
+    } catch (err) {
+        logger.error(`Error sending HR submission notification: %o`, err);
     }
 };

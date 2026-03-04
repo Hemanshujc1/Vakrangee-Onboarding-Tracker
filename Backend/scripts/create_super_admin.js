@@ -46,7 +46,8 @@ const createSuperAdmin = async () => {
             firstname: 'Super',
             lastname: 'Admin',
             designation_id: null, 
-            department_id: null,
+            department_id: 6,
+            department_name: "Human Resource",
             job_title: 'HR Super Admin',
             personal_email_id: email,
             date_of_joining: new Date()

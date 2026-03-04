@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
+import SearchableSelect from "../UI/SearchableSelect";
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
@@ -24,12 +25,43 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const [loading, setLoading] = useState(false);
 
   const [managers, setManagers] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+
+  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
 
   useEffect(() => {
     if (isOpen) {
       fetchManagers();
+      fetchDropdownData();
     }
   }, [isOpen]);
+
+  const fetchDropdownData = async () => {
+    setLoadingDropdowns(true);
+    try {
+      const responses = await Promise.all([
+        fetch(`${DROPDOWN_BASE_URL}/department-list`),
+        fetch(`${DROPDOWN_BASE_URL}/designation-list`),
+      ]);
+
+      const [deptRes, desRes] = await Promise.all(
+        responses.map((r) => r.json()),
+      );
+
+      if (deptRes?.status) {
+        setDepartments(deptRes.data);
+      }
+      if (desRes?.status) {
+        setDesignations(desRes.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  };
 
   const fetchManagers = async () => {
     try {
@@ -108,14 +140,29 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         }
       }
 
-      // 1. Send Welcome Email
+      // 1a. Map Department and Designation strings back out from the IDs
+      const selectedDept = departments.find(
+        (d) => String(d.department_id) === String(formData.department),
+      );
+      const selectedDesig = designations.find(
+        (d) => String(d.designation_id) === String(formData.jobTitle),
+      );
+
+      const departmentName = selectedDept
+        ? selectedDept.department_name
+        : formData.department;
+      const designationName = selectedDesig
+        ? selectedDesig.designation_name
+        : formData.jobTitle;
+
+      // 1b. Send Welcome Email
       await axios.post(
         "/api/email/send-welcome",
         {
           email: formData.email,
           firstName: formData.firstName,
           password: formData.password,
-          jobTitle: formData.jobTitle,
+          jobTitle: designationName,
           startDate: formData.startDate,
           location: formData.location || "Mumbai",
           hrName: hrName,
@@ -128,6 +175,10 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       // 2. Add Employee
       await onAdd({
         ...formData,
+        department_name: departmentName,
+        department_id: parseInt(formData.department) || null,
+        job_title: designationName,
+        designation_id: parseInt(formData.jobTitle) || null,
         hrName,
         hrDesignation,
         onboarding_hr_id: formData.managerId,
@@ -245,36 +296,33 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
-                  placeholder="Engineering"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  name="jobTitle"
-                  value={formData.jobTitle}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
-                  placeholder="Software Engineer"
-                />
-              </div>
-            </div>
+            <SearchableSelect
+              label="Department"
+              name="department"
+              options={departments.map((dept) => ({
+                id: dept.department_id,
+                name: dept.department_name,
+              }))}
+              value={formData.department}
+              onChange={handleChange}
+              placeholder="Select Department"
+              required
+              disabled={loadingDropdowns}
+            />
+
+            <SearchableSelect
+              label="Job Title"
+              name="jobTitle"
+              options={designations.map((des) => ({
+                id: des.designation_id,
+                name: des.designation_name,
+              }))}
+              value={formData.jobTitle}
+              onChange={handleChange}
+              placeholder="Select Job Title"
+              required
+              disabled={loadingDropdowns}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

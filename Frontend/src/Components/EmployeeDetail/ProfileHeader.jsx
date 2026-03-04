@@ -8,6 +8,7 @@ import {
   CheckCircle,
   UserX,
 } from "lucide-react";
+import SearchableSelect from "../UI/SearchableSelect";
 
 const ProfileHeader = ({
   employee,
@@ -128,15 +129,19 @@ const ProfileHeader = ({
               <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2 mt-1">
                 <Briefcase size={14} />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={editForm.jobTitle}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, jobTitle: e.target.value })
-                    }
-                    className="border border-blue-200 rounded px-2 py-1 text-sm text-[#2C9DE6] font-medium focus:outline-none focus:border-[#2C9DE6] w-full sm:w-auto"
-                    placeholder="Job Title"
-                  />
+                  <div className="w-full sm:w-64">
+                    <SearchableSelect
+                      name="jobTitle"
+                      options={designationsList.map((des) => ({
+                        id: des.designation_id,
+                        name: des.designation_name,
+                      }))}
+                      value={editForm.designation_id || editForm.jobTitle}
+                      onChange={handleDesigChange}
+                      placeholder="Select Job Title"
+                      disabled={loadingDropdowns}
+                    />
+                  </div>
                 ) : (
                   <span className="text-sm sm:text-base">
                     {employee.jobTitle || "Employee"}
@@ -145,13 +150,11 @@ const ProfileHeader = ({
               </div>
             </div>
           </div>
-
           {/* Status */}
           <div className="mb-2 md:mb-4">
             {getOnboardingStatusDisplay(employee.onboardingStage)}
           </div>
         </div>
-
         {children}
       </div>
     </div>

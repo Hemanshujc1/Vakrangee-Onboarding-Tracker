@@ -20,6 +20,17 @@ export default defineConfig(({ mode }) => {
         '/uploads': {
           target: env.VITE_API_URL || 'http://localhost:3001',
           changeOrigin: true,
+        },
+        '/vakrangee-connect': {
+          target: 'https://vkmssit.vakrangee.in',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/nsdl-api': {
+          target: 'https://vkms.vakrangee.in',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/nsdl-api/, '')
         }
       }
     },

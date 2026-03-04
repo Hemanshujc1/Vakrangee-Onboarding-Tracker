@@ -1,4 +1,3 @@
-/// Done
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { User, EmployeeMaster, EmployeeRecord } = require('../models'); 
@@ -21,7 +20,8 @@ exports.register = async (req, res) => {
     // destructuring
     const { 
         username, password, role, 
-        firstName, lastName, department, jobTitle, location, phone, startDate, onboarding_hr_id 
+        firstName, lastName, department, jobTitle, location, phone, startDate, onboarding_hr_id,
+        department_id, designation_id 
     } = req.body;
 
     // Check if user already exists
@@ -60,7 +60,9 @@ exports.register = async (req, res) => {
         firstname: firstName,
         lastname: lastName,
         department_name: department,
+        department_id: department_id,
         job_title: jobTitle,
+        designation_id: designation_id,
         work_location: location,
         phone: phone,
         date_of_joining: startDate,

@@ -36,10 +36,11 @@ exports.getProfile = async (req, res) => {
       userId: employeeMaster.employee_id,
       role: employeeMaster.role,
       email: employeeMaster.company_email_id,
-      record: employeeMaster.EmployeeRecord || {},
       basic_info_status: employeeMaster.basic_info_status,
       basic_info_rejection_reason: employeeMaster.basic_info_rejection_reason,
-      verifiedByName: verifiedByName
+      verifiedByName: verifiedByName,
+      signature: employeeMaster.EmployeeRecord ? employeeMaster.EmployeeRecord.signature : null,
+      record: employeeMaster.EmployeeRecord // Added to return full record
     });
 
   } catch (error) {
@@ -53,10 +54,11 @@ exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const { 
-        firstname, lastname, department_name, job_title, work_location, phone,
+        firstname, middlename, lastname, department_name, job_title, work_location, phone,
         address_line1, address_line2, landmark, post_office, pincode, city, district, state, country,
         date_of_birth, personal_email_id, gender,
-        tenth_percentage, twelfth_percentage, adhar_number, pan_number
+        tenth_percentage, twelfth_percentage, adhar_number, pan_number, pan_verified,
+        department_id, designation_id
     } = req.body;
 
     // Helper to convert empty string to null and ensure YYYY-MM-DD format
@@ -69,16 +71,20 @@ exports.updateProfile = async (req, res) => {
     const cleanNumber = (num) => num === "" ? null : num;
 
     const cleanedData = {
-        firstname, lastname, department_name, job_title, work_location, phone,
+        firstname, middlename, lastname, department_name, job_title, work_location, phone,
         address_line1, address_line2, landmark, post_office, pincode, city, district, state, country,
         personal_email_id, gender, adhar_number, pan_number,
+        pan_verified: pan_verified === 'true' || pan_verified === true,
         date_of_birth: cleanDate(date_of_birth),
         tenth_percentage: cleanNumber(tenth_percentage),
-        twelfth_percentage: cleanNumber(twelfth_percentage)
+        twelfth_percentage: cleanNumber(twelfth_percentage),
+        department_id: cleanNumber(department_id),
+        designation_id: cleanNumber(designation_id)
     };
     
-    // profile_photo 
+    // profile_photo & signature
     const profile_photo = req.body.profile_photo; 
+    const signature = req.body.signature_path;
 
     // Find EmployeeMaster
     const employeeMaster = await EmployeeMaster.findOne({ where: { employee_id: userId } });
@@ -99,7 +105,8 @@ exports.updateProfile = async (req, res) => {
       where: { employee_id: employeeMaster.id },
       defaults: {
         ...cleanedData,
-        profile_photo
+        profile_photo,
+        signature
       }
     });
 
@@ -111,6 +118,9 @@ exports.updateProfile = async (req, res) => {
       // Only update photo if a new one was uploaded
       if (profile_photo) {
         updateData.profile_photo = profile_photo;
+      }
+      if (signature) {
+        updateData.signature = signature;
       }
 
       await record.update(updateData);

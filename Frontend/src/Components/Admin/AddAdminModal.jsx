@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
+import SearchableSelect from "../UI/SearchableSelect";
 
 const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
@@ -13,10 +14,9 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     cc: "",
     phone: null,
     role: "HR_ADMIN",
-    department: "HR",
+    department: "Human Resource",
     jobTitle: "",
     location: "",
-    startDate: null,
     password: "admin@123",
   });
 
@@ -56,7 +56,22 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       }
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      // 1. Send Admin Welcome Email
+      // 1a. Map Department and Designation strings back out from the IDs
+      const selectedDept = departments.find(
+        (d) => String(d.department_id) === String(formData.department),
+      );
+      const selectedDesig = designations.find(
+        (d) => String(d.designation_id) === String(formData.jobTitle),
+      );
+
+      const departmentName = selectedDept
+        ? selectedDept.department_name
+        : formData.department;
+      const designationName = selectedDesig
+        ? selectedDesig.designation_name
+        : formData.jobTitle;
+
+      // 1b. Send Admin Welcome Email
       await axios.post(
         "/api/email/send-admin-welcome",
         {
@@ -72,7 +87,13 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       );
 
       // 2. Add Admin
-      await onAdd(formData);
+      await onAdd({
+        ...formData,
+        department_name: departmentName,
+        department_id: parseInt(formData.department) || null,
+        job_title: designationName,
+        designation_id: parseInt(formData.jobTitle) || null,
+      });
 
       setFormData({
         firstName: "",
@@ -81,10 +102,12 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
         cc: "",
         phone: "",
         role: "HR_ADMIN",
-        department: "HR",
+        department:
+          departments
+            .find((d) => d.department_name.toLowerCase() === "human resource")
+            ?.department_id.toString() || "Human Resource",
         jobTitle: "",
         location: "",
-        startDate: null,
         password: "admin@123",
       });
     } catch (error) {
@@ -100,12 +123,57 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   };
 
   const [hrDetails, setHrDetails] = useState({ name: "", designation: "" });
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+
+  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
 
   useEffect(() => {
     if (isOpen) {
       fetchCurrentUserDetails();
+      fetchDropdownData();
     }
   }, [isOpen]);
+
+  const fetchDropdownData = async () => {
+    setLoadingDropdowns(true);
+    try {
+      const responses = await Promise.all([
+        fetch(`${DROPDOWN_BASE_URL}/department-list`),
+        fetch(`${DROPDOWN_BASE_URL}/designation-list`),
+      ]);
+
+      const [deptRes, desRes] = await Promise.all(
+        responses.map((r) => r.json()),
+      );
+
+      if (deptRes?.status) {
+        setDepartments(deptRes.data);
+        // Resolve default department ID if not already an ID
+        if (formData.department === "Human Resource") {
+          const hrDept = deptRes.data.find(
+            (d) =>
+              d.department_name &&
+              d.department_name.toLowerCase() === "human resource",
+          );
+          if (hrDept) {
+            setFormData((prev) => ({
+              ...prev,
+              department: String(hrDept.department_id),
+            }));
+          }
+        }
+      }
+      if (desRes?.status) {
+        setDesignations(desRes.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  };
 
   const fetchCurrentUserDetails = async () => {
     try {
@@ -214,26 +282,9 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
                   required
-                  placeholder="admin@vakrangee.in"
+                  placeholder="admin@vakrange.in"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
-                  placeholder="HR"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   CC (Optional)
@@ -247,20 +298,35 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   placeholder="hr@vakrangee.in"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  name="jobTitle"
-                  value={formData.jobTitle}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="HR Manager"
-                />
-              </div>
             </div>
+
+            <SearchableSelect
+              label="Department"
+              name="department"
+              options={departments.map((dept) => ({
+                id: dept.department_id,
+                name: dept.department_name,
+              }))}
+              value={formData.department}
+              onChange={handleChange}
+              placeholder="Select Department"
+              required
+              disabled={loadingDropdowns}
+            />
+
+            <SearchableSelect
+              label="Job Title"
+              name="jobTitle"
+              options={designations.map((des) => ({
+                id: des.designation_id,
+                name: des.designation_name,
+              }))}
+              value={formData.jobTitle}
+              onChange={handleChange}
+              placeholder="Select Job Title"
+              required
+              disabled={loadingDropdowns}
+            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -58,6 +58,7 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        
 
         {/* HR Super Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["HR_SUPER_ADMIN"]} />}>

@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
-const loginLimiter = require('../middleware/rateLimitMiddleware');
+ const loginLimiter = require('../middleware/rateLimitMiddleware');
 
 // Register a new user (Restricted to Admins)
 router.post('/register', authMiddleware, authController.register);

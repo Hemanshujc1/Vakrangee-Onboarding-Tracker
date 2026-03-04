@@ -14,6 +14,7 @@ const loginLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGeneratorIpFallback: false },
 });
 
 module.exports = loginLimiter;

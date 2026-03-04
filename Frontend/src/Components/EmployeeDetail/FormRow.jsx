@@ -10,6 +10,7 @@ const FormRow = ({
   onView,
   showToggle = true,
   verifiedByName,
+  isEmployeeView = false,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 border border-gray-100 rounded-lg bg-gray-50 gap-3">
@@ -39,19 +40,19 @@ const FormRow = ({
               status === "VERIFIED"
                 ? "bg-green-100 text-green-700"
                 : status === "REJECTED"
-                ? "bg-red-100 text-red-700"
-                : status === "SUBMITTED"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-500"
+                  ? "bg-red-100 text-red-700"
+                  : status === "SUBMITTED"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-500"
             }`}
           >
             {status === "SUBMITTED"
               ? "Submitted"
               : status === "VERIFIED"
-              ? "Verified"
-              : status === "REJECTED"
-              ? "Rejected"
-              : "Pending"}
+                ? "Verified"
+                : status === "REJECTED"
+                  ? "Rejected"
+                  : "Pending"}
           </span>
           {status === "VERIFIED" && verifiedByName && (
             <span className="text-[10px] text-gray-500 mt-1">
@@ -61,12 +62,23 @@ const FormRow = ({
         </div>
 
         {!isDisabled ? (
-          status !== "PENDING" && (
+          (isEmployeeView || status !== "PENDING") && (
             <button
               onClick={onView}
-              className="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded hover:bg-gray-50 text-gray-700 font-medium"
+              className={`text-xs border px-3 py-1.5 rounded font-medium ${
+                isEmployeeView &&
+                ["PENDING", "DRAFT", "REJECTED"].includes(status || "PENDING")
+                  ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              View Form
+              {isEmployeeView
+                ? ["PENDING", "DRAFT"].includes(status || "PENDING")
+                  ? "Fill Form"
+                  : status === "REJECTED"
+                    ? "Correct Form"
+                    : "View Form"
+                : "View Form"}
             </button>
           )
         ) : (

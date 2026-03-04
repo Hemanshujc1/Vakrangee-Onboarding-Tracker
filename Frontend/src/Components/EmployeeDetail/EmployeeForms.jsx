@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom";
 import FormSection from "../../Components/EmployeeDetail/FormSection";
 import FormRow from "../../Components/EmployeeDetail/FormRow";
 
-const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
+const EmployeeForms = ({
+  employee,
+  handleToggleFormAccess,
+  isEmployeeView = false,
+}) => {
   const navigate = useNavigate();
 
   const getCommonState = (dataKey, statusKey, employeeId) => ({
@@ -18,7 +22,7 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
         employee[dataKey]?.member_name_aadhar || employee.fullName, // For EPF
     },
     status: employee[statusKey],
-    isHR: true,
+    isHR: !isEmployeeView,
     employeeId: employeeId,
   });
 
@@ -44,7 +48,7 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
           state: getCommonState(
             "mediclaimData",
             "mediclaimStatus",
-            employee.id
+            employee.id,
           ),
         }),
     },
@@ -108,7 +112,7 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
           state: getCommonState(
             "declarationData",
             "declarationStatus",
-            employee.id
+            employee.id,
           ),
         }),
     },
@@ -135,14 +139,28 @@ const EmployeeForms = ({ employee, handleToggleFormAccess }) => {
         status={employee[form.statusKey]}
         isDisabled={employee[form.disabledKey]}
         onToggle={() =>
+          !isEmployeeView &&
           handleToggleFormAccess(
             form.formKey,
             form.category,
-            employee[form.disabledKey]
+            employee[form.disabledKey],
           )
         }
-        onView={form.onView}
+        showToggle={!isEmployeeView}
+        onView={() => {
+          if (
+            isEmployeeView &&
+            ["PENDING", "DRAFT", "REJECTED"].includes(
+              employee[form.statusKey] || "PENDING",
+            )
+          ) {
+            navigate(form.onView().replace("/preview/", "/"));
+          } else {
+            form.onView();
+          }
+        }}
         verifiedByName={employee[form.verifiedByNameKey]}
+        isEmployeeView={isEmployeeView}
       />
     ));
 

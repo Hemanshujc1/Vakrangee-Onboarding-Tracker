@@ -32,12 +32,41 @@ const AdminDetail = () => {
   const [editForm, setEditForm] = useState({
     location: "",
     jobTitle: "",
+    designation_id: "",
     department: "",
+    department_id: "",
   });
+
+  const [departmentsList, setDepartmentsList] = useState([]);
+  const [designationsList, setDesignationsList] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
   useEffect(() => {
     fetchAdminDetails();
+    fetchDropdownData();
   }, [id]);
+
+  const fetchDropdownData = async () => {
+    setLoadingDropdowns(true);
+    try {
+      const BASE_URL = "/vakrangee-connect/OnBoarding";
+      const responses = await Promise.all([
+        fetch(`${BASE_URL}/department-list`),
+        fetch(`${BASE_URL}/designation-list`),
+      ]);
+
+      const [deptRes, desRes] = await Promise.all(
+        responses.map((r) => r.json()),
+      );
+
+      if (deptRes?.status) setDepartmentsList(deptRes.data);
+      if (desRes?.status) setDesignationsList(desRes.data);
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  };
 
   const fetchAdminDetails = async () => {
     try {
@@ -48,7 +77,9 @@ const AdminDetail = () => {
       setEditForm({
         location: data.location || "",
         jobTitle: data.jobTitle || "",
+        designation_id: data.designation_id || "",
         department: data.department || "",
+        department_id: data.department_id || "",
       });
     } catch (error) {
       console.error("Error fetching admin details:", error);
@@ -172,6 +203,9 @@ const AdminDetail = () => {
           editForm={editForm}
           setEditForm={setEditForm}
           handleSave={handleSave}
+          departmentsList={departmentsList}
+          designationsList={designationsList}
+          loadingDropdowns={loadingDropdowns}
         />
 
         <AdminStatsGrid stats={admin.stats} />

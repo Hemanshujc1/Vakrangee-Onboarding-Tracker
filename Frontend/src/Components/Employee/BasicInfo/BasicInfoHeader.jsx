@@ -1,5 +1,13 @@
-import React from 'react';
-import { Clock, CheckCircle, AlertCircle, Edit2, ShieldCheck, X, Save } from 'lucide-react';
+import React from "react";
+import {
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Edit2,
+  ShieldCheck,
+  X,
+  Save,
+} from "lucide-react";
 
 const BasicInfoHeader = ({
   verificationStatus,
@@ -9,12 +17,15 @@ const BasicInfoHeader = ({
   onSubmitVerification,
   saving,
   verifiedByName,
-  rejectionReason
+  rejectionReason,
+  isProfileComplete,
 }) => {
   return (
     <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <h1 className="text-3xl font-bold text-(--color-text-dark)">Basic Information</h1>
+        <h1 className="text-3xl font-bold text-(--color-text-dark)">
+          Basic Information
+        </h1>
         <p className="text-gray-500 mt-2">Personal and professional details.</p>
       </div>
 
@@ -40,7 +51,9 @@ const BasicInfoHeader = ({
             <AlertCircle size={16} />
             <span>
               Verification Rejected
-              {verifiedByName && <span className="text-sm"> by {verifiedByName}</span>}
+              {verifiedByName && (
+                <span className="text-sm"> by {verifiedByName}</span>
+              )}
               {rejectionReason && <> Reason: {rejectionReason}</>}
             </span>
           </div>
@@ -61,14 +74,30 @@ const BasicInfoHeader = ({
             </button>
 
             {/* Submit for Verification Button */}
-            <button
-              type="button"
-              onClick={onSubmitVerification}
-              className="flex justify-center items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-all font-medium shadow-sm w-full sm:w-auto"
-            >
-              <ShieldCheck size={18} />
-              <span>Submit for Verification</span>
-            </button>
+            {isProfileComplete ? (
+              <button
+                type="button"
+                onClick={onSubmitVerification}
+                className="flex justify-center items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-all font-medium shadow-sm w-full sm:w-auto"
+              >
+                <ShieldCheck size={18} />
+                <span>Submit for Verification</span>
+              </button>
+            ) : (
+              <div
+                title="Complete your profile and upload all required documents to submit for verification."
+                className="w-full sm:w-auto"
+              >
+                <button
+                  type="button"
+                  disabled
+                  className="flex justify-center items-center gap-2 bg-gray-400 text-white px-6 py-2.5 rounded-lg cursor-not-allowed font-medium shadow-sm w-full sm:w-auto"
+                >
+                  <ShieldCheck size={18} />
+                  <span>Submit for Verification</span>
+                </button>
+              </div>
+            )}
           </>
         ) : isEditing ? (
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -84,11 +113,13 @@ const BasicInfoHeader = ({
               type="submit"
               disabled={saving}
               className={`flex justify-center items-center gap-2 bg-(--color-primary) text-white px-6 py-2.5 rounded-lg transition-all font-medium shadow-sm w-full sm:w-auto ${
-                saving ? "opacity-70 cursor-not-allowed" : "hover:brightness-110"
+                saving
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:brightness-110"
               }`}
             >
               <Save size={18} />
-              <span>{saving ? "Saving..." : "Save Changes"}</span>
+              <span>{saving ? "Saving..." : "Save Draft"}</span>
             </button>
           </div>
         ) : null}

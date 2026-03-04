@@ -24,7 +24,13 @@ const upload = multer({
 
 // Middleware to resize and save image
 const resizePhoto = async (req, res, next) => {
-  if (!req.file) return next();
+  let fileToProcess = req.file;
+
+  if (!fileToProcess && req.files && req.files['profile_photo'] && req.files['profile_photo'].length > 0) {
+      fileToProcess = req.files['profile_photo'][0];
+  }
+
+  if (!fileToProcess) return next();
 
   // Create unique filename
   const filename = `user-${req.user.id}-${Date.now()}.jpeg`;
@@ -36,7 +42,7 @@ const resizePhoto = async (req, res, next) => {
   }
 
   try {
-    await sharp(req.file.buffer)
+    await sharp(fileToProcess.buffer)
       .resize(500, 500) // Resize to 500x500 square
       .toFormat('jpeg')
       .jpeg({ quality: 90 })

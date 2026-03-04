@@ -86,7 +86,7 @@ export const commonSchemas = {
   // --- Address Lines ---
   addressString: Yup.string()
     .min(5, "Min 5 characters")
-    .max(150, "Max 150 characters")
+    .max(350, "Max 350 characters")
     .trim()
     .required("Required"),
 
@@ -94,7 +94,7 @@ export const commonSchemas = {
   .nullable()
   .transform((v) => (v === "" ? null : v))
   .min(4, "Min 4 characters")
-  .max(150, "Max 150 characters")
+  .max(350, "Max 350 characters")
   .trim(),
 
 

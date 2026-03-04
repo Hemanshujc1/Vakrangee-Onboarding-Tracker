@@ -36,8 +36,10 @@ const ManageEmployees = () => {
         role: formData.role || "EMPLOYEE",
         firstName: formData.firstName,
         lastName: formData.lastName,
-        department: formData.department,
-        jobTitle: formData.jobTitle,
+        department: formData.department_name, // Sending string name
+        department_id: formData.department_id, // Sending external ID
+        jobTitle: formData.job_title, // Sending string name
+        designation_id: formData.designation_id, // Sending external ID
         location: formData.location,
         phone: formData.phone,
         startDate: formData.startDate,

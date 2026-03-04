@@ -2,6 +2,7 @@ const { EmployeeDocument, EmployeeMaster, EmployeeRecord, User } = require('../m
 const fs = require('fs');
 const path = require('path');
 const logger = require('../utils/logger');
+const formHandler = require('../utils/formHandler');
 
 // Get all documents for the logged-in employee
 exports.getDocuments = async (req, res) => {
@@ -79,6 +80,9 @@ exports.uploadDocument = async (req, res) => {
             status: 'UPLOADED'
         });
     }
+
+    // Notify HR
+    await formHandler.sendHRSubmissionNotification(employee.id, `Document: ${documentType}`);
 
     res.json({ message: 'Document uploaded successfully', document });
 
@@ -188,6 +192,13 @@ exports.verifyDocument = async (req, res) => {
        });
 
        res.json({ message: `Document ${status.toLowerCase()} successfully`, document });
+
+       // Send Notification
+       await formHandler.sendVerificationNotification(document.employee_id, document.document_type, status, rejectionReason);
+
+       if (status === 'VERIFIED') {
+           await formHandler.checkAndUpdateBasicInfoStage(document.employee_id);
+       }
 
     } catch (error) {
         logger.error('Error verifying document: %o', error);

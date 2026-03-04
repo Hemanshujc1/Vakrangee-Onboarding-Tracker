@@ -8,6 +8,7 @@ import {
   Users,
   Pencil,
 } from "lucide-react";
+import SearchableSelect from "../../../Components/UI/SearchableSelect";
 
 const AdminProfileCard = ({
   admin,
@@ -16,7 +17,26 @@ const AdminProfileCard = ({
   editForm,
   setEditForm,
   handleSave,
+  departmentsList = [],
+  designationsList = [],
+  loadingDropdowns = false,
 }) => {
+  const handleDeptChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      department: e.target.option.name,
+      department_id: e.target.value,
+    }));
+  };
+
+  const handleDesigChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      jobTitle: e.target.option.name,
+      designation_id: e.target.value,
+    }));
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="h-32 bg-linear-to-r from-blue-600 to-blue-800"></div>
@@ -36,21 +56,26 @@ const AdminProfileCard = ({
                 </div>
               )}
             </div>
-            <div className="mb-2 text-center md:text-left mt-2 md:mt-0">
+            <div className="mb-2 text-center md:text-left mt-2 md:mt-0 w-full">
               <h2 className="text-2xl font-bold text-gray-800">
                 {admin.firstName} {admin.lastName}
               </h2>
               <div className="text-blue-600 font-medium flex items-center justify-center md:justify-start gap-2">
                 <Briefcase size={16} />
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={editForm.jobTitle}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, jobTitle: e.target.value })
-                    }
-                    className="border border-blue-200 rounded px-2 py-1 text-sm text-blue-600 font-medium focus:outline-none focus:border-blue-600 w-full"
-                  />
+                  <div className="w-full max-w-xs">
+                    <SearchableSelect
+                      name="jobTitle"
+                      options={designationsList.map((des) => ({
+                        id: des.designation_id,
+                        name: des.designation_name,
+                      }))}
+                      value={editForm.designation_id || editForm.jobTitle}
+                      onChange={handleDesigChange}
+                      placeholder="Select Job Title"
+                      disabled={loadingDropdowns}
+                    />
+                  </div>
                 ) : (
                   <span>{admin.jobTitle || admin.role}</span>
                 )}
@@ -89,16 +114,19 @@ const AdminProfileCard = ({
             <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
               <Building size={18} />
             </div>
-            <div>
+            <div className="w-full">
               <p className="text-xs text-gray-400">Department</p>
               {isEditing ? (
-                <input
-                  type="text"
-                  value={editForm.department}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, department: e.target.value })
-                  }
-                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
+                <SearchableSelect
+                  name="department"
+                  options={departmentsList.map((dept) => ({
+                    id: dept.department_id,
+                    name: dept.department_name,
+                  }))}
+                  value={editForm.department_id || editForm.department}
+                  onChange={handleDeptChange}
+                  placeholder="Select Department"
+                  disabled={loadingDropdowns}
                 />
               ) : (
                 <p className="font-medium text-sm">
@@ -111,7 +139,7 @@ const AdminProfileCard = ({
             <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
               <MapPin size={18} />
             </div>
-            <div>
+            <div className="w-full">
               <p className="text-xs text-gray-400">Location</p>
               {isEditing ? (
                 <input
@@ -120,7 +148,7 @@ const AdminProfileCard = ({
                   onChange={(e) =>
                     setEditForm({ ...editForm, location: e.target.value })
                   }
-                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
+                  className="border border-gray-300 rounded-xl px-4 py-2 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
                 />
               ) : (
                 <p className="font-medium text-sm">{admin.location || "N/A"}</p>
@@ -135,7 +163,9 @@ const AdminProfileCard = ({
                   setEditForm({
                     location: admin.location || "",
                     jobTitle: admin.jobTitle || "",
+                    designation_id: admin.designation_id || "",
                     department: admin.department || "",
+                    department_id: admin.department_id || "",
                   });
                 }}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
@@ -144,7 +174,7 @@ const AdminProfileCard = ({
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-[#2C9DE6] hover:bg-[#205081] text-white rounded-lg text-sm font-medium"
+                className="px-4 py-2 bg-[#2C9DE6] hover:bg-[#205081] text-white rounded-lg text-sm font-medium whitespace-nowrap"
               >
                 Save Changes
               </button>

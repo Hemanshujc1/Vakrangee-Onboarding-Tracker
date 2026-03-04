@@ -13,81 +13,79 @@ const DocumentList = ({ documents, handleDocumentVerification }) => {
       </div>
 
       {documents.length > 0 ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="border border-gray-100 rounded-lg bg-gray-50 p-4"
+              className="border border-gray-100 rounded-lg bg-gray-50 p-4 flex flex-col justify-between gap-3"
             >
-              {/* Main Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                {/* Left: Document Info */}
-                <div className="space-y-1">
-                  <p className="font-semibold text-gray-800">
-                    {doc.document_type}
-                  </p>
+              {/* Document Info */}
+              <div className="space-y-1">
+                <p className="font-semibold text-sm text-gray-800">
+                  {doc.document_type}
+                </p>
+                <div className="flex items-center gap-2">
                   <span
-                    className={`inline-block text-xs font-semibold px-2 py-1 rounded ${
+                    className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded ${
                       doc.status === "VERIFIED"
                         ? "bg-green-100 text-green-700"
                         : doc.status === "REJECTED"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-blue-100 text-blue-700"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-blue-100 text-blue-700"
                     }`}
                   >
                     {doc.status}
                   </span>
-
                   {doc.status === "VERIFIED" && doc.verifiedByName && (
-                    <p className="text-xs text-gray-500">
-                      Verified by: {doc.verifiedByName}
+                    <p className="text-[10px] text-gray-500">
+                      {doc.verifiedByName}
                     </p>
-                  )}
-                </div>
-
-                {/* Right: Actions */}
-                <div className="flex items-center gap-3 justify-end">
-                  {/* View */}
-                  <a
-                    href={`/uploads/documents/${doc.file_path}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded bg-white border border-gray-200 text-blue-500 hover:bg-gray-100"
-                    title="View document"
-                  >
-                    <Eye size={16} />
-                  </a>
-
-                  {/* Verify / Reject (ONLY if not VERIFIED or REJECTED) */}
-                  {(doc.status === "PENDING" || doc.status === "UPLOADED") && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          handleDocumentVerification(doc.id, "VERIFIED")
-                        }
-                        className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200"
-                        title="Approve"
-                      >
-                        <CheckCircle size={16} />
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          handleDocumentVerification(doc.id, "REJECTED")
-                        }
-                        className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                        title="Reject"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
                   )}
                 </div>
               </div>
 
+              {/* Actions */}
+              <div className="flex items-center gap-2 justify-end">
+                {/* View */}
+                <a
+                  href={`/uploads/documents/${doc.file_path}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded bg-white border border-gray-200 text-blue-500 hover:bg-gray-100"
+                  title="View"
+                >
+                  <Eye size={14} />
+                </a>
+
+                {/* Verify / Reject */}
+                {(doc.status === "PENDING" || doc.status === "UPLOADED") && (
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() =>
+                        handleDocumentVerification(doc.id, "VERIFIED")
+                      }
+                      className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200"
+                      title="Approve"
+                    >
+                      <CheckCircle size={14} />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleDocumentVerification(doc.id, "REJECTED")
+                      }
+                      className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                      title="Reject"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Rejection Reason */}
               {doc.status === "REJECTED" && doc.rejection_reason && (
-                <div className="mt-3 text-xs text-red-600 bg-red-50 p-3 rounded border border-red-100">
+                <div className="text-[10px] text-red-600 bg-red-50 p-2 rounded border border-red-100">
                   <span className="font-semibold">Reason:</span>{" "}
                   {doc.rejection_reason}
                 </div>

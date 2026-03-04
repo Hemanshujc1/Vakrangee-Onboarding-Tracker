@@ -25,7 +25,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
   });
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || '"Vakrangee Support" <noreply@vakrangee.in>',
+    from: process.env.SMTP_FROM || '"Vakrangee Support" <noreply@vakrangewwwwwe.in>',
     to,
     subject,
     text,

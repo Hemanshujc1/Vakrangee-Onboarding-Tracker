@@ -45,7 +45,7 @@ const ManageAdmins = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.get("/api/employees", config);
       const strictAdmins = data.filter((emp) =>
-        ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(emp.role)
+        ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(emp.role),
       );
       setAdmins(strictAdmins);
     } catch (error) {
@@ -68,8 +68,10 @@ const ManageAdmins = () => {
         role: formData.role,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        department: formData.department,
-        jobTitle: formData.jobTitle,
+        department: formData.department_name, // Sending string name
+        department_id: formData.department_id, // Sending external ID
+        jobTitle: formData.job_title, // Sending string name
+        designation_id: formData.designation_id, // Sending external ID
         location: formData.location,
         phone: formData.phone,
         startDate: formData.startDate,
@@ -89,7 +91,7 @@ const ManageAdmins = () => {
   const handleActivateAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to activate this admin?",
-      { type: "info" }
+      { type: "info" },
     );
     if (!isConfirmed) return;
 
@@ -110,7 +112,7 @@ const ManageAdmins = () => {
         {
           accountStatus: newStatus,
         },
-        config
+        config,
       );
 
       setAdmins((prev) =>
@@ -120,8 +122,8 @@ const ManageAdmins = () => {
                 ...admin,
                 accountStatus: newStatus,
               }
-            : admin
-        )
+            : admin,
+        ),
       );
 
       await showAlert("Admin activated successfully!", { type: "success" });
@@ -133,7 +135,7 @@ const ManageAdmins = () => {
   const handleDeleteAdmin = async (id) => {
     const isConfirmed = await showConfirm(
       "Are you sure you want to deactivate this admin?",
-      { type: "warning" }
+      { type: "warning" },
     );
     if (!isConfirmed) return;
     try {
@@ -145,7 +147,7 @@ const ManageAdmins = () => {
       if (!token) {
         await showAlert(
           "Authentication error: No token found. Please login again.",
-          { type: "error" }
+          { type: "error" },
         );
         return;
       }
@@ -157,8 +159,8 @@ const ManageAdmins = () => {
       // Optimistic update
       setAdmins((prev) =>
         prev.map((admin) =>
-          admin.id === id ? { ...admin, accountStatus: "Inactive" } : admin
-        )
+          admin.id === id ? { ...admin, accountStatus: "Inactive" } : admin,
+        ),
       );
 
       await showAlert("Admin deactivated successfully", { type: "success" });
@@ -226,7 +228,7 @@ const ManageAdmins = () => {
   const totalItems = filteredAdmins.length;
   const currentAdmins = filteredAdmins.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
   return (
     <DashboardLayout>
@@ -394,8 +396,8 @@ const ManageAdmins = () => {
                                 admin.accountStatus === "Inactive"
                                   ? "bg-red-100 text-red-800"
                                   : admin.accountStatus === "ACTIVE"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {admin.accountStatus || "ACTIVE"}

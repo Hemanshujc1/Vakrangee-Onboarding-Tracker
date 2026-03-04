@@ -16,18 +16,47 @@ const useEmployeeDetail = () => {
 
   const [editForm, setEditForm] = useState({
     department: "",
+    department_id: "",
     jobTitle: "",
+    designation_id: "",
     location: "",
     dateOfJoining: "",
     personalEmail: "",
     onboardingHrId: "",
   });
 
+  const [departmentsList, setDepartmentsList] = useState([]);
+  const [designationsList, setDesignationsList] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+
   useEffect(() => {
     fetchEmployeeDetails();
     fetchHrAdmins();
     fetchDocuments();
+    fetchDropdownData();
   }, [id]);
+
+  const fetchDropdownData = async () => {
+    setLoadingDropdowns(true);
+    try {
+      const BASE_URL = "/vakrangee-connect/OnBoarding";
+      const responses = await Promise.all([
+        fetch(`${BASE_URL}/department-list`),
+        fetch(`${BASE_URL}/designation-list`),
+      ]);
+
+      const [deptRes, desRes] = await Promise.all(
+        responses.map((r) => r.json()),
+      );
+
+      if (deptRes?.status) setDepartmentsList(deptRes.data);
+      if (desRes?.status) setDesignationsList(desRes.data);
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  };
 
   const fetchDocuments = async () => {
     try {
@@ -75,11 +104,13 @@ const useEmployeeDetail = () => {
 
       setEditForm({
         department: empData.department || "",
+        department_id: empData.department_id || "",
         jobTitle: empData.jobTitle || "",
+        designation_id: empData.designation_id || "",
         location: empData.location || "",
         dateOfJoining: empData.dateOfJoining || "",
         personalEmail: empData.personalEmail || "",
-        onboardingHrId: empData.assignedHR?.id || "",
+        onboardingHrId: empData.onboardingHrId || "",
       });
     } catch (error) {
       console.error("Error fetching employee details:", error);
@@ -269,11 +300,13 @@ const useEmployeeDetail = () => {
     if (employee) {
       setEditForm({
         department: employee.department || "",
+        department_id: employee.department_id || "",
         jobTitle: employee.jobTitle || "",
+        designation_id: employee.designation_id || "",
         location: employee.location || "",
         dateOfJoining: employee.dateOfJoining || "",
         personalEmail: employee.personalEmail || "",
-        onboardingHrId: employee.assignedHR?.id || "",
+        onboardingHrId: employee.onboardingHrId || "",
       });
     }
   };
@@ -295,6 +328,9 @@ const useEmployeeDetail = () => {
     handleDocumentVerification,
     handleAdvanceStage,
     handleToggleFormAccess,
+    departmentsList,
+    designationsList,
+    loadingDropdowns,
   };
 };
 

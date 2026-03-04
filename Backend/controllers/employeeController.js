@@ -1,5 +1,6 @@
-const { EmployeeMaster, EmployeeRecord, User } = require("../models");
+const { EmployeeMaster, EmployeeRecord, User, FormSubmission } = require("../models");
 const logger = require("../utils/logger");
+const formHandler = require("../utils/formHandler");
 
 // Get all employees
 exports.getAllEmployees = async (req, res) => {
@@ -12,7 +13,9 @@ exports.getAllEmployees = async (req, res) => {
             "firstname",
             "lastname",
             "department_name",
+            "department_id",
             "job_title",
+            "designation_id",
             "work_location",
             "personal_email_id",
             "date_of_joining",
@@ -135,8 +138,10 @@ exports.getAllEmployees = async (req, res) => {
         lastName: record.lastname || "",
         email: emp.company_email_id || user.username || "",
         department: record.department_name,
+        department_id: record.department_id,
         location: record.work_location,
         jobTitle: record.job_title,
+        designation_id: record.designation_id,
         profilePhoto: record.profile_photo
           ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${record.profile_photo}`
           : null,
@@ -253,6 +258,7 @@ exports.getMe = async (req, res) => {
       basicInfoStatus: employee.basic_info_status,
       firstName: employee.EmployeeRecord?.firstname,
       lastName: employee.EmployeeRecord?.lastname,
+      signature: employee.EmployeeRecord?.signature,
     });
   } catch (error) {
     logger.error("Error fetching my details: %o", error);
@@ -275,8 +281,6 @@ exports.getDashboardStats = async (req, res) => {
 
       
       const basicInfoProgress = ["SUBMITTED", "VERIFIED"].includes(employee.basic_info_status) ? 100 : 0;
-    
-      const { FormSubmission } = require("../models"); 
       
       const submittedForms = await FormSubmission.count({
           where: { employee_id: employee.id }
@@ -347,7 +351,9 @@ exports.getEmployeeById = async (req, res) => {
             "firstname",
             "lastname",
             "department_name",
+            "department_id",
             "job_title",
+            "designation_id",
             "work_location",
             "personal_email_id",
             "date_of_joining",
@@ -372,6 +378,7 @@ exports.getEmployeeById = async (req, res) => {
             "twelfth_percentage",
             "adhar_number",
             "pan_number",
+            "signature"
           ],
         },
         {
@@ -446,7 +453,9 @@ exports.getEmployeeById = async (req, res) => {
       lastName: r.lastname,
       name: `${r.firstname} ${r.lastname}`, 
       department: r.department_name,
+      department_id: r.department_id,
       jobTitle: r.job_title,
+      designation_id: r.designation_id,
       location: r.work_location,
       dateOfJoining: r.date_of_joining,
       profilePhoto: r.profile_photo
@@ -541,6 +550,7 @@ exports.getEmployeeById = async (req, res) => {
       twelfthPercentage: record.twelfth_percentage,
       adharNumber: record.adhar_number,
       panNumber: record.pan_number,
+      signature: record.signature,
 
       role: employee.role,
       accountStatus: employee.account_status,
@@ -573,6 +583,8 @@ exports.updateEmployeeDetails = async (req, res) => {
       location,
       jobTitle,
       department,
+      department_id,
+      designation_id,
       dateOfJoining,
       personalEmail,
       onboardingHrId,
@@ -604,6 +616,8 @@ exports.updateEmployeeDetails = async (req, res) => {
     if (location !== undefined) record.work_location = location;
     if (jobTitle !== undefined) record.job_title = jobTitle;
     if (department !== undefined) record.department_name = department;
+    if (department_id !== undefined) record.department_id = department_id;
+    if (designation_id !== undefined) record.designation_id = designation_id;
 
     // New fields
     if (dateOfJoining !== undefined) record.date_of_joining = dateOfJoining;
@@ -685,6 +699,9 @@ exports.submitBasicInfo = async (req, res) => {
     employee.basic_info_status = "SUBMITTED";
     await employee.save();
 
+    // Notify HR
+    await formHandler.sendHRSubmissionNotification(employee.id, "Basic Information");
+
     res.json({
       message: "Profile submitted for verification",
       status: "SUBMITTED",
@@ -716,7 +733,6 @@ exports.verifyBasicInfo = async (req, res) => {
     employee.basic_info_verified_at = new Date();
 
     if (status === "VERIFIED") {
-      employee.onboarding_stage = "PRE_JOINING"; // Advance stage
       employee.basic_info_rejection_reason = null; // Clear reason
     } else {
       employee.basic_info_rejection_reason =
@@ -725,6 +741,14 @@ exports.verifyBasicInfo = async (req, res) => {
     }
 
     await employee.save();
+
+    // Send Notification
+    await formHandler.sendVerificationNotification(employee.id, "Basic Information", status, rejectionReason);
+
+    // Auto-update stage logic
+    if (status === "VERIFIED") {
+      await formHandler.checkAndUpdateBasicInfoStage(employee.id);
+    }
 
     res.json({
       message: `Profile ${status}`,

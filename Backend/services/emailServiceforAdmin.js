@@ -78,11 +78,11 @@ const sendHRAdminAssignmentEmail = async (
       cc,
       subject,
       html,
-      attachments: [{
-        filename: 'Vakrangee_email_logo.jpg',
-        path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
-        cid: 'vakrangeelogo'
-      }]
+      // attachments: [{
+      //   filename: 'Vakrangee_email_logo.jpg',
+      //   path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
+      //   cid: 'vakrangeelogo'
+      // }]
     };
   
     try {

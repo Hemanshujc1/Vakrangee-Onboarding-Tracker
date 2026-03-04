@@ -5,13 +5,16 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { commonSchemas } from "../../utils/validationSchemas";
+import { commonSchemas, commonPatterns } from "../../utils/validationSchemas";
 import BasicInfoHeader from "../../Components/Employee/BasicInfo/BasicInfoHeader";
 import ProfilePhotoSection from "../../Components/Employee/BasicInfo/ProfilePhotoSection";
-import PersonalDetailsSection from "../../Components/Employee/BasicInfo/PersonalDetailsSection";
-import ProfessionalDetailsSection from "../../Components/Employee/BasicInfo/ProfessionalDetailsSection";
-import AddressSection from "../../Components/Employee/BasicInfo/AddressSection";
-import EducationIdentitySection from "../../Components/Employee/BasicInfo/EducationIdentitySection";
+import ProfileIdentitySection from "../../Components/Employee/BasicInfo/ProfileIdentitySection";
+import ContactInfoSection from "../../Components/Employee/BasicInfo/ContactInfoSection";
+import JobInformationSection from "../../Components/Employee/BasicInfo/JobInformationSection";
+import AddressInformationSection from "../../Components/Employee/BasicInfo/AddressInformationSection";
+import AcademicDetailsSection from "../../Components/Employee/BasicInfo/AcademicDetailsSection";
+import FinancialHRDocumentsSection from "../../Components/Employee/BasicInfo/FinancialHRDocumentsSection";
+import SignatureSection from "../../Components/Employee/BasicInfo/SignatureSection";
 
 const BasicInformation = () => {
   const [loading, setLoading] = useState(true);
@@ -20,32 +23,51 @@ const BasicInformation = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [previewImage, setPreviewImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const { showConfirm } = useAlert();
+  const [previewSignature, setPreviewSignature] = useState(null);
+  const [signatureFile, setSignatureFile] = useState(null);
+  const { showConfirm, showAlert } = useAlert();
 
   const [verificationStatus, setVerificationStatus] = useState("PENDING");
   const [rejectionReason, setRejectionReason] = useState(null);
   const [verifiedByName, setVerifiedByName] = useState(null);
 
+  // Document states
+  const [documents, setDocuments] = useState([]);
+  const [uploadingState, setUploadingState] = useState({});
+
+  // PAN Verification states
+  const [panVerifying, setPanVerifying] = useState(false);
+  const [panVerified, setPanVerified] = useState(false);
+  const [panVerificationFailed, setPanVerificationFailed] = useState(false);
+  const [lastVerifiedPanData, setLastVerifiedPanData] = useState(null);
+
   // Validation Schema
   const validationSchema = Yup.object().shape({
-    firstname: commonSchemas.nameString.label("First Name"),
-    lastname: commonSchemas.nameString.label("Last Name"),
+    firstname: commonSchemas.nameStringOptional.label("First Name"),
+    middlename: commonSchemas.nameStringOptional.label("Middle Name"),
+    lastname: commonSchemas.nameStringOptional.label("Last Name"),
     email: commonSchemas.emailOptional.nullable(),
-    personal_email_id: commonSchemas.email.nullable(),
-    phone: commonSchemas.mobile,
-    date_of_birth: commonSchemas.datePast.nullable().transform((v, o) => (o === "" ? null : v)),
-    gender: Yup.string().required("Gender is required"),
+    personal_email_id: commonSchemas.emailOptional.nullable(),
+    phone: commonSchemas.mobileOptional.label("Phone"),
+    date_of_birth: commonSchemas.datePastOptional.label("Date of Birth"),
+    gender: Yup.string().nullable().optional(),
 
     // Address
-    address_line1: commonSchemas.addressString.label("Address Line 1"),
-    address_line2: commonSchemas.addressString.label("Address Line 2"),
-    landmark: commonSchemas.landmark,
-    post_office: commonSchemas.stringOptional.label("Post Office"),
-    pincode: commonSchemas.pincode.nullable().transform((v, o) => (o === "" ? null : v)),
-    city: commonSchemas.stringRequired,
-    district: commonSchemas.stringRequired,
-    state: commonSchemas.stringRequired,
-    country: commonSchemas.country,
+    address_line1: commonSchemas.addressStringOptional.label("Address Line 1"),
+    address_line2: commonSchemas.addressStringOptional.label("Address Line 2"),
+    landmark: commonSchemas.landmark.nullable(),
+    post_office: commonSchemas.stringOptional.label("Post Office").nullable(),
+    pincode: Yup.string()
+      .nullable()
+      .test(
+        "valid-pincode",
+        "Pincode must be 6 digits",
+        (val) => !val || commonPatterns.pincode.test(val)
+      ),
+    city: commonSchemas.stringOptional.nullable(),
+    district: commonSchemas.stringOptional.nullable(),
+    state: commonSchemas.stringOptional.nullable(),
+    country: commonSchemas.country.nullable().optional(),
 
     // Education & IDs
     tenth_percentage: Yup.number()
@@ -55,7 +77,7 @@ const BasicInformation = () => {
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
-      ).required("Required"),
+      ),
     twelfth_percentage: Yup.number()
       .typeError("Must be a number")
       .min(0, "Min 0")
@@ -63,9 +85,21 @@ const BasicInformation = () => {
       .nullable()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
-      ).required("Required"),
-    adhar_number: commonSchemas.aadhaar.required("Required"),
-    pan_number: commonSchemas.pan.required("Required"),
+      ),
+    adhar_number: Yup.string()
+      .nullable()
+      .test(
+        "valid-aadhaar",
+        "Aadhaar must be 12 digits",
+        (val) => !val || commonPatterns.aadhaar.test(val)
+      ),
+    pan_number: Yup.string()
+      .nullable()
+      .test(
+        "valid-pan",
+        "Invalid PAN Format",
+        (val) => !val || commonPatterns.pan.test(val)
+      ),
   });
 
   const {
@@ -73,11 +107,14 @@ const BasicInformation = () => {
     handleSubmit,
     reset,
     watch,
+    setValue,
+    trigger,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       firstname: "",
+      middlename: "",
       lastname: "",
       email: "",
       personal_email_id: "",
@@ -96,7 +133,7 @@ const BasicInformation = () => {
       city: "",
       district: "",
       state: "",
-      country: "",
+      country: "India",
       tenth_percentage: "",
       twelfth_percentage: "",
       adhar_number: "",
@@ -106,8 +143,42 @@ const BasicInformation = () => {
 
   const formData = watch();
 
+  // Auto-verify PAN when all required fields are filled without errors
+  useEffect(() => {
+    // Check if PAN is already verified or currently verifying to prevent loops
+    if (panVerified || panVerifying || !isEditing) return;
+
+    const { pan_number, firstname, lastname, date_of_birth } = formData;
+
+    // Check if the current data matches the last failed/succeeded attempt to avoid infinite loops
+    const currentDataString = `${pan_number}-${firstname}-${lastname}-${date_of_birth}`;
+    if (lastVerifiedPanData === currentDataString) return;
+
+    // Trigger verification automatically when we have valid data
+    const timeoutId = setTimeout(() => {
+      handleVerifyPan(currentDataString);
+    }, 1500); // 1.5-second debounce to allow typing to finish
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    formData.pan_number,
+    formData.firstname,
+    formData.middlename,
+    formData.lastname,
+    formData.date_of_birth,
+    errors.pan_number,
+    errors.firstname,
+    errors.lastname,
+    errors.date_of_birth,
+    panVerified,
+    panVerifying,
+    isEditing,
+    lastVerifiedPanData,
+  ]);
+
   useEffect(() => {
     fetchProfile();
+    fetchDocuments();
   }, []);
 
   const fetchProfile = async () => {
@@ -129,15 +200,22 @@ const BasicInformation = () => {
       setVerifiedByName(verifiedByName);
 
       if (record) {
-        const dob = record.date_of_birth
-          ? new Date(record.date_of_birth).toISOString().split("T")[0]
-          : "";
-        const doj = record.date_of_joining
-          ? new Date(record.date_of_joining).toISOString().split("T")[0]
-          : "";
+        const formatForDateInput = (dateString) => {
+          if (!dateString) return "";
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return "";
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
+
+        const dob = formatForDateInput(record.date_of_birth);
+        const doj = formatForDateInput(record.date_of_joining);
 
         reset({
           firstname: record.firstname || "",
+          middlename: record.middlename || "",
           lastname: record.lastname || "",
           email: response.data.email || "",
           personal_email_id: record.personal_email_id || "",
@@ -156,7 +234,7 @@ const BasicInformation = () => {
           city: record.city || "",
           district: record.district || "",
           state: record.state || "",
-          country: record.country || "",
+          country: record.country || "India",
           tenth_percentage: record.tenth_percentage || "",
           twelfth_percentage: record.twelfth_percentage || "",
           adhar_number: record.adhar_number || "",
@@ -164,9 +242,16 @@ const BasicInformation = () => {
         });
 
         if (record.profile_photo) {
-          setPreviewImage(
-            `/uploads/profilepic/${record.profile_photo}`
-          );
+          setPreviewImage(`/uploads/profilepic/${record.profile_photo}`);
+        }
+        if (response.data.signature) {
+          setPreviewSignature(`/uploads/signatures/${response.data.signature}`);
+        }
+
+        if (record.pan_verified) {
+          setPanVerified(true);
+          const currentDataString = `${record.pan_number}-${record.firstname}-${record.lastname}-${dob}`;
+          setLastVerifiedPanData(currentDataString);
         }
 
         if (!record.firstname) {
@@ -179,6 +264,145 @@ const BasicInformation = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("/api/documents", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDocuments(response.data);
+    } catch (error) {
+      console.error("Error fetching docs:", error);
+    }
+  };
+
+  const handleUpload = async (file, docType) => {
+    if (!file) return;
+    const token = localStorage.getItem("token");
+    setUploadingState((prev) => ({ ...prev, [docType]: true }));
+
+    const formData = new FormData();
+    formData.append("documentType", docType);
+    formData.append("file", file);
+
+    try {
+      await axios.post("/api/documents/upload", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      fetchDocuments();
+      showAlert("Document uploaded successfully!", { type: "success" });
+    } catch (error) {
+      console.error("Upload failed:", error);
+      showAlert("Upload failed. Please try again.", { type: "error" });
+    } finally {
+      setUploadingState((prev) => ({ ...prev, [docType]: false }));
+    }
+  };
+  const handleVerifyPan = async (currentDataString) => {
+    if (panVerifying) return; // double check
+
+    const { pan_number, firstname, middlename, lastname, date_of_birth } =
+      formData;
+
+    if (!pan_number || !firstname || !lastname || !date_of_birth) {
+      return; // Handled quietly
+    }
+
+    setPanVerifying(true);
+    setPanVerificationFailed(false);
+    setLastVerifiedPanData(currentDataString); // Mark this exact combination as attempted
+
+    try {
+      // Format DOB to DD/MM/YYYY
+      const dobParts = date_of_birth.split("-");
+      const formattedDob = `${dobParts[2]}/${dobParts[1]}/${dobParts[0]}`;
+
+      const payload = {
+        pan: pan_number,
+        name: `${firstname} ${
+          middlename ? middlename + " " : ""
+        }${lastname}`.trim(),
+        fathername: "",
+        dob: formattedDob,
+      };
+
+      const response = await axios.post(
+        "/nsdl-api/banking-kar-api-test/nsdl-pan-verification",
+        payload,
+        {
+          headers: {
+            "api-key":
+              "c4f67d09ff264a1ac9b0bdf61676d255c6b273d5b9634e5c951a3718e90bc86d",
+          },
+        }
+      );
+
+      if (response.data.status === "00") {
+        setPanVerified(true);
+        if (response.data.firstName)
+          setValue("firstname", response.data.firstName);
+        if (response.data.middleName)
+          setValue("middlename", response.data.middleName);
+        if (response.data.lastName)
+          setValue("lastname", response.data.lastName);
+        trigger(["firstname", "middlename", "lastname"]);
+        showAlert("PAN Verified Successfully! Name updated as per PAN.", {
+          type: "success",
+        });
+      } else {
+        setPanVerificationFailed(true);
+        setPanVerified(false);
+        showAlert(
+          response.data.statusDesc ||
+            "PAN Verification Failed. Please check your details.",
+          {
+            type: "error",
+          }
+        );
+      }
+    } catch (error) {
+      console.error("PAN Verification Error:", error);
+      setPanVerificationFailed(true);
+      setPanVerified(false);
+      showAlert(
+        "Verification failed. Please check your details and try again.",
+        { type: "error" }
+      );
+    } finally {
+      setPanVerifying(false);
+    }
+  };
+
+  const handleDelete = async (docId) => {
+    const isConfirmed = await showConfirm(
+      "Are you sure you want to delete this document?",
+      { type: "warning" }
+    );
+    if (!isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`/api/documents/${docId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchDocuments();
+      showAlert("Document deleted successfully.", { type: "success" });
+    } catch (error) {
+      console.error("Delete error:", error);
+      showAlert("Failed to delete.", { type: "error" });
+    }
+  };
+
+  const getDocStatus = (docKey) => {
+    const doc = documents.find((d) => d.document_type === docKey);
+    return doc
+      ? { status: doc.status || "UPLOADED", data: doc }
+      : { status: "PENDING", data: null };
   };
 
   const formatDate = (dateString) => {
@@ -196,6 +420,16 @@ const BasicInformation = () => {
     if (file) {
       setImageFile(file);
       setPreviewImage(URL.createObjectURL(file));
+      // Special handling: Passport size photo is also handled here
+      handleUpload(file, "Passport Size Photo");
+    }
+  };
+
+  const handleSignatureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSignatureFile(file);
+      setPreviewSignature(URL.createObjectURL(file));
     }
   };
 
@@ -208,11 +442,23 @@ const BasicInformation = () => {
       const formPayload = new FormData();
 
       Object.keys(data).forEach((key) => {
-        formPayload.append(key, data[key] || "");
+        let val = data[key];
+        if (val instanceof Date && !isNaN(val.getTime())) {
+          const year = val.getFullYear();
+          const month = String(val.getMonth() + 1).padStart(2, "0");
+          const day = String(val.getDate()).padStart(2, "0");
+          val = `${year}-${month}-${day}`;
+        }
+        formPayload.append(key, val || "");
       });
+
+      formPayload.append("pan_verified", panVerified.toString());
 
       if (imageFile) {
         formPayload.append("profile_photo", imageFile);
+      }
+      if (signatureFile) {
+        formPayload.append("signature", signatureFile);
       }
 
       await axios.put("/api/profile", formPayload, {
@@ -277,39 +523,63 @@ const BasicInformation = () => {
       });
     }
   };
-  // const fullAddress = [
-  //   formData.address_line1,
-  //   formData.address_line2,
-  //   formData.landmark,
-  //   formData.post_office,
-  //   formData.district,
-  //   formData.city && formData.pincode
-  //     ? `${formData.city} - ${formData.pincode}`
-  //     : formData.city || formData.pincode,
-  //   formData.state,
-  //   formData.country,
-  // ]
-  //   .filter(Boolean)
-  //   .join(", ");
 
-    const fullAddress = [
-      formData.address_line1,
-      formData.address_line2,
-      formData.landmark,
-      formData.post_office && formData.district
-        ? `${formData.post_office}, ${formData.district}`
-        : formData.post_office || formData.district,
-      formData.city && formData.pincode
-        ? `${formData.city} - ${formData.pincode}`
-        : formData.city || formData.pincode,
-      formData.state && formData.country
-        ? `${formData.state}, ${formData.country}`
-        : formData.state || formData.country,
-    ]
-      .filter(Boolean)
-      .join(", ");
-    
-  
+  const fullAddress = [
+    formData.address_line1,
+    formData.address_line2,
+    formData.landmark,
+    formData.post_office && formData.district
+      ? `${formData.post_office}, ${formData.district}`
+      : formData.post_office || formData.district,
+    formData.city && formData.pincode
+      ? `${formData.city} - ${formData.pincode}`
+      : formData.city || formData.pincode,
+    formData.state && formData.country
+      ? `${formData.state}, ${formData.country}`
+      : formData.state || formData.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const isProfileComplete = () => {
+    const requiredFields = [
+      "firstname",
+      "lastname",
+      "personal_email_id",
+      "phone",
+      "date_of_birth",
+      "gender",
+      "address_line1",
+      "city",
+      "district",
+      "state",
+      "pincode",
+      "tenth_percentage",
+      "twelfth_percentage",
+      "adhar_number",
+      "pan_number",
+    ];
+    for (const field of requiredFields) {
+      if (!formData[field]) return false;
+    }
+
+    const requiredDocs = [
+      "PAN Card",
+      "Aadhar Card",
+      "10th Marksheet",
+      "12th Marksheet",
+      "Degree Certificate",
+      "Cancelled Cheque",
+    ];
+    for (const docKey of requiredDocs) {
+      if (!documents.find((d) => d.document_type === docKey)) return false;
+    }
+
+    if (!previewImage) return false;
+    if (!previewSignature) return false;
+    if (!panVerified) return false; // Form cannot be submitted unless PAN is verified
+    return true;
+  };
 
   if (loading)
     return (
@@ -324,17 +594,18 @@ const BasicInformation = () => {
     <DashboardLayout>
       <form onSubmit={handleSubmit(onSubmit, onError)}>
         <BasicInfoHeader
-            verificationStatus={verificationStatus}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            onCancel={() => {
-                setIsEditing(false);
-                fetchProfile();
-            }}
-            onSubmitVerification={handleSubmitForVerification}
-            saving={saving}
-            verifiedByName={verifiedByName}
-            rejectionReason={rejectionReason}
+          verificationStatus={verificationStatus}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onCancel={() => {
+            setIsEditing(false);
+            fetchProfile();
+          }}
+          onSubmitVerification={handleSubmitForVerification}
+          saving={saving}
+          verifiedByName={verifiedByName}
+          rejectionReason={rejectionReason}
+          isProfileComplete={isProfileComplete()}
         />
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
@@ -350,39 +621,73 @@ const BasicInformation = () => {
             </div>
           )}
 
-          <ProfilePhotoSection 
-            previewImage={previewImage} 
-            isEditing={isEditing} 
-            handleImageChange={handleImageChange} 
+          <ProfilePhotoSection
+            previewImage={previewImage}
+            isEditing={isEditing}
+            handleImageChange={handleImageChange}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 form-group">
-            <PersonalDetailsSection 
-                register={register} 
-                errors={errors} 
-                isEditing={isEditing} 
-                formData={formData} 
-                formatDate={formatDate} 
+          <div className="flex flex-col gap-8">
+            <ProfileIdentitySection
+              register={register}
+              errors={errors}
+              isEditing={isEditing}
+              formData={formData}
+              formatDate={formatDate}
+              getDocStatus={getDocStatus}
+              uploadingState={uploadingState}
+              handleUpload={handleUpload}
+              handleDelete={handleDelete}
+              panVerifying={panVerifying}
+              panVerified={panVerified}
+              panVerificationFailed={panVerificationFailed}
+            />
+            <JobInformationSection
+              register={register}
+              formData={formData}
+              formatDate={formatDate}
             />
 
-            <ProfessionalDetailsSection 
-                register={register} 
-                formData={formData} 
-                formatDate={formatDate} 
+            <ContactInfoSection
+              register={register}
+              errors={errors}
+              isEditing={isEditing}
+              formData={formData}
             />
 
-            <AddressSection 
-                register={register} 
-                errors={errors} 
-                isEditing={isEditing} 
-                fullAddress={fullAddress} 
+            <AddressInformationSection
+              register={register}
+              errors={errors}
+              isEditing={isEditing}
+              fullAddress={fullAddress}
+              setValue={setValue}
+              watch={watch}
+              trigger={trigger}
             />
 
-            <EducationIdentitySection 
-                register={register} 
-                errors={errors} 
-                isEditing={isEditing} 
-                formData={formData} 
+            <AcademicDetailsSection
+              register={register}
+              errors={errors}
+              isEditing={isEditing}
+              formData={formData}
+              getDocStatus={getDocStatus}
+              uploadingState={uploadingState}
+              handleUpload={handleUpload}
+              handleDelete={handleDelete}
+            />
+
+            <FinancialHRDocumentsSection
+              isEditing={isEditing}
+              getDocStatus={getDocStatus}
+              uploadingState={uploadingState}
+              handleUpload={handleUpload}
+              handleDelete={handleDelete}
+            />
+
+            <SignatureSection
+              previewSignature={previewSignature}
+              isEditing={isEditing}
+              handleSignatureChange={handleSignatureChange}
             />
           </div>
         </div>

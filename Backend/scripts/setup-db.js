@@ -2,7 +2,6 @@ const mysql = require('mysql2/promise');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const sequelize = require('../config/database');
-const { User, EmployeeMaster, EmployeeRecord, PreJoiningForm, PostJoiningForm } = require('../models/index');
 
 const DB_NAME = process.env.DB_NAME;
 

@@ -3,13 +3,14 @@ import { MapPin } from "lucide-react";
 
 const AddressCard = ({ employee }) => {
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-[#4E4E4E]">Employee Address</h3>
-        <div className="p-2 bg-gray-50 text-gray-600 rounded-lg">
-          <MapPin size={20} />
+    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full">
+      <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-50">
+        <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+          <MapPin size={18} />
         </div>
+        <h3 className="text-lg font-bold text-gray-800">Address</h3>
       </div>
+
       <div className="space-y-3">
         <div>
           <p className="text-xs text-gray-400">Address</p>

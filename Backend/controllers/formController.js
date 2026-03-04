@@ -158,7 +158,7 @@ exports.getAutoFillData = async (req, res) => {
 
       // Assets
       profilePhoto: record.profile_photo,
-      signature: null, 
+      signature: record.signature, 
        
       mediclaimData: null,
       applicationData: null
