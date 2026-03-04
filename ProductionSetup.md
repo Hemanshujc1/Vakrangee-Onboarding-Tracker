@@ -145,7 +145,7 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    # Handle uploads under the base path to prevent 304/SPA Fallback
+    # 4. Handle uploads under the base path to prevent 304/SPA Fallback
     location /vakrangee-onboarding-portal/uploads/ {
         proxy_pass http://localhost:3001/uploads/;
         proxy_http_version 1.1;
@@ -153,6 +153,23 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+    }
+     # 5. Proxy for Vakrangee Connect APIs
+    location /vakrangee-connect {
+        proxy_pass https://vkmssit.vakrangee.in;
+        proxy_set_header Host vkmssit.vakrangee.in;
+        proxy_ssl_server_name on;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    # 6. Proxy for NSDL API with path rewrite
+    location /nsdl-api/ {
+        rewrite ^/nsdl-api/(.*)$ /$1 break;
+        proxy_pass https://vkms.vakrangee.in;
+        proxy_set_header Host vkms.vakrangee.in;
+        proxy_ssl_server_name on;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 
