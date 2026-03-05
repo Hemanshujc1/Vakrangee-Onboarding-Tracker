@@ -295,6 +295,22 @@ const useEmployeeDetail = () => {
     }
   };
 
+  const handleDeptChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      department: e.target.option.name,
+      department_id: e.target.value,
+    }));
+  };
+
+  const handleDesigChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      jobTitle: e.target.option.name,
+      designation_id: e.target.value,
+    }));
+  };
+
   const handleCancelEdit = () => {
     setIsEditing(false);
     if (employee) {
@@ -331,6 +347,8 @@ const useEmployeeDetail = () => {
     departmentsList,
     designationsList,
     loadingDropdowns,
+    handleDeptChange,
+    handleDesigChange,
   };
 };
 

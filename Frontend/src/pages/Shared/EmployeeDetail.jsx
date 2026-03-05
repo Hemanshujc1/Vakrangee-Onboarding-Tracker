@@ -31,6 +31,8 @@ const EmployeeDetail = () => {
     departmentsList,
     designationsList,
     loadingDropdowns,
+    handleDeptChange,
+    handleDesigChange,
   } = useEmployeeDetail();
 
   if (loading)
@@ -109,6 +111,7 @@ const EmployeeDetail = () => {
           editForm={editForm}
           setEditForm={setEditForm}
           designationsList={designationsList}
+          handleDesigChange={handleDesigChange}
           loadingDropdowns={loadingDropdowns}
         >
           <PersonalInfoGrid
@@ -152,6 +155,8 @@ const EmployeeDetail = () => {
             departmentsList={departmentsList}
             designationsList={designationsList}
             loadingDropdowns={loadingDropdowns}
+            handleDeptChange={handleDeptChange}
+            handleDesigChange={handleDesigChange}
           />
           <AddressCard employee={employee} />
         </div>

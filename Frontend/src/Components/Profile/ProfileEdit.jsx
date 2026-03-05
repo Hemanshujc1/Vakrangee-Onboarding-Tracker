@@ -34,7 +34,7 @@ const ProfileEdit = ({
           // If we have an initial state name, try to find its ID for subsequent fetches
           if (formData.state) {
             const foundState = data.data.find(
-              (s) => s.state_name === formData.state,
+              (s) => s.state_name === formData.state
             );
             if (foundState) setSelectedStateId(foundState.lg_state_id);
           }
@@ -57,7 +57,7 @@ const ProfileEdit = ({
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
+          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`
         );
         const data = await response.json();
         if (data?.status) {
@@ -66,7 +66,7 @@ const ProfileEdit = ({
           // If we have an initial district name, try to find its ID for subsequent fetches
           if (formData.district) {
             const foundDist = data.data.find(
-              (d) => d.district_name === formData.district,
+              (d) => d.district_name === formData.district
             );
             if (foundDist) setSelectedDistrictId(foundDist.district_id);
           }
@@ -91,7 +91,7 @@ const ProfileEdit = ({
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
+          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`
         );
         const data = await response.json();
         if (data?.status) {
@@ -264,6 +264,8 @@ const ProfileEdit = ({
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.phone ? "border-red-500" : "border-gray-200"
             }`}
+            maxLength={10}
+            minLength={10}
           />
           {errors.phone && (
             <p className="text-red-500 text-xs mt-1">{errors.phone}</p>

@@ -45,6 +45,8 @@ const ContactInfoSection = ({ register, errors, isEditing, formData }) => {
                 {...register("phone")}
                 type="tel"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.phone ? "border-red-500" : "border-gray-200"}`}
+                  maxLength={10}
+                  minLength={10}
               />
               {errors.phone && (
                 <p className="text-red-500 text-xs mt-1">

@@ -15,6 +15,9 @@ const ProfileHeader = ({
   isEditing,
   editForm,
   setEditForm,
+  designationsList = [],
+  handleDesigChange,
+  loadingDropdowns,
   children,
 }) => {
   const getOnboardingStatusDisplay = (stage) => {
@@ -126,10 +129,10 @@ const ProfileHeader = ({
                 {employee.firstName} {employee.lastName}
               </h2>
 
-              <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2 mt-1">
-                <Briefcase size={14} />
+              <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2 mt-2 w-full">
+                <Briefcase size={14} className="shrink-0" />
                 {isEditing ? (
-                  <div className="w-full sm:w-64">
+                  <div className="w-full max-w-sm md:max-w-xs">
                     <SearchableSelect
                       name="jobTitle"
                       options={designationsList.map((des) => ({

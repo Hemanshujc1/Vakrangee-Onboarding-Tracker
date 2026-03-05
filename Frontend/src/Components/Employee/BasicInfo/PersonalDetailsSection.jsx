@@ -141,7 +141,9 @@ const PersonalDetailsSection = ({
               {...register("phone")}
               type="tel"
               className={getInputClass(errors.phone)}
-              placeholder="+91"
+              placeholder="9876543210"
+              maxLength={10}
+              minLength={10}
             />
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">

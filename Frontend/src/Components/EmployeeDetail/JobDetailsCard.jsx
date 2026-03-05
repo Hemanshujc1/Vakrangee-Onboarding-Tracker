@@ -11,23 +11,9 @@ const JobDetailsCard = ({
   departmentsList = [],
   designationsList = [],
   loadingDropdowns = false,
+  handleDeptChange,
+  handleDesigChange,
 }) => {
-  const handleDeptChange = (e) => {
-    setEditForm((prev) => ({
-      ...prev,
-      department: e.target.option.name,
-      department_id: e.target.value,
-    }));
-  };
-
-  const handleDesigChange = (e) => {
-    setEditForm((prev) => ({
-      ...prev,
-      jobTitle: e.target.option.name,
-      designation_id: e.target.value,
-    }));
-  };
-
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full font-inter">
       <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-50">
