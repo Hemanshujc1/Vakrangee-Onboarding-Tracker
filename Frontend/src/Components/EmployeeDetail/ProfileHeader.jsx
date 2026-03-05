@@ -124,11 +124,10 @@ const ProfileHeader = ({
             </div>
 
             {/* Name & Role */}
-            <div className="mb-1 sm:mb-2">
+            <div className="mb-1 mt-10 sm:mt-15 pt-6 sm:mb-2">
               <h2 className="text-xl sm:text-2xl font-bold text-[#4E4E4E]">
                 {employee.firstName} {employee.lastName}
               </h2>
-
               <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2 mt-2 w-full">
                 <Briefcase size={14} className="shrink-0" />
                 {isEditing ? (
