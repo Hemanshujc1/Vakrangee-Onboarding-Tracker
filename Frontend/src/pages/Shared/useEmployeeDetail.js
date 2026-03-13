@@ -13,6 +13,7 @@ const useEmployeeDetail = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [hrAdmins, setHrAdmins] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [emailSent, setEmailSent] = useState(false);
 
   const [editForm, setEditForm] = useState({
     department: "",
@@ -235,6 +236,8 @@ const useEmployeeDetail = () => {
     } catch (error) {
       console.error("Error verifying document:", error);
       await showAlert("Failed to update document status.", { type: "error" });
+    } finally {
+      setEmailSent(false); // Reset if doc status changed
     }
   };
 
@@ -295,6 +298,71 @@ const useEmployeeDetail = () => {
     }
   };
 
+  const handleFinalVerify = async () => {
+    const isConfirmed = await showConfirm(
+      "Are you sure you want to perform the final verification for this employee? This will send a summary email to the employee.",
+      { type: "info" }
+    );
+    if (!isConfirmed) return;
+
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.post(
+        `/api/employees/${id}/final-verify`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      await fetchEmployeeDetails();
+      await fetchDocuments();
+      await showAlert(
+        `Final verification completed: ${data.isSuccess ? "Approved" : "Rejected"}`,
+        { type: "success" }
+      );
+      setEmailSent(true);
+    } catch (error) {
+      console.error("Error in final verification:", error);
+      await showAlert(error.response?.data?.message || "Failed to complete final verification.", { type: "error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const isBasicInfoComplete = () => {
+    if (!employee) return false;
+    const mandatoryFields = [
+      "firstName",
+      "lastName",
+      "personalEmail",
+      "phone",
+      "gender",
+      "dateOfBirth",
+      "adharNumber",
+      "panNumber",
+      "addressLine1",
+      "city",
+      "district",
+      "state",
+      "pincode",
+      "postOffice",
+    ];
+    // Return true if all mandatory fields have values
+    return mandatoryFields.every((field) => {
+      const val = employee[field];
+      return val !== null && val !== undefined && String(val).trim() !== "";
+    });
+  };
+
+  const isEverythingReviewed = () => {
+    if (!employee) return false;
+    
+    const isBasicInfoReviewed = employee.basicInfoStatus !== "PENDING" && employee.basicInfoStatus !== "SUBMITTED";
+    const areAllDocumentsReviewed = documents.length > 0 && documents.every(doc => doc.status !== "PENDING" && doc.status !== "UPLOADED");
+    
+    return isBasicInfoReviewed && areAllDocumentsReviewed;
+  };
+
   const handleDeptChange = (e) => {
     setEditForm((prev) => ({
       ...prev,
@@ -344,6 +412,10 @@ const useEmployeeDetail = () => {
     handleDocumentVerification,
     handleAdvanceStage,
     handleToggleFormAccess,
+    handleFinalVerify,
+    isEverythingReviewed,
+    isBasicInfoComplete,
+    emailSent,
     departmentsList,
     designationsList,
     loadingDropdowns,

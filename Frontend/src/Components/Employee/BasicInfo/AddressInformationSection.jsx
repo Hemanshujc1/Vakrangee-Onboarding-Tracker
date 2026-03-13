@@ -9,7 +9,9 @@ const AddressInformationSection = ({
   setValue,
   watch,
   trigger,
+  verificationStatus,
 }) => {
+  const isLocked = verificationStatus === "VERIFIED";
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
@@ -147,7 +149,8 @@ const AddressInformationSection = ({
             </label>
             <input
               {...register("address_line1")}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.address_line1 ? "border-red-500" : "border-gray-200"}`}
+              readOnly={isLocked}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.address_line1 ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
             />
             {errors.address_line1 && (
               <p className="text-red-500 text-xs mt-1">
@@ -162,7 +165,8 @@ const AddressInformationSection = ({
             </label>
             <input
               {...register("address_line2")}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+              readOnly={isLocked}
+              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
             />
           </div>
 
@@ -170,7 +174,8 @@ const AddressInformationSection = ({
             <label className="block text-sm text-gray-500 mb-1">Landmark</label>
             <input
               {...register("landmark")}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+              readOnly={isLocked}
+              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
             />
           </div>
 
@@ -188,6 +193,7 @@ const AddressInformationSection = ({
             placeholder="Select State"
             required
             error={errors.state?.message}
+            disabled={isLocked}
           />
 
           <SearchableSelect
@@ -202,7 +208,7 @@ const AddressInformationSection = ({
               onDistrictChange(e.target.value, e.target.option.name);
             }}
             placeholder="Select District"
-            disabled={!selectedStateId || loadingRegions}
+            disabled={!selectedStateId || loadingRegions || isLocked}
             required
             error={errors.district?.message}
           />
@@ -217,7 +223,7 @@ const AddressInformationSection = ({
             value={watch("city")}
             onChange={(e) => onCityChange(e.target.option.name)}
             placeholder="Select City"
-            disabled={!selectedDistrictId || loadingRegions}
+            disabled={!selectedDistrictId || loadingRegions || isLocked}
             required
             error={errors.city?.message}
           />
@@ -228,7 +234,8 @@ const AddressInformationSection = ({
             </label>
             <input
               {...register("post_office")}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+              readOnly={isLocked}
+              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
             />
           </div>
 
@@ -238,7 +245,8 @@ const AddressInformationSection = ({
             </label>
             <input
               {...register("pincode")}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.pincode ? "border-red-500" : "border-gray-200"}`}
+              readOnly={isLocked}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.pincode ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
             />
             {errors.pincode && (
               <p className="text-red-500 text-xs mt-1">

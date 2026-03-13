@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../Components/Layout/DashboardLayout';
-import { Upload, Trash2, Eye, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Trash2, Eye, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
+import axios from 'axios';
 
 const REQUIRED_DOCUMENTS = [
     { name: '10th Marksheet', key: '10th Marksheet', optional: false },
@@ -95,6 +96,29 @@ const Documents = () => {
       } catch (error) {
           console.error('Delete error:', error);
       }
+  };
+
+  const handleSubmitForVerification = async () => {
+    const isConfirmed = await showConfirm(
+      "Are you sure you want to resubmit your documents for verification?"
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await axios.post(
+        "/api/employees/submit-basic-info",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      await showAlert("Documents submitted for verification.", { type: "success" });
+      fetchDocuments();
+    } catch (error) {
+      console.error("Error submitting documents:", error);
+      await showAlert(error.response?.data?.message || "Failed to submit documents.", { type: "error" });
+    }
   };
 
   const getDocStatus = (docKey) => {
@@ -208,6 +232,18 @@ const Documents = () => {
             </div>
         )}
       </div>
+
+      {documents.some(d => d.status === 'REJECTED') && (
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleSubmitForVerification}
+            className="flex items-center gap-2 bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 transition-all font-bold shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <ShieldCheck size={20} />
+            <span>Resubmit for Verification</span>
+          </button>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

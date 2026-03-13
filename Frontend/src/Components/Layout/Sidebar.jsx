@@ -89,7 +89,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     {
       name: "Company Overview",
       icon: Building2,
-      path: "/employee/company-overview",
+      path: "https://www.vakrangee.in/who_we_are.html",
+      isExternal: true,
     },
     // { name: 'Check List', icon: ListCheck, path: '/employee/check-list' },
   ];
@@ -147,25 +148,37 @@ const Sidebar = ({ isOpen, onClose }) => {
           <ul className="space-y-2 px-4">
             {navItems.map((item) => (
               <li key={item.name}>
-                <NavLink
-                  to={item.path}
-                  end={
-                    item.path === "/hr-super-admin" ||
-                    item.path === "/hr-admin" ||
-                    item.path === "/employee"
-                  }
-                  onClick={() => onClose && onClose()} // Close on navigation on mobile
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? "bg-(--color-primary) shadow-md font-semibold"
-                        : "hover:bg-[rgba(255,255,255,0.1)]"
-                    }`
-                  }
-                >
-                  <item.icon size={20} />
-                  <span>{item.name}</span>
-                </NavLink>
+                {item.isExternal ? (
+                  <a
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)]"
+                  >
+                    <item.icon size={20} />
+                    <span>{item.name}</span>
+                  </a>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    end={
+                      item.path === "/hr-super-admin" ||
+                      item.path === "/hr-admin" ||
+                      item.path === "/employee"
+                    }
+                    onClick={() => onClose && onClose()} // Close on navigation on mobile
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-(--color-primary) shadow-md font-semibold"
+                          : "hover:bg-[rgba(255,255,255,0.1)]"
+                      }`
+                    }
+                  >
+                    <item.icon size={20} />
+                    <span>{item.name}</span>
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>

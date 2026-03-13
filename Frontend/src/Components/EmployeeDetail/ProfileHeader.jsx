@@ -42,27 +42,27 @@ const ProfileHeader = ({
     const stages = {
       BASIC_INFO: {
         label: "Profile Pending",
-        color: "bg-yellow-100 text-yellow-600",
+        color: "bg-(--color-accent-gold)/10 text-(--color-accent-gold)",
         icon: UserCheck,
       },
       PRE_JOINING: {
         label: "In Progress",
-        color: "bg-blue-100 text-blue-600",
+        color: "bg-(--color-primary)/10 text-(--color-primary)",
         icon: Clock,
       },
       PRE_JOINING_VERIFIED: {
         label: "Ready to Join",
-        color: "bg-green-100 text-green-600",
+        color: "bg-(--color-accent-sage)/10 text-(--color-accent-sage)",
         icon: ShieldCheck,
       },
       POST_JOINING: {
         label: "Joining Formalities",
-        color: "bg-purple-100 text-purple-600",
+        color: "bg-(--color-secondary)/10 text-(--color-secondary)",
         icon: Building,
       },
       ONBOARDED: {
         label: "Completed",
-        color: "text-green-600 bg-green-100",
+        color: "text-(--color-accent-sage) bg-(--color-accent-sage)/10 border border-(--color-accent-sage)/20",
         icon: CheckCircle,
       },
     };
@@ -87,7 +87,7 @@ const ProfileHeader = ({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Cover */}
-      <div className="h-24 sm:h-28 md:h-32 bg-linear-to-r from-[#2C9DE6] to-[#205081]"></div>
+      <div className="h-24 sm:h-28 md:h-32 bg-linear-to-r from-(--color-primary) to-(--color-secondary)"></div>
 
       <div className="px-4 sm:px-6 md:px-8 pb-6 sm:pb-8">
         <div className="relative flex flex-col md:flex-row justify-between items-center md:items-end -mt-14 sm:-mt-16 mb-6 gap-4">
@@ -112,23 +112,23 @@ const ProfileHeader = ({
                   }}
                 />
               ) : (
-                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-[#2C9DE6]">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-md bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-(--color-primary)">
                   {employee.firstName?.[0]}
                 </div>
               )}
 
               {/* Fallback Initial */}
-              <div className="fallback-initial hidden absolute inset-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-md bg-white items-center justify-center text-3xl sm:text-4xl font-bold text-[#2C9DE6]">
+              <div className="fallback-initial hidden absolute inset-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-md bg-white items-center justify-center text-3xl sm:text-4xl font-bold text-(--color-primary)">
                 {employee.firstName?.[0]}
               </div>
             </div>
 
             {/* Name & Role */}
             <div className="mb-1 mt-10 sm:mt-15 pt-6 sm:mb-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#4E4E4E]">
+              <h2 className="text-xl sm:text-2xl font-bold text-(--color-text-dark)">
                 {employee.firstName} {employee.lastName}
               </h2>
-              <div className="text-[#2C9DE6] font-medium flex items-center justify-center md:justify-start gap-2 mt-2 w-full">
+              <div className="text-(--color-primary) font-medium flex items-center justify-center md:justify-start gap-2 mt-2 w-full">
                 <Briefcase size={14} className="shrink-0" />
                 {isEditing ? (
                   <div className="w-full max-w-sm md:max-w-xs">

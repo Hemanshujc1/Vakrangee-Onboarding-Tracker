@@ -81,8 +81,8 @@ exports.uploadDocument = async (req, res) => {
         });
     }
 
-    // Notify HR
-    await formHandler.sendHRSubmissionNotification(employee.id, `Document: ${documentType}`);
+    // Notify HR - SILENCED for individual documents (HR will be notified on final Submit/Resubmit for Verification)
+    // await formHandler.sendHRSubmissionNotification(employee.id, `Document: ${documentType}`);
 
     res.json({ message: 'Document uploaded successfully', document });
 
@@ -193,8 +193,8 @@ exports.verifyDocument = async (req, res) => {
 
        res.json({ message: `Document ${status.toLowerCase()} successfully`, document });
 
-       // Send Notification
-       await formHandler.sendVerificationNotification(document.employee_id, document.document_type, status, rejectionReason);
+       // Send Notification - SILENCED for individual documents (Summary sent later)
+       // await formHandler.sendVerificationNotification(document.employee_id, document.document_type, status, rejectionReason);
 
        if (status === 'VERIFIED') {
            await formHandler.checkAndUpdateBasicInfoStage(document.employee_id);

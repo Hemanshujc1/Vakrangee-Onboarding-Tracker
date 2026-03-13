@@ -14,7 +14,9 @@ const ProfileIdentitySection = ({
   panVerifying,
   panVerified,
   panVerificationFailed,
+  verificationStatus,
 }) => {
+  const isLocked = verificationStatus === "VERIFIED";
   const panDoc = getDocStatus("PAN Card");
   const aadhaarDoc = getDocStatus("Aadhar Card");
 
@@ -35,8 +37,8 @@ const ProfileIdentitySection = ({
             <>
               <input
                 {...register("firstname")}
-                readOnly={panVerified}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.firstname ? "border-red-500" : "border-gray-200"} ${panVerified ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                readOnly={panVerified || isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.firstname ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.firstname && (
                 <p className="text-red-500 text-xs mt-1">
@@ -59,8 +61,8 @@ const ProfileIdentitySection = ({
             <>
               <input
                 {...register("middlename")}
-                readOnly={panVerified}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.middlename ? "border-red-500" : "border-gray-200"} ${panVerified ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                readOnly={panVerified || isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.middlename ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.middlename && (
                 <p className="text-red-500 text-xs mt-1">
@@ -83,8 +85,8 @@ const ProfileIdentitySection = ({
             <>
               <input
                 {...register("lastname")}
-                readOnly={panVerified}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.lastname ? "border-red-500" : "border-gray-200"} ${panVerified ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                readOnly={panVerified || isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.lastname ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.lastname && (
                 <p className="text-red-500 text-xs mt-1">
@@ -108,8 +110,8 @@ const ProfileIdentitySection = ({
               <input
                 {...register("date_of_birth")}
                 type="date"
-                readOnly={panVerified}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${panVerified ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                readOnly={panVerified || isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.date_of_birth && (
                 <p className="text-red-500 text-xs mt-1">
@@ -133,8 +135,8 @@ const ProfileIdentitySection = ({
               <>
                 <input
                   {...register("pan_number")}
-                  readOnly={panVerified}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 uppercase ${errors.pan_number ? "border-red-500" : "border-gray-200"} ${panVerified ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  readOnly={panVerified || isLocked}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 uppercase ${errors.pan_number ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
                 {errors.pan_number && (
                   <p className="text-red-500 text-xs mt-1">
@@ -209,7 +211,8 @@ const ProfileIdentitySection = ({
               <>
                 <input
                   {...register("adhar_number")}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.adhar_number ? "border-red-500" : "border-gray-200"}`}
+                  readOnly={isLocked}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.adhar_number ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
                 {errors.adhar_number && (
                   <p className="text-red-500 text-xs mt-1">

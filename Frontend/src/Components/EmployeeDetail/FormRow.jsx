@@ -36,13 +36,13 @@ const FormRow = ({
         {/* Status Badge */}
         <div className="flex flex-col items-end">
           <span
-            className={`text-xs font-semibold px-2 py-1 rounded ${
+            className={`text-xs font-bold px-2 py-1 rounded transition-all ${
               status === "VERIFIED"
-                ? "bg-green-100 text-green-700"
+                ? "bg-(--color-accent-sage)/10 text-(--color-accent-sage)"
                 : status === "REJECTED"
-                  ? "bg-red-100 text-red-700"
+                  ? "bg-(--color-accent-orange)/10 text-(--color-accent-orange)"
                   : status === "SUBMITTED"
-                    ? "bg-blue-100 text-blue-700"
+                    ? "bg-(--color-primary)/10 text-(--color-primary)"
                     : "bg-gray-100 text-gray-500"
             }`}
           >
@@ -55,7 +55,7 @@ const FormRow = ({
                   : "Pending"}
           </span>
           {status === "VERIFIED" && verifiedByName && (
-            <span className="text-[10px] text-gray-500 mt-1">
+            <span className="text-[10px] text-gray-500 mt-1 font-medium">
               By: {verifiedByName}
             </span>
           )}
@@ -65,10 +65,10 @@ const FormRow = ({
           (isEmployeeView || status !== "PENDING") && (
             <button
               onClick={onView}
-              className={`text-xs border px-3 py-1.5 rounded font-medium ${
+              className={`text-xs border px-3 py-1.5 rounded font-bold transition-all ${
                 isEmployeeView &&
                 ["PENDING", "DRAFT", "REJECTED"].includes(status || "PENDING")
-                  ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+                  ? "bg-(--color-primary) border-(--color-primary) text-white hover:bg-(--color-secondary)"
                   : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
               }`}
             >

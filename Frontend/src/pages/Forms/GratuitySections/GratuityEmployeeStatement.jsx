@@ -21,7 +21,12 @@ const GratuityEmployeeStatement = ({
         required
         disabled={!!autoFillData?.fullName}
       />
-      <FormInput label="Middle Name" register={register} name="middlename" />
+      <FormInput
+        label="Middle Name"
+        register={register}
+        name="middlename"
+        // disabled={!!autoFillData?.middlename}
+      />
       <FormInput
         label="Last Name"
         register={register}

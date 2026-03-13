@@ -86,6 +86,7 @@ exports.getAutoFillData = async (req, res) => {
       // Identity
       fullName: `${record.firstname} ${record.lastname}`.trim(),
       firstname: record.firstname,
+      middlename: record.middlename,
       lastname: record.lastname,
       dateOfBirth: record.date_of_birth,
       gender: record.gender,
@@ -231,6 +232,7 @@ exports.getAutoFillData = async (req, res) => {
     // Populate autoFillData with Gratuity specific pre-fills or existing data
     autoFillData.gratuityData = subGrat.data || {
         firstname: record.firstname,
+        middlename: record.middlename,
         lastname: record.lastname,
         gender: record.gender, 
         department: record.department_name,

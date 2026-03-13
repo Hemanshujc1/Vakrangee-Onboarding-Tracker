@@ -1,7 +1,10 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Briefcase, Eye, CheckCircle, X } from "lucide-react";
 
 const DocumentList = ({ documents, handleDocumentVerification }) => {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const rolePath = user.role === "HR_SUPER_ADMIN" ? "hr-super-admin" : "hr-admin";
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
       {/* Header */}
@@ -26,19 +29,19 @@ const DocumentList = ({ documents, handleDocumentVerification }) => {
                 </p>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded ${
+                    className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded transition-all ${
                       doc.status === "VERIFIED"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-(--color-accent-sage)/10 text-(--color-accent-sage)"
                         : doc.status === "REJECTED"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-(--color-accent-orange)/10 text-(--color-accent-orange)"
+                          : "bg-(--color-primary)/10 text-(--color-primary)"
                     }`}
                   >
                     {doc.status}
                   </span>
-                  {doc.status === "VERIFIED" && doc.verifiedByName && (
-                    <p className="text-[10px] text-gray-500">
-                      {doc.verifiedByName}
+                  {doc.verified_by && doc.verifiedByName && (
+                    <p className="text-[10px] text-gray-500 font-medium">
+                      Reviewed By: {doc.verifiedByName}
                     </p>
                   )}
                 </div>
@@ -46,41 +49,14 @@ const DocumentList = ({ documents, handleDocumentVerification }) => {
 
               {/* Actions */}
               <div className="flex items-center gap-2 justify-end">
-                {/* View */}
-                <a
-                  href={`/uploads/documents/${doc.file_path}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 rounded bg-white border border-gray-200 text-blue-500 hover:bg-gray-100"
-                  title="View"
-                >
-                  <Eye size={14} />
-                </a>
-
-                {/* Verify / Reject */}
-                {(doc.status === "PENDING" || doc.status === "UPLOADED") && (
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={() =>
-                        handleDocumentVerification(doc.id, "VERIFIED")
-                      }
-                      className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200"
-                      title="Approve"
-                    >
-                      <CheckCircle size={14} />
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        handleDocumentVerification(doc.id, "REJECTED")
-                      }
-                      className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                      title="Reject"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
+                  <button
+                    onClick={() => navigate(`/${rolePath}/employees/${doc.employee_id}/documents/${doc.id}/preview`)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded bg-white text-(--color-primary) border border-(--color-primary)/20 hover:bg-(--color-primary)/5 transition-all text-xs font-bold"
+                    title="View Document"
+                  >
+                    <Eye size={14} />
+                    <span>View Document</span>
+                  </button>
               </div>
 
               {/* Rejection Reason */}

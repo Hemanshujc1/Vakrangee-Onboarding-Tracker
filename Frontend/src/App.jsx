@@ -43,6 +43,7 @@ import ForgotPassword from "./pages/Auth/ForgotPassword";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import PreviewInformation from "./pages/Forms/PreviewInformation";
+import DocumentPreview from "./pages/Shared/DocumentPreview";
 import { AlertProvider } from "./context/AlertContext";
 import CustomAlert from "./components/UI/CustomAlert";
 import NotFound from "./pages/NotFound";
@@ -75,6 +76,10 @@ const App = () => {
           />
           <Route path="/hr-super-admin/profile" element={<MyProfile />} />
           <Route path="/hr-super-admin/myemployees" element={<MyEmployees />} />
+          <Route
+            path="/hr-super-admin/employees/:id/documents/:docId/preview"
+            element={<DocumentPreview />}
+          />
         </Route>
 
         {/* HR Admin Routes */}
@@ -90,6 +95,10 @@ const App = () => {
             element={<ManageEmployees />}
           />
           <Route path="/hr-admin/employees/:id" element={<EmployeeDetail />} />
+          <Route
+            path="/hr-admin/employees/:id/documents/:docId/preview"
+            element={<DocumentPreview />}
+          />
           <Route path="/hr-admin/profile" element={<MyProfile />} />
         </Route>
 

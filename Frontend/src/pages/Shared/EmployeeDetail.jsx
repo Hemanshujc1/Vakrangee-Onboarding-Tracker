@@ -5,7 +5,8 @@ import ProfileHeader from "../../Components/EmployeeDetail/ProfileHeader";
 import PersonalInfoGrid from "../../Components/EmployeeDetail/PersonalInfoGrid";
 import AddressCard from "../../Components/EmployeeDetail/AddressCard";
 import JobDetailsCard from "../../Components/EmployeeDetail/JobDetailsCard";
-import VerificationActionCard from "../../Components/EmployeeDetail/VerificationActionCard";
+import BasicInfoVerifyCard from "../../Components/EmployeeDetail/BasicInfoVerifyCard";
+import FinalVerifyCard from "../../Components/EmployeeDetail/FinalVerifyCard";
 import DocumentList from "../../Components/EmployeeDetail/DocumentList";
 import EmployeeForms from "../../Components/EmployeeDetail/EmployeeForms";
 import useEmployeeDetail from "./useEmployeeDetail";
@@ -33,6 +34,10 @@ const EmployeeDetail = () => {
     loadingDropdowns,
     handleDeptChange,
     handleDesigChange,
+    handleFinalVerify,
+    isEverythingReviewed,
+    isBasicInfoComplete,
+    emailSent,
   } = useEmployeeDetail();
 
   if (loading)
@@ -161,17 +166,28 @@ const EmployeeDetail = () => {
           <AddressCard employee={employee} />
         </div>
 
+        <BasicInfoVerifyCard
+          employee={employee}
+          handleVerificationAction={handleVerificationAction}
+          isBasicInfoComplete={isBasicInfoComplete}
+          actionLoading={actionLoading}
+        />
+
         {/* Documents Section */}
         <DocumentList
           documents={documents}
           handleDocumentVerification={handleDocumentVerification}
         />
 
-        <VerificationActionCard
+        <FinalVerifyCard
           employee={employee}
-          handleVerificationAction={handleVerificationAction}
+          documents={documents}
+          handleFinalVerify={handleFinalVerify}
+          isEverythingReviewed={isEverythingReviewed}
+          emailSent={emailSent}
           actionLoading={actionLoading}
         />
+
         {/* Employee Forms Section */}
         <EmployeeForms
           employee={employee}

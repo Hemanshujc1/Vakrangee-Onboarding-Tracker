@@ -5,7 +5,9 @@ const SignatureSection = ({
   previewSignature,
   isEditing,
   handleSignatureChange,
+  verificationStatus,
 }) => {
+  const isLocked = verificationStatus === "VERIFIED";
   return (
     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pt-6 border-t border-gray-100 text-center sm:text-left">
       <div className="relative group">
@@ -23,7 +25,7 @@ const SignatureSection = ({
             </div>
           )}
         </div>
-        {isEditing && (
+        {isEditing && !isLocked && (
           <label className="absolute -bottom-3 -right-3 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 border border-gray-200">
             <Upload size={16} className="text-gray-600" />
             <input

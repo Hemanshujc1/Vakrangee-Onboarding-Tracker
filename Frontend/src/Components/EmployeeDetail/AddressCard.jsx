@@ -5,10 +5,10 @@ const AddressCard = ({ employee }) => {
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full">
       <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-50">
-        <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+        <div className="p-1.5 bg-(--color-secondary)/10 text-(--color-secondary) rounded-lg">
           <MapPin size={18} />
         </div>
-        <h3 className="text-lg font-bold text-gray-800">Address</h3>
+        <h3 className="text-lg font-bold text-(--color-text-dark)">Address</h3>
       </div>
 
       <div className="space-y-3">

@@ -1,6 +1,7 @@
 import React from "react";
 
-const ContactInfoSection = ({ register, errors, isEditing, formData }) => {
+const ContactInfoSection = ({ register, errors, isEditing, formData, verificationStatus }) => {
+  const isLocked = verificationStatus === "VERIFIED";
   return (
     <>
       <div className="md:col-span-2 mt-8">
@@ -44,9 +45,10 @@ const ContactInfoSection = ({ register, errors, isEditing, formData }) => {
               <input
                 {...register("phone")}
                 type="tel"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.phone ? "border-red-500" : "border-gray-200"}`}
-                  maxLength={10}
-                  minLength={10}
+                readOnly={isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.phone ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                maxLength={10}
+                minLength={10}
               />
               {errors.phone && (
                 <p className="text-red-500 text-xs mt-1">
@@ -69,7 +71,8 @@ const ContactInfoSection = ({ register, errors, isEditing, formData }) => {
             <>
               <select
                 {...register("gender")}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 bg-white ${errors.gender ? "border-red-500" : "border-gray-200"}`}
+                disabled={isLocked}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 bg-white ${errors.gender ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               >
                 <option value="">Select Gender</option>
                 <option value="Male">Male</option>

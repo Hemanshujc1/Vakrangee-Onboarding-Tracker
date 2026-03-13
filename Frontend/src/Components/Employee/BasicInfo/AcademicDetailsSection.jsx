@@ -10,7 +10,9 @@ const AcademicDetailsSection = ({
   uploadingState,
   handleUpload,
   handleDelete,
+  verificationStatus,
 }) => {
+  const isLocked = verificationStatus === "VERIFIED";
   const tenthDoc = getDocStatus("10th Marksheet");
   const twelfthDoc = getDocStatus("12th Marksheet");
   const degreeDoc = getDocStatus("Degree Certificate");
@@ -35,7 +37,8 @@ const AcademicDetailsSection = ({
                   {...register("tenth_percentage")}
                   type="number"
                   step="0.01"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.tenth_percentage ? "border-red-500" : "border-gray-200"}`}
+                  readOnly={isLocked}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.tenth_percentage ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
                 {errors.tenth_percentage && (
                   <p className="text-red-500 text-xs mt-1">
@@ -76,7 +79,8 @@ const AcademicDetailsSection = ({
                   {...register("twelfth_percentage")}
                   type="number"
                   step="0.01"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.twelfth_percentage ? "border-red-500" : "border-gray-200"}`}
+                  readOnly={isLocked}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.twelfth_percentage ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
                 {errors.twelfth_percentage && (
                   <p className="text-red-500 text-xs mt-1">

@@ -196,7 +196,7 @@ const useFormGratuity = () => {
       reset({
         firstname: savedData.firstname || "",
         lastname: savedData.lastname || "",
-        middlename: savedData.middlename || "",
+        middlename: savedData.middlename || autoFillData.middlename || "",
 
         religion: savedData.religion || appData.religion || "",
         marital_status:

@@ -20,6 +20,7 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           name="middle_name"
           register={register}
           error={errors.middle_name}
+          // disabled={!!autoFillData?.middlename}
         />
         <FormInput
           label="Last Name"
@@ -192,4 +193,3 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
 };
 
 export default PersonalDetails;
-      

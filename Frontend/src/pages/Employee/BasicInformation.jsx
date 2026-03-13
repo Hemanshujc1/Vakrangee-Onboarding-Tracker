@@ -572,12 +572,13 @@ const BasicInformation = () => {
       "Cancelled Cheque",
     ];
     for (const docKey of requiredDocs) {
-      if (!documents.find((d) => d.document_type === docKey)) return false;
+      const doc = documents.find((d) => d.document_type === docKey);
+      if (!doc || doc.status === "REJECTED") return false;
     }
 
     if (!previewImage) return false;
     if (!previewSignature) return false;
-    if (!panVerified) return false; // Form cannot be submitted unless PAN is verified
+    if (!panVerified) return false;
     return true;
   };
 
@@ -606,6 +607,7 @@ const BasicInformation = () => {
           verifiedByName={verifiedByName}
           rejectionReason={rejectionReason}
           isProfileComplete={isProfileComplete()}
+          documents={documents}
         />
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
@@ -641,11 +643,13 @@ const BasicInformation = () => {
               panVerifying={panVerifying}
               panVerified={panVerified}
               panVerificationFailed={panVerificationFailed}
+              verificationStatus={verificationStatus}
             />
             <JobInformationSection
               register={register}
               formData={formData}
               formatDate={formatDate}
+              verificationStatus={verificationStatus}
             />
 
             <ContactInfoSection
@@ -653,6 +657,7 @@ const BasicInformation = () => {
               errors={errors}
               isEditing={isEditing}
               formData={formData}
+              verificationStatus={verificationStatus}
             />
 
             <AddressInformationSection
@@ -663,6 +668,7 @@ const BasicInformation = () => {
               setValue={setValue}
               watch={watch}
               trigger={trigger}
+              verificationStatus={verificationStatus}
             />
 
             <AcademicDetailsSection
@@ -674,6 +680,7 @@ const BasicInformation = () => {
               uploadingState={uploadingState}
               handleUpload={handleUpload}
               handleDelete={handleDelete}
+              verificationStatus={verificationStatus}
             />
 
             <FinancialHRDocumentsSection
@@ -682,12 +689,14 @@ const BasicInformation = () => {
               uploadingState={uploadingState}
               handleUpload={handleUpload}
               handleDelete={handleDelete}
+              verificationStatus={verificationStatus}
             />
 
             <SignatureSection
               previewSignature={previewSignature}
               isEditing={isEditing}
               handleSignatureChange={handleSignatureChange}
+              verificationStatus={verificationStatus}
             />
           </div>
         </div>

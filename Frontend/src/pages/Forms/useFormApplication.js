@@ -95,7 +95,7 @@ const useFormApplication = () => {
       reset({
         firstname: saved.firstname || autoFillData.firstname || "",
         lastname: saved.lastname || autoFillData.lastname || "",
-        middlename: saved.middlename || "",
+        middlename: saved.middlename || autoFillData.middlename || "",
         Maidenname: saved.Maidenname || "",
 
         currentAddress:

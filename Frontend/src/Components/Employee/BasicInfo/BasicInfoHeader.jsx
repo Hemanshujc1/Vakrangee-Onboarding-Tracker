@@ -19,7 +19,13 @@ const BasicInfoHeader = ({
   verifiedByName,
   rejectionReason,
   isProfileComplete,
+  documents = [],
 }) => {
+  const hasRejectedDocs = documents.some((d) => d.status === "REJECTED");
+  const isResubmission = verificationStatus === "REJECTED" || hasRejectedDocs;
+  const showSubmitButton =
+    verificationStatus !== "SUBMITTED" &&
+    (verificationStatus !== "VERIFIED" || hasRejectedDocs);
   return (
     <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
@@ -60,9 +66,7 @@ const BasicInfoHeader = ({
         )}
 
         {/* Edit Button - Hide if Submitted/Verified */}
-        {!isEditing &&
-        verificationStatus !== "SUBMITTED" &&
-        verificationStatus !== "VERIFIED" ? (
+        {!isEditing && showSubmitButton ? (
           <>
             <button
               type="button"
@@ -81,7 +85,11 @@ const BasicInfoHeader = ({
                 className="flex justify-center items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-all font-medium shadow-sm w-full sm:w-auto"
               >
                 <ShieldCheck size={18} />
-                <span>Submit for Verification</span>
+                <span>
+                  {isResubmission
+                    ? "Resubmit for Verification"
+                    : "Submit for Verification"}
+                </span>
               </button>
             ) : (
               <div
@@ -94,7 +102,11 @@ const BasicInfoHeader = ({
                   className="flex justify-center items-center gap-2 bg-gray-400 text-white px-6 py-2.5 rounded-lg cursor-not-allowed font-medium shadow-sm w-full sm:w-auto"
                 >
                   <ShieldCheck size={18} />
-                  <span>Submit for Verification</span>
+                  <span>
+                    {isResubmission
+                      ? "Resubmit for Verification"
+                      : "Submit for Verification"}
+                  </span>
                 </button>
               </div>
             )}

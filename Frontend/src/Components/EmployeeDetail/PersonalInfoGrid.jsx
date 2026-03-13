@@ -16,10 +16,10 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
       {/* Personal & Contact Section */}
       <div className="p-6 md:p-8">
         <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-50">
-          <div className="p-1.5 bg-blue-50 text-blue-600  rounded-lg">
+          <div className="p-1.5 bg-(--color-primary)/10 text-(--color-primary)  rounded-lg">
             <UserCheck size={18} />
           </div>
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-bold text-(--color-text-dark)">
             Personal & Contact Information
           </h3>
         </div>
@@ -27,7 +27,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8">
           {/* Email */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <Mail size={18} />
             </div>
             <div className="w-full">
@@ -39,7 +39,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                   onChange={(e) =>
                     setEditForm({ ...editForm, personalEmail: e.target.value })
                   }
-                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
+                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full mt-1 focus:outline-none focus:border-(--color-primary)"
                   placeholder="Email"
                 />
               ) : (
@@ -51,7 +51,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
           </div>
           {/* Phone */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <Phone size={18} />
             </div>
             <div>
@@ -61,7 +61,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
           </div>
           {/* Gender */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <Users size={18} />
             </div>
             <div>
@@ -71,7 +71,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
           </div>
           {/* date of birth */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <CalendarDays size={18} />
             </div>
             <div>
@@ -88,7 +88,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
 
           {/* PAN Number */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <Building size={18} />
             </div>
             <div>
@@ -101,7 +101,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
 
           {/* Aadhaar Number */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <ShieldCheck size={18} />
             </div>
             <div>
@@ -116,7 +116,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
 
           {/* 10th Percentage */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <ShieldCheck size={18} />
             </div>
             <div>
@@ -131,7 +131,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
 
           {/* 12th Percentage */}
           <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary)">
               <ShieldCheck size={18} />
             </div>
             <div>
@@ -143,26 +143,26 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-gray-600">
-            <p className="text-xs text-gray-400">Employee Signature</p>
-            <p className="bg-gray-50 rounded-lg border border-dashed border-gray-200">
+          <div className="flex flex-col gap-1 text-gray-600">
+            <span className="text-xs text-gray-400">Employee Signature</span>
+            <div className="bg-gray-50 rounded-lg border border-dashed border-gray-200 p-2 w-fit min-w-[120px]">
               {employee.signature ? (
                 <img
                   src={`/uploads/signatures/${employee.signature}`}
                   alt="Signature"
-                  className="max-h-16 object-contain mix-blend-multiply transition-transform group-hover:scale-105"
+                  className="max-h-12 object-contain mix-blend-multiply transition-transform group-hover:scale-105"
                 />
               ) : (
-                <div className="text-center space-y-1">
-                  <div className="mx-auto w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-300">
-                    <Save size={16} />
+                <div className="text-center py-1">
+                  <div className="mx-auto w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-300 mb-1">
+                    <Save size={12} />
                   </div>
                   <p className="text-gray-400 text-[9px] italic">
                     No signature found
                   </p>
                 </div>
               )}
-            </p>
+            </div>
           </div>
         </div>
       </div>

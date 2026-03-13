@@ -1,4 +1,4 @@
-const { EmployeeMaster, EmployeeRecord, User, FormSubmission } = require("../models");
+const { EmployeeMaster, EmployeeRecord, User, FormSubmission, EmployeeDocument } = require("../models");
 const logger = require("../utils/logger");
 const formHandler = require("../utils/formHandler");
 
@@ -689,11 +689,15 @@ exports.submitBasicInfo = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // Only allow submission if PENDING or REJECTED
-    if (["SUBMITTED", "VERIFIED"].includes(employee.basic_info_status)) {
+    // Only allow submission if PENDING or REJECTED or if there are REJECTED documents
+    const documents = await EmployeeDocument.findAll({ where: { employee_id: employee.id } });
+    const hasRejectedDocs = documents.some(doc => doc.status === 'REJECTED');
+    const canSubmit = ["PENDING", "REJECTED"].includes(employee.basic_info_status) || hasRejectedDocs;
+
+    if (!canSubmit) {
       return res
         .status(400)
-        .json({ message: "Profile is locked or already verified." });
+        .json({ message: "Profile is already submitted or verified, and no items are rejected." });
     }
 
     employee.basic_info_status = "SUBMITTED";
@@ -742,8 +746,8 @@ exports.verifyBasicInfo = async (req, res) => {
 
     await employee.save();
 
-    // Send Notification
-    await formHandler.sendVerificationNotification(employee.id, "Basic Information", status, rejectionReason);
+    // Send Notification - SILENCED for individual basic info review (Summary sent later)
+    // await formHandler.sendVerificationNotification(employee.id, "Basic Information", status, rejectionReason);
 
     // Auto-update stage logic
     if (status === "VERIFIED") {
@@ -813,9 +817,6 @@ exports.advanceOnboardingStage = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // specific validation logic could go here
-    // e.g. only if PRE_JOINING can go to POST_JOINING
-
     employee.onboarding_stage = stage;
     await employee.save();
 
@@ -827,6 +828,122 @@ exports.advanceOnboardingStage = async (req, res) => {
   } catch (error) {
     logger.error("Error advancing stage: %o", error);
     res.status(500).json({ message: "Server error advancing stage" });
+  }
+};
+
+// Final Verification for Employee (Basic Info + Documents)
+exports.finalVerifyEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const hrUserId = req.user.id;
+
+    const employee = await EmployeeMaster.findByPk(id, {
+      include: [{ model: EmployeeRecord }, { model: User }]
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // 1. Fetch all documents for this employee
+    const documents = await EmployeeDocument.findAll({
+      where: { employee_id: id }
+    });
+
+    // 2. Check if any item is still PENDING or UPLOADED (not reviewed)
+    const pendingDocuments = documents.filter(doc => doc.status === 'PENDING' || doc.status === 'UPLOADED');
+    
+    if (employee.basic_info_status === 'PENDING' || employee.basic_info_status === 'SUBMITTED') {
+      // Basic info review is a prerequisite for final verify, but if it's SUBMITTED it means HR hasn't clicked Approve/Reject yet on the UI
+      // However, the UI should only enable the final button if HR has clicked Approve/Reject.
+      // We check if it's still in a "to-be-reviewed" state.
+      return res.status(400).json({ message: "Basic Information must be reviewed (Approved or Rejected) first." });
+    }
+
+    if (pendingDocuments.length > 0) {
+      return res.status(400).json({ message: "All documents must be reviewed (Approved or Rejected) first." });
+    }
+
+    // 3. Evaluate results
+    const rejectedDocs = documents.filter(doc => doc.status === 'REJECTED');
+    const isBasicInfoRejected = employee.basic_info_status === 'REJECTED';
+    const isSuccess = !isBasicInfoRejected && rejectedDocs.length === 0;
+
+    // 4. Prepare and Send Summary Email
+    const emailTo = employee.EmployeeRecord?.personal_email_id || employee.User?.username;
+    const employeeName = employee.EmployeeRecord 
+      ? `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim()
+      : "Employee";
+
+    let subject, html;
+
+    if (isSuccess) {
+      subject = "Verification Completed";
+      html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2e7d32;">Verification Completed</h2>
+          <p>Dear <strong>${employeeName}</strong>,</p>
+          <p>Your basic details and documents have been successfully verified.</p>
+          <br/>
+          <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
+        </div>
+      `;
+    } else {
+      subject = "Verification Rejected";
+      
+      let rejectedItemsHtml = "";
+      if (isBasicInfoRejected) {
+        rejectedItemsHtml += `
+          <div style="margin-bottom: 15px;">
+            <strong>Basic Details</strong><br/>
+            Reason: ${employee.basic_info_rejection_reason || "Details mismatch"}
+          </div>
+        `;
+      }
+
+      rejectedDocs.forEach(doc => {
+        rejectedItemsHtml += `
+          <div style="margin-bottom: 15px;">
+            <strong>${doc.document_type}</strong><br/>
+            Reason: ${doc.rejection_reason || "Document mismatch or unclear"}
+          </div>
+        `;
+      });
+
+      html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: left;">
+          <h2 style="color: #d32f2f;">Verification Rejected</h2>
+          <p>Dear <strong>${employeeName}</strong>,</p>
+          <p>Your verification could not be completed.</p>
+          <h4 style="margin-bottom: 10px;">Rejected Items:</h4>
+          ${rejectedItemsHtml}
+          <p>Please log in to the portal to correct the details and resubmit.</p>
+          <br/>
+          <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
+        </div>
+      `;
+    }
+
+    // Trigger Email
+    if (emailTo) {
+      const sendEmail = require('../utils/emailService'); // Exported directly, not destructured
+      await sendEmail({ to: emailTo, subject, html, text: subject }); // Simplified text
+      logger.info(`Final verification email sent to ${emailTo} (Success: ${isSuccess})`);
+    }
+
+    // 5. Update Stage if successful
+    if (isSuccess) {
+      await formHandler.checkAndUpdateBasicInfoStage(employee.id);
+    }
+
+    res.json({ 
+      message: `Final verification processed: ${isSuccess ? 'Verified' : 'Rejected'}`,
+      isSuccess 
+    });
+
+  } catch (error) {
+    logger.error("Error in final verification: %o", error);
+    res.status(500).json({ message: "Server error during final verification" });
   }
 };
 

@@ -28,6 +28,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           register={register}
           name="middlename"
           error={errors.middlename}
+          // disabled={!!autoFillData?.middlename}
         />
         <FormInput
           label="Maiden Name"

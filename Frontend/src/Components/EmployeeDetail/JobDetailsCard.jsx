@@ -17,10 +17,10 @@ const JobDetailsCard = ({
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full font-inter">
       <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-50">
-        <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+        <div className="p-1.5 bg-(--color-primary)/10 text-(--color-primary) rounded-lg">
           <Building size={18} />
         </div>
-        <h3 className="text-lg font-bold text-gray-800">
+        <h3 className="text-lg font-bold text-(--color-text-dark)">
           Official Job Details
         </h3>
       </div>
@@ -157,7 +157,7 @@ const JobDetailsCard = ({
               <div className="flex items-center gap-3 mt-1">
                 {employee.assignedHR ? (
                   <>
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-(--color-primary)/10 flex items-center justify-center text-(--color-primary) font-bold text-xs shrink-0">
                       {employee.assignedHR.name?.[0]}
                     </div>
                     <div className="min-w-0">
