@@ -36,7 +36,7 @@ const BasicInfoVerifyCard = ({
             <span className="text-[14px] font-bold text-red-800">
               Basic Info Rejected
             </span>
-            <span className="text-[11px] text-red-600 opacity-70 font-medium truncate max-w-[200px]">
+            <span className="text-[11px] text-red-600 opacity-70 font-medium truncate max-w-50">
               Reason: {employee.basicInfoRejectionReason}
             </span>
           </div>
