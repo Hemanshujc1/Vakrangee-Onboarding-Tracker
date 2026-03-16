@@ -83,7 +83,7 @@ const EmployeeMaster = sequelize.define(
       allowNull: true,
     },
     disabled_forms: {
-      type: DataTypes.TEXT, // Will store JSON string array of form keys e.g. ["GRATUITY", "mediclaim"]
+      type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: "[]",
       get() {
@@ -93,6 +93,11 @@ const EmployeeMaster = sequelize.define(
       set(value) {
         this.setDataValue("disabled_forms", JSON.stringify(value));
       },
+    },
+    final_verification_email_sent: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
     },
   },
   {

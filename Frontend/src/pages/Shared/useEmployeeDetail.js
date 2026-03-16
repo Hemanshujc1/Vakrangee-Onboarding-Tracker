@@ -37,6 +37,8 @@ const useEmployeeDetail = () => {
     fetchDropdownData();
   }, [id]);
 
+  // Sync emailSent is now handled directly inside fetchEmployeeDetails
+
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
     try {
@@ -99,6 +101,11 @@ const useEmployeeDetail = () => {
         `/api/forms/auto-fill/${id}`,
         config
       );
+
+      // Sync email sent state directly from empData (before any spread overwrite)
+      if (empData.finalVerificationEmailSent === true) {
+        setEmailSent(true);
+      }
 
       // Merge Data
       setEmployee({ ...empData, ...formData });

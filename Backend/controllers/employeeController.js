@@ -565,9 +565,11 @@ exports.getEmployeeById = async (req, res) => {
       },
       assignedEmployees: assignedList,
       basicInfoStatus: employee.basic_info_status,
+      basicInfoVerifiedAt: employee.basic_info_verified_at,
       basicInfoRejectionReason: employee.basic_info_rejection_reason,
       basicInfoVerifiedByName: basicInfoVerifiedByName,
       disabledForms: employee.disabled_forms || [],
+      finalVerificationEmailSent: employee.final_verification_email_sent || false,
     });
   } catch (error) {
     logger.error("Error fetching employee details: %o", error);
@@ -926,9 +928,13 @@ exports.finalVerifyEmployee = async (req, res) => {
 
     // Trigger Email
     if (emailTo) {
-      const sendEmail = require('../utils/emailService'); // Exported directly, not destructured
-      await sendEmail({ to: emailTo, subject, html, text: subject }); // Simplified text
+      const sendEmail = require('../utils/emailService');
+      await sendEmail({ to: emailTo, subject, html, text: subject });
       logger.info(`Final verification email sent to ${emailTo} (Success: ${isSuccess})`);
+
+      // Persist the email-sent flag to the database
+      employee.final_verification_email_sent = true;
+      await employee.save();
     }
 
     // 5. Update Stage if successful
