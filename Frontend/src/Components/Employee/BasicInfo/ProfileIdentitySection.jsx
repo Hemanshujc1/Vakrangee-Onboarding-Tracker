@@ -14,6 +14,7 @@ const ProfileIdentitySection = ({
   panVerifying,
   panVerified,
   panVerificationFailed,
+  panFormatError,
   verificationStatus,
 }) => {
   const isLocked = verificationStatus === "VERIFIED";
@@ -138,7 +139,7 @@ const ProfileIdentitySection = ({
                   readOnly={panVerified || isLocked}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 uppercase ${errors.pan_number ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
-                {errors.pan_number && (
+                {errors.pan_number && !panVerified && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.pan_number.message}
                   </p>
@@ -169,9 +170,14 @@ const ProfileIdentitySection = ({
                     Verifying PAN...
                   </p>
                 )}
+                {panFormatError && !panVerifying && !panVerified && (
+                  <p className="text-red-500 text-xs mt-1 font-medium">
+                     {panFormatError}
+                  </p>
+                )}
                 {panVerified && !panVerifying && (
                   <p className="text-green-600 text-xs mt-1 font-medium">
-                    ✓ PAN Verified
+                     PAN Verified
                   </p>
                 )}
                 {panVerificationFailed && !panVerifying && (

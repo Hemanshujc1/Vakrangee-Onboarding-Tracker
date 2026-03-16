@@ -39,6 +39,7 @@ const BasicInformation = () => {
   const [panVerifying, setPanVerifying] = useState(false);
   const [panVerified, setPanVerified] = useState(false);
   const [panVerificationFailed, setPanVerificationFailed] = useState(false);
+  const [panFormatError, setPanFormatError] = useState(null);
   const [lastVerifiedPanData, setLastVerifiedPanData] = useState(null);
 
   // Validation Schema
@@ -143,21 +144,43 @@ const BasicInformation = () => {
 
   const formData = watch();
 
-  // Auto-verify PAN when all required fields are filled without errors
+  // PAN format: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g. ABCDE1234F)
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+  // Auto-verify PAN only when ALL required fields are filled and PAN format is valid
   useEffect(() => {
-    // Check if PAN is already verified or currently verifying to prevent loops
-    if (panVerified || panVerifying || !isEditing) return;
+    if (panVerified) {
+      setPanFormatError(null); // Clear format error once verified
+      return;
+    }
+    if (panVerifying || !isEditing) return;
 
     const { pan_number, firstname, lastname, date_of_birth } = formData;
 
-    // Check if the current data matches the last failed/succeeded attempt to avoid infinite loops
-    const currentDataString = `${pan_number}-${firstname}-${lastname}-${date_of_birth}`;
+    // All required fields must be present
+    if (!pan_number || !firstname || !lastname || !date_of_birth) {
+      setPanFormatError(null); // Clear error if user hasn't typed enough yet
+      return;
+    }
+
+    // Validate PAN format first — must be exact 10-char uppercase format
+    const panUpper = pan_number.toUpperCase();
+    if (!PAN_REGEX.test(panUpper)) {
+      setPanFormatError("Invalid PAN number format (e.g. ABCDE1234F)");
+      setPanVerified(false);
+      return;
+    }
+
+    // Format is valid — clear any previous format error
+    setPanFormatError(null);
+
+    const currentDataString = `${panUpper}-${firstname}-${lastname}-${date_of_birth}`;
     if (lastVerifiedPanData === currentDataString) return;
 
-    // Trigger verification automatically when we have valid data
+    // Trigger verification automatically with a debounce
     const timeoutId = setTimeout(() => {
       handleVerifyPan(currentDataString);
-    }, 1500); // 1.5-second debounce to allow typing to finish
+    }, 1000); // 1-second debounce after all fields are complete
 
     return () => clearTimeout(timeoutId);
   }, [
@@ -166,10 +189,6 @@ const BasicInformation = () => {
     formData.middlename,
     formData.lastname,
     formData.date_of_birth,
-    errors.pan_number,
-    errors.firstname,
-    errors.lastname,
-    errors.date_of_birth,
     panVerified,
     panVerifying,
     isEditing,
@@ -643,6 +662,7 @@ const BasicInformation = () => {
               panVerifying={panVerifying}
               panVerified={panVerified}
               panVerificationFailed={panVerificationFailed}
+              panFormatError={panFormatError}
               verificationStatus={verificationStatus}
             />
             <JobInformationSection
