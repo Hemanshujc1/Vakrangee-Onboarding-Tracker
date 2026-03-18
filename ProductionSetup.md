@@ -171,6 +171,17 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
+    
+    # 7. Handle vakrangee-connect under the base path
+    location /vakrangee-onboarding-portal/vakrangee-connect {
+    rewrite ^/vakrangee-onboarding-portal/vakrangee-connect(.*)$ /vakrangee-connect$1 break;
+    proxy_pass https://vkmssit.vakrangee.in;
+    proxy_set_header Host vkmssit.vakrangee.in;
+    proxy_ssl_server_name on;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
 }
 
 ```
