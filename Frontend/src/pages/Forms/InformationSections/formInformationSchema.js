@@ -15,7 +15,12 @@ export const getValidationSchema = (hasSavedSignature) =>
     father_name: commonSchemas.nameStringOptional.label("Father's Name"),
     father_middle_name: commonSchemas.nameStringOptional.label("Father's Middle Name"),
     father_last_name: commonSchemas.nameStringOptional.label("Father's Last Name"),
-    date_of_birth: commonSchemas.datePast,
+    date_of_birth: commonSchemas.datePast
+      .max(
+        new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+        "Must be 18 years or older"
+      )
+      .required("Date of Birth is required"),
     birth_city: commonSchemas.stringRequired,
     birth_state: commonSchemas.stringRequired,
     country: commonSchemas.country,

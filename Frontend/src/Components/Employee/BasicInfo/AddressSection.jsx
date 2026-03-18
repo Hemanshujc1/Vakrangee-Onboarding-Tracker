@@ -61,6 +61,11 @@ const AddressSection = ({ register, errors, isEditing, fullAddress }) => {
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
                 errors.pincode ? "border-red-500" : "border-gray-200"
               }`}
+              maxLength={6}
+                minLength={6}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              }}
             />
             {errors.pincode && (
               <p className="text-red-500 text-xs mt-1">

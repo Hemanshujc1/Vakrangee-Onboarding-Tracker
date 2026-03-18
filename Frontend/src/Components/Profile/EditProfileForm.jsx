@@ -51,7 +51,12 @@ const EditProfileForm = () => {
     work_location: commonSchemas.stringRequired.label("Work Location"),
     phone: commonSchemas.mobile,
     personal_email_id: commonSchemas.email,
-    date_of_birth: commonSchemas.datePast,
+    date_of_birth: commonSchemas.datePast
+      .max(
+        new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+        "Must be 18 years or older"
+      )
+      .required("Date of Birth is required"),
     gender: Yup.string().required("Gender is required"),
     address_line1: commonSchemas.addressString.label("Address Line 1"),
     address_line2: commonSchemas.addressString.label("Address Line 2"),

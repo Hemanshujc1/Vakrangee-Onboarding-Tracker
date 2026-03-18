@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Loader2 } from "lucide-react";
 
 const FinalVerifyCard = ({
   employee,
@@ -46,8 +46,12 @@ const FinalVerifyCard = ({
               : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed shadow-none"
         }`}
       >
-        <ShieldCheck size={20} />
-        <span>{buttonText}</span>
+        {actionLoading ? (
+          <Loader2 size={20} className="animate-spin" />
+        ) : (
+          <ShieldCheck size={20} />
+        )}
+        <span>{actionLoading ? "Sending Email..." : buttonText}</span>
       </button>
 
       {!isReviewed && (

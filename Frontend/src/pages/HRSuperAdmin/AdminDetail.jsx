@@ -49,7 +49,7 @@ const AdminDetail = () => {
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
     try {
-      const BASE_URL = "/vakrangee-connect/OnBoarding";
+      const BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
       const responses = await Promise.all([
         fetch(`${BASE_URL}/department-list`),
         fetch(`${BASE_URL}/designation-list`),

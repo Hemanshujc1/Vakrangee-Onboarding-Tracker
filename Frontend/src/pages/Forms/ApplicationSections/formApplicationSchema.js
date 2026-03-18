@@ -15,7 +15,12 @@ export const getValidationSchema = (hasSavedSignature) =>
     email: commonSchemas.email,
     emergencyNo: commonSchemas.mobile,
     gender: commonSchemas.stringRequired,
-    dob: commonSchemas.datePast,
+    dob: commonSchemas.datePast
+      .max(
+        new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+        "Must be 18 years or older"
+      )
+      .required("Date of Birth is required"),
 
     // Conditional Documents
     hasPan: Yup.string().oneOf(["Yes", "No"]),

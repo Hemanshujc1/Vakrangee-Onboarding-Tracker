@@ -35,6 +35,9 @@ const EducationAndTraining = ({ register, errors, control, educationFields, appe
                 type="number"
                 error={errors.education?.[index]?.year}
                 required
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+                }}
               />
               <TableInput
                 register={register(`education.${index}.percentage`)}
@@ -121,6 +124,9 @@ const EducationAndTraining = ({ register, errors, control, educationFields, appe
                 register={register(`achievements.${index}.year`)} 
                 type="number"
                 error={errors.achievements?.[index]?.year}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+                }}
               />
               <TableInput
                 register={register(`achievements.${index}.details`)}

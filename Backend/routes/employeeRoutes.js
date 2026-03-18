@@ -11,6 +11,7 @@ router.get('/:id', protect, employeeController.getEmployeeById);
 router.put('/:id', protect, employeeController.updateEmployeeDetails);
 router.post('/submit-basic-info', protect, employeeController.submitBasicInfo);
 router.post('/:id/verify-basic-info', protect, employeeController.verifyBasicInfo);
+router.post('/:id/advance-stage', protect, employeeController.advanceOnboardingStage);
 router.put('/:id/form-access', protect, employeeController.updateFormAccess);
 router.post('/:id/final-verify', protect, employeeController.finalVerifyEmployee);
 router.delete('/:id', protect, employeeController.deleteEmployee);

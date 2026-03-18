@@ -99,6 +99,11 @@ const EmployeeMaster = sequelize.define(
       allowNull: true,
       defaultValue: false,
     },
+    is_first_login: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
   },
   {
     tableName: "employee_master",

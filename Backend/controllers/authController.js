@@ -156,7 +156,8 @@ exports.login = async (req, res) => {
         id: user.id,
         username: user.username,
         role: role,
-        employeeId: employeeRecord.id
+        employeeId: employeeRecord.id,
+        is_first_login: (role === 'HR_ADMIN' || role === 'EMPLOYEE') ? employeeRecord.is_first_login : false,
       }
     });
 
@@ -262,3 +263,30 @@ exports.resetPassword = async (req, res) => {
          res.status(500).json({ message: 'Server error', error: error.message });
     }
  };
+
+// Change password on first login (authenticated, no OTP required)
+exports.changePasswordFirstLogin = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const employeeRecord = await EmployeeMaster.findOne({ where: { employee_id: req.user.id } });
+    if (!employeeRecord) return res.status(404).json({ message: 'Employee record not found.' });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    await employeeRecord.update({ is_first_login: false });
+
+    res.json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    logger.error('Change Password Error: %o', error);
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};

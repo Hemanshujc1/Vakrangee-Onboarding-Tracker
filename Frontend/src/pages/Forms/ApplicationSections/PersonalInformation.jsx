@@ -4,6 +4,10 @@ import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
 
 const PersonalInformation = ({ register, errors, autoFillData }) => {
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
+
   return (
     <FormSection title="Personal Information">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -50,6 +54,11 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           name="alternateNo"
           error={errors.alternateNo}
           required
+          maxLength={10}
+          minLength={10}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="Email ID"
@@ -65,6 +74,11 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           name="emergencyNo"
           error={errors.emergencyNo}
           required
+          maxLength={10}
+                minLength={10}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  }}
         />
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
           <FormSelect
@@ -85,6 +99,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
             name="dob"
             error={errors.dob}
             required
+            max={maxDate}
             disabled={!!(autoFillData?.dob || autoFillData?.dateOfBirth)}
             className="col-span-2"
           />

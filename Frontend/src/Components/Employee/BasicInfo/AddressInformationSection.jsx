@@ -9,9 +9,8 @@ const AddressInformationSection = ({
   setValue,
   watch,
   trigger,
-  verificationStatus,
+  isLocked,
 }) => {
-  const isLocked = verificationStatus === "VERIFIED";
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
@@ -23,7 +22,7 @@ const AddressInformationSection = ({
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
 
   // Fetch States on mount
   useEffect(() => {
@@ -135,14 +134,14 @@ const AddressInformationSection = ({
 
   return (
     <>
-      <div className="md:col-span-2 mt-8">
+      <div className="mt-6">
         <h4 className="font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
           Address Information
         </h4>
       </div>
 
       {isEditing ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 md:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 md:col-span-2">
           <div>
             <label className="block text-sm text-gray-500 mb-1">
               Address Line 1 <span className="text-red-500">*</span>
@@ -247,6 +246,11 @@ const AddressInformationSection = ({
               {...register("pincode")}
               readOnly={isLocked}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.pincode ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+              maxLength={6}
+                minLength={6}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              }}
             />
             {errors.pincode && (
               <p className="text-red-500 text-xs mt-1">
@@ -272,7 +276,7 @@ const AddressInformationSection = ({
           </div>
         </div>
       ) : (
-        <div className="md:col-span-2">
+        <div>
           <label className="block text-sm text-gray-500 mb-1">
             Full Address
           </label>

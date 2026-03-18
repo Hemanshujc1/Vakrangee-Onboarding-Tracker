@@ -5,7 +5,7 @@ const MAX_FILE_SIZE = 200 * 1024; // 200KB
 export const commonPatterns = {
   mobile: /^[0-9]{10}$/,
   pincode: /^[0-9]{6}$/,
-  pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+  pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i,
   aadhaar: /^\d{12}$/,
   ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/,
   passport: /^[A-Z][0-9]{7}$/,
@@ -115,7 +115,9 @@ export const commonSchemas = {
     .required("Required"),
 
   // --- Document IDs ---
-  pan: Yup.string().matches(commonPatterns.pan, "Invalid PAN Format (e.g., ABCDE1234F)"),
+  pan: Yup.string()
+    .transform((value) => (value ? value.toUpperCase() : value))
+    .matches(commonPatterns.pan, "Invalid PAN Format (e.g., ABCDE1234F)"),
   aadhaar: Yup.string().matches(commonPatterns.aadhaar, "Aadhaar must be 12 digits"),
   uan: Yup.string().matches(commonPatterns.uan, "UAN must be 12 digits"),
   ifsc: Yup.string().matches(commonPatterns.ifsc, "Invalid IFSC Code"),

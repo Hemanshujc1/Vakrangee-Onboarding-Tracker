@@ -47,6 +47,7 @@ import DocumentPreview from "./pages/Shared/DocumentPreview";
 import { AlertProvider } from "./context/AlertContext";
 import CustomAlert from "./components/UI/CustomAlert";
 import NotFound from "./pages/NotFound";
+import Temp from "./pages/temp";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/temp" element={<Temp/>}/>
         
 
         {/* HR Super Admin Routes */}

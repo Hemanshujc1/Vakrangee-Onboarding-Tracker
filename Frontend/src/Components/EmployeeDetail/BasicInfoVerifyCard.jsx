@@ -65,7 +65,7 @@ const BasicInfoVerifyCard = ({
                   !isBasicInfoComplete()
                     ? "Cannot approve: Mandatory details are missing"
                     : ""
-                }
+                } 
                 className={`px-4 py-1.5 text-white text-[11px] font-bold rounded-lg transition-all shadow-sm shadow-green-100 ${
                   !isBasicInfoComplete()
                     ? "bg-gray-300 cursor-not-allowed shadow-none"

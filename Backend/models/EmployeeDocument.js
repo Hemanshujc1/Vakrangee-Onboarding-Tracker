@@ -24,7 +24,7 @@ const EmployeeDocument = sequelize.define('EmployeeDocument', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('PENDING', 'UPLOADED', 'VERIFIED', 'REJECTED'),
+    type: DataTypes.ENUM('PENDING', 'UPLOADED', 'SUBMITTED', 'VERIFIED', 'REJECTED'),
     defaultValue: 'UPLOADED'
   },
   uploaded_at: {

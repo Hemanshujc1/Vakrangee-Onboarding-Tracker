@@ -1,6 +1,7 @@
 const { EmployeeDocument, EmployeeMaster, EmployeeRecord, User } = require('../models');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const logger = require('../utils/logger');
 const formHandler = require('../utils/formHandler');
 
@@ -50,6 +51,68 @@ exports.uploadDocument = async (req, res) => {
         return res.status(400).json({ message: 'Document type is required' });
     }
 
+    const filename = req.file.filename;
+    let finalPath = filename;
+    const oldTempPath = req.file.path; // Multer diskStorage path
+
+    // Special handling for Profile Photo and Signature
+    if (documentType === "Passport Size Photo" || documentType === "Signature") {
+        try {
+            const isPhoto = documentType === "Passport Size Photo";
+            const targetFolder = isPhoto ? 'profilepic' : 'signatures';
+            const prefix = isPhoto ? 'user' : 'sig';
+            const ext = isPhoto ? 'jpeg' : 'png';
+            const newFilename = `${prefix}-${userId}-${Date.now()}.${ext}`;
+            const targetDir = path.join(__dirname, '..', 'uploads', targetFolder);
+            
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            const outputPath = path.join(targetDir, newFilename);
+
+            // Process with sharp
+            const transformer = sharp(oldTempPath);
+            if (isPhoto) {
+                transformer.resize(500, 500).toFormat('jpeg').jpeg({ quality: 90 });
+            } else {
+                transformer.resize({ height: 100 }).toFormat('png').png({ quality: 90 });
+            }
+            
+            await transformer.toFile(outputPath);
+            
+            // Delete the temp file from uploads/documents (multer saved it there)
+            if (fs.existsSync(oldTempPath)) {
+                fs.unlinkSync(oldTempPath);
+            }
+
+            finalPath = newFilename;
+
+            // Update EmployeeRecord
+            const employeeRecord = await EmployeeRecord.findOne({ where: { employee_id: employee.id } });
+            if (employeeRecord) {
+                // Delete OLD file from its specific folder
+                const oldVal = isPhoto ? employeeRecord.profile_photo : employeeRecord.signature;
+                if (oldVal) {
+                    const oldFilePath = path.join(__dirname, '..', 'uploads', targetFolder, oldVal);
+                    if (fs.existsSync(oldFilePath)) {
+                        fs.unlinkSync(oldFilePath);
+                    }
+                }
+                
+                if (isPhoto) {
+                    employeeRecord.profile_photo = finalPath;
+                } else {
+                    employeeRecord.signature = finalPath;
+                }
+                await employeeRecord.save();
+            }
+        } catch (err) {
+            logger.error(`Error processing ${documentType}: %o`, err);
+            return res.status(500).json({ message: `Error processing ${documentType}` });
+        }
+    }
+
     // Check if document of this type already exists, if so maybe update it or delete old? 
     let document = await EmployeeDocument.findOne({
         where: { 
@@ -59,14 +122,16 @@ exports.uploadDocument = async (req, res) => {
     });
 
     if (document) {
-        // Delete old file if exists
-        const oldPath = path.join(__dirname, '..', 'uploads', 'documents', document.file_path);
-        if (fs.existsSync(oldPath)) {
-            fs.unlinkSync(oldPath);
+        // Delete old file if exists (standard documents are in 'documents' folder)
+        if (documentType !== "Passport Size Photo" && documentType !== "Signature") {
+            const oldPath = path.join(__dirname, '..', 'uploads', 'documents', document.file_path);
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
         }
         
         await document.update({
-            file_path: req.file.filename,
+            file_path: finalPath,
             original_name: req.file.originalname,
             status: 'UPLOADED',
             uploaded_at: new Date()
@@ -75,11 +140,14 @@ exports.uploadDocument = async (req, res) => {
         document = await EmployeeDocument.create({
             employee_id: employee.id,
             document_type: documentType,
-            file_path: req.file.filename,
+            file_path: finalPath,
             original_name: req.file.originalname,
             status: 'UPLOADED'
         });
     }
+
+    // Reset final verification email flag so HR can send summary again after resubmission
+    await employee.update({ final_verification_email_sent: false });
 
     // Notify HR - SILENCED for individual documents (HR will be notified on final Submit/Resubmit for Verification)
     // await formHandler.sendHRSubmissionNotification(employee.id, `Document: ${documentType}`);
@@ -112,7 +180,11 @@ exports.deleteDocument = async (req, res) => {
     }
 
     // Delete file from filesystem
-    const filePath = path.join(__dirname, '..', 'uploads', 'documents', document.file_path);
+    let targetFolder = 'documents';
+    if (document.document_type === "Passport Size Photo") targetFolder = 'profilepic';
+    else if (document.document_type === "Signature") targetFolder = 'signatures';
+
+    const filePath = path.join(__dirname, '..', 'uploads', targetFolder, document.file_path);
     if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
     }

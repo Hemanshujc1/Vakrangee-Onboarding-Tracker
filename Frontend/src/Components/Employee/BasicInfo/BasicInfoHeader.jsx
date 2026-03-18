@@ -7,14 +7,16 @@ import {
   ShieldCheck,
   X,
   Save,
+  Loader2,
 } from "lucide-react";
 
 const BasicInfoHeader = ({
   verificationStatus,
   isEditing,
   setIsEditing,
-  onCancel, // Optional if setIsEditing(false) is handled inside or passed directly
+  onCancel,
   onSubmitVerification,
+  onSubmitLoading,
   saving,
   verifiedByName,
   rejectionReason,
@@ -22,120 +24,170 @@ const BasicInfoHeader = ({
   documents = [],
 }) => {
   const hasRejectedDocs = documents.some((d) => d.status === "REJECTED");
-  const isResubmission = verificationStatus === "REJECTED" || hasRejectedDocs;
+  const hasUploadedDocs = documents.some((d) => d.status === "UPLOADED");
+  const hasSubmittedDocs = documents.some((d) => d.status === "SUBMITTED");
+  const isResubmission =
+    verificationStatus !== "PENDING" &&
+    (verificationStatus === "REJECTED" || hasRejectedDocs || hasUploadedDocs);
   const showSubmitButton =
     verificationStatus !== "SUBMITTED" &&
-    (verificationStatus !== "VERIFIED" || hasRejectedDocs);
-  return (
-    <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h1 className="text-3xl font-bold text-(--color-text-dark)">
-          Basic Information
-        </h1>
-        <p className="text-gray-500 mt-2">Personal and professional details.</p>
-      </div>
+    (verificationStatus !== "VERIFIED" || hasRejectedDocs || hasUploadedDocs);
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-        {/* Status Banner / Action */}
-        {verificationStatus === "SUBMITTED" && (
-          <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 flex items-center gap-2">
-            <Clock size={16} /> Submitted for Verification
-          </div>
-        )}
-        {verificationStatus === "VERIFIED" && (
-          <div className="px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium border border-green-100 flex items-center gap-2">
-            <CheckCircle size={16} /> Profile Verified
+  // Determine status banner content
+  const renderStatusBanner = () => {
+    if (verificationStatus === "SUBMITTED") {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 text-sm">
+          <Clock size={15} className="shrink-0" />
+          <span>Submitted for Verification</span>
+        </div>
+      );
+    }
+    if (verificationStatus === "VERIFIED" && !hasRejectedDocs && !hasUploadedDocs && !hasSubmittedDocs) {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium border border-green-100 text-sm">
+          <CheckCircle size={15} className="shrink-0" />
+          <span>Profile Verified{verifiedByName ? ` by ${verifiedByName}` : ""}</span>
+        </div>
+      );
+    }
+    if (verificationStatus === "VERIFIED" && hasRejectedDocs) {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium border border-red-100 text-sm">
+          <AlertCircle size={15} className="shrink-0" />
+          <span>Some documents are rejected — please re-upload</span>
+        </div>
+      );
+    }
+    if (verificationStatus === "VERIFIED" && hasUploadedDocs && !hasRejectedDocs) {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 text-sm">
+          <Clock size={15} className="shrink-0" />
+          <span>Documents re-uploaded — submit for verification</span>
+        </div>
+      );
+    }
+    if (verificationStatus === "VERIFIED" && hasSubmittedDocs) {
+      return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 text-sm">
+          <Clock size={15} className="shrink-0" />
+          <span>Documents submitted for verification</span>
+        </div>
+      );
+    }
+    if (verificationStatus === "REJECTED") {
+      return (
+        <div className="flex items-start gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium border border-red-100 text-sm">
+          <AlertCircle size={15} className="shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-bold">Verification Rejected</span>
+            <span className="font-normal text-xs">
+              {rejectionReason || "Please check the details again."}
+              {hasRejectedDocs && " Please re-upload the rejected documents as well."}
+            </span>
             {verifiedByName && (
-              <span className="text-sm border-l border-green-200 pl-2 ml-1">
-                by {verifiedByName}
-              </span>
+              <span className="text-xs text-red-400 font-normal">by {verifiedByName}</span>
             )}
           </div>
-        )}
-        {verificationStatus === "REJECTED" && (
-          <div className="px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium border border-red-100 flex items-center gap-2">
-            <AlertCircle size={16} />
-            <span>
-              Verification Rejected
-              {verifiedByName && (
-                <span className="text-sm"> by {verifiedByName}</span>
-              )}
-              {rejectionReason && <> Reason: {rejectionReason}</>}
-            </span>
-          </div>
-        )}
+        </div>
+      );
+    }
+    return null;
+  };
 
-        {/* Edit Button - Hide if Submitted/Verified */}
-        {!isEditing && showSubmitButton ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="flex justify-center items-center gap-2 bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition-all font-medium shadow-sm w-full sm:w-auto"
-            >
-              <Edit2 size={18} />
-              <span>Edit Profile</span>
-            </button>
+  const statusBanner = renderStatusBanner();
 
-            {/* Submit for Verification Button */}
-            {isProfileComplete ? (
+  return (
+    <header className="mb-6">
+      {/* Top row: title + action buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-(--color-text-dark)">
+            Basic Information
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm">Personal and professional details.</p>
+        </div>
+
+        {/* Action buttons only */}
+        <div className="flex flex-row flex-wrap gap-2 sm:gap-3 sm:shrink-0">
+          {!isEditing && showSubmitButton && (
+            <>
               <button
                 type="button"
-                onClick={onSubmitVerification}
-                className="flex justify-center items-center gap-2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-all font-medium shadow-sm w-full sm:w-auto"
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-all font-medium text-sm shadow-sm"
               >
-                <ShieldCheck size={18} />
-                <span>
-                  {isResubmission
-                    ? "Resubmit for Verification"
-                    : "Submit for Verification"}
-                </span>
+                <Edit2 size={16} />
+                <span>Edit</span>
               </button>
-            ) : (
-              <div
-                title="Complete your profile and upload all required documents to submit for verification."
-                className="w-full sm:w-auto"
-              >
+
+              {isProfileComplete ? (
+                <button
+                  type="button"
+                  onClick={onSubmitVerification}
+                  disabled={onSubmitLoading}
+                  className={`flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg transition-all font-medium text-sm shadow-sm ${
+                    onSubmitLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
+                  }`}
+                >
+                  {onSubmitLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <ShieldCheck size={16} />
+                  )}
+                  <span>
+                    {onSubmitLoading
+                      ? "Submitting..."
+                      : isResubmission
+                      ? "Resubmit"
+                      : "Submit"}
+                  </span>
+                </button>
+              ) : (
                 <button
                   type="button"
                   disabled
-                  className="flex justify-center items-center gap-2 bg-gray-400 text-white px-6 py-2.5 rounded-lg cursor-not-allowed font-medium shadow-sm w-full sm:w-auto"
+                  title="Complete your profile and upload all required documents to submit for verification."
+                  className="flex items-center gap-2 bg-gray-300 text-white px-4 py-2 rounded-lg cursor-not-allowed font-medium text-sm shadow-sm"
                 >
-                  <ShieldCheck size={18} />
-                  <span>
-                    {isResubmission
-                      ? "Resubmit for Verification"
-                      : "Submit for Verification"}
-                  </span>
+                  <ShieldCheck size={16} />
+                  <span>{isResubmission ? "Resubmit" : "Submit"}</span>
                 </button>
-              </div>
-            )}
-          </>
-        ) : isEditing ? (
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex justify-center items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-50 transition-all font-medium w-full sm:w-auto"
-            >
-              <X size={18} />
-              <span>Cancel</span>
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={`flex justify-center items-center gap-2 bg-(--color-primary) text-white px-6 py-2.5 rounded-lg transition-all font-medium shadow-sm w-full sm:w-auto ${
-                saving
-                  ? "opacity-70 cursor-not-allowed"
-                  : "hover:brightness-110"
-              }`}
-            >
-              <Save size={18} />
-              <span>{saving ? "Saving..." : "Save Draft"}</span>
-            </button>
-          </div>
-        ) : null}
+              )}
+            </>
+          )}
+
+          {isEditing && (
+            <>
+              <button
+                type="button"
+                onClick={onCancel}
+                className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all font-medium text-sm"
+              >
+                <X size={16} />
+                <span>Cancel</span>
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`flex items-center gap-2 bg-(--color-primary) text-white px-4 py-2 rounded-lg transition-all font-medium text-sm shadow-sm ${
+                  saving ? "opacity-70 cursor-not-allowed" : "hover:brightness-110"
+                }`}
+              >
+                {saving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                <span>{saving ? "Saving..." : "Save Draft"}</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Status banner — full width below title row */}
+      {statusBanner && <div className="mt-3">{statusBanner}</div>}
     </header>
   );
 };

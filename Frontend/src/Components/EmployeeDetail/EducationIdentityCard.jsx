@@ -1,5 +1,4 @@
-import React from "react";
-import { ShieldCheck } from "lucide-react";
+import { Award } from "lucide-react";
 import DocumentVerificationItem from "./DocumentVerificationItem";
 
 const EducationIdentityCard = ({ employee }) => {
@@ -10,7 +9,7 @@ const EducationIdentityCard = ({ employee }) => {
           Academic Information
         </h3>
         <div className="p-2 bg-gray-50 text-gray-600 rounded-lg">
-          <ShieldCheck size={20} />
+          <Award size={20} />
         </div>
       </div>
       <div className="space-y-4">
@@ -18,19 +17,35 @@ const EducationIdentityCard = ({ employee }) => {
           <div className="space-y-1">
             <p className="text-xs text-gray-400">10th Percentage</p>
             <p className="text-sm text-gray-800 font-medium">
-              {employee.tenthPercentage
-                ? `${employee.tenthPercentage}%`
+              {employee.tenth_percentage
+                ? `${employee.tenth_percentage}%`
                 : "N/A"}
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-gray-400">12th Percentage</p>
             <p className="text-sm text-gray-800 font-medium">
-              {employee.twelfthPercentage
-                ? `${employee.twelfthPercentage}%`
+              {employee.twelfth_percentage
+                ? `${employee.twelfth_percentage}%`
                 : "N/A"}
             </p>
           </div>
+          {employee.degree_name && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Degree</p>
+              <p className="text-sm text-gray-800 font-medium">
+                {employee.degree_name}
+              </p>
+            </div>
+          )}
+          {employee.degree_percentage !== undefined && employee.degree_percentage !== null && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Degree Percentage</p>
+              <p className="text-sm text-gray-800 font-medium">
+                {employee.degree_percentage}%
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useAlert } from "../../context/AlertContext";
 import SearchableSelect from "../UI/SearchableSelect";
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
+  const today = new Date().toISOString().split("T")[0];
   const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,7 +30,8 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const [designations, setDesignations] = useState([]);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
-  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL =
+    "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +49,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       ]);
 
       const [deptRes, desRes] = await Promise.all(
-        responses.map((r) => r.json()),
+        responses.map((r) => r.json())
       );
 
       if (deptRes?.status) {
@@ -81,11 +83,11 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       const filteredManagers = data.filter(
         (emp) =>
           adminRoles.includes(emp.role) &&
-          emp.accountStatus?.toUpperCase() === "ACTIVE",
+          emp.accountStatus?.toUpperCase() === "ACTIVE"
       );
 
       const sortedManagers = filteredManagers.sort((a, b) =>
-        a.firstName.localeCompare(b.firstName),
+        a.firstName.localeCompare(b.firstName)
       );
       setManagers(sortedManagers);
     } catch (error) {
@@ -107,7 +109,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     if (!formData.email || !formData.firstName || !formData.password) {
       await showAlert(
         "Please fill in First Name, Email and Password before adding employee.",
-        { type: "warning" },
+        { type: "warning" }
       );
       return;
     }
@@ -132,7 +134,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       let hrDesignation = "";
       if (formData.managerId) {
         const selectedManager = managers.find(
-          (m) => m.userId === parseInt(formData.managerId),
+          (m) => m.userId === parseInt(formData.managerId)
         );
         if (selectedManager) {
           hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
@@ -142,10 +144,10 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
 
       // 1a. Map Department and Designation strings back out from the IDs
       const selectedDept = departments.find(
-        (d) => String(d.department_id) === String(formData.department),
+        (d) => String(d.department_id) === String(formData.department)
       );
       const selectedDesig = designations.find(
-        (d) => String(d.designation_id) === String(formData.jobTitle),
+        (d) => String(d.designation_id) === String(formData.jobTitle)
       );
 
       const departmentName = selectedDept
@@ -169,7 +171,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
           hrDesignation: hrDesignation,
           cc: formData.cc,
         },
-        config,
+        config
       );
 
       // 2. Add Employee
@@ -204,7 +206,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       await showAlert(
         error.response?.data?.message ||
           "Failed to process employee addition and email.",
-        { type: "error" },
+        { type: "error" }
       );
     } finally {
       setLoading(false);
@@ -334,6 +336,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  min={today}
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
                   style={{ colorScheme: "light" }}
                   required

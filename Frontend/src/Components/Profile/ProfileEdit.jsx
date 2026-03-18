@@ -20,7 +20,7 @@ const ProfileEdit = ({
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
 
   // Fetch States on mount
   useEffect(() => {
@@ -130,6 +130,10 @@ const ProfileEdit = ({
   const onCityChange = (name) => {
     handleInputChange({ target: { name: "city", value: name } });
   };
+
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -266,6 +270,9 @@ const ProfileEdit = ({
             }`}
             maxLength={10}
             minLength={10}
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
           />
           {errors.phone && (
             <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
@@ -280,6 +287,7 @@ const ProfileEdit = ({
           <input
             type="date"
             name="date_of_birth"
+            max={maxDate}
             value={formData.date_of_birth}
             onChange={handleInputChange}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
@@ -430,6 +438,11 @@ const ProfileEdit = ({
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.pincode ? "border-red-500" : "border-gray-200"
             }`}
+            maxLength={6}
+                minLength={6}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              }}
           />
           {errors.pincode && (
             <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>

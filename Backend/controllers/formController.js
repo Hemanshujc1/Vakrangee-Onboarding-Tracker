@@ -153,14 +153,32 @@ exports.getAutoFillData = async (req, res) => {
       // FormApplication specific
       positionApplied: record.job_title,
       education: [
-         { qualification: "10th", percentage: record.tenth_percentage?.toString() || "" },
-         { qualification: "12th", percentage: record.twelfth_percentage?.toString() || "" }
+        {
+          qualification: "10th",
+          percentage: record.tenth_percentage?.toString() || "",
+        },
+        {
+          qualification: "12th",
+          percentage: record.twelfth_percentage?.toString() || "",
+        },
+        ...(record.degree_name
+          ? [
+              {
+                qualification: record.degree_name,
+                percentage: record.degree_percentage?.toString() || "",
+              },
+            ]
+          : []),
       ],
 
       // Assets
       profilePhoto: record.profile_photo,
       signature: record.signature, 
-       
+
+      // Degree (top-level for PersonalInfoGrid)
+      degree_name: record.degree_name,
+      degree_percentage: record.degree_percentage,
+
       mediclaimData: null,
       applicationData: null
     };

@@ -7,6 +7,8 @@ const FinancialHRDocumentsSection = ({
   uploadingState,
   handleUpload,
   handleDelete,
+  isLocked,
+  verificationStatus,
 }) => {
   const chequeDoc = getDocStatus("Cancelled Cheque");
   const relievingDoc = getDocStatus("Relieving Letter");
@@ -16,13 +18,13 @@ const FinancialHRDocumentsSection = ({
 
   return (
     <>
-      <div className="md:col-span-2 mt-8">
+      <div className="mt-6">
         <h4 className="font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
           Financial & HR Documents
         </h4>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:col-span-2">
         <DocumentUploadItem
           label="Cancelled Cheque"
           docKey="Cancelled Cheque"
@@ -32,6 +34,7 @@ const FinancialHRDocumentsSection = ({
           handleUpload={handleUpload}
           handleDelete={handleDelete}
           isEditing={isEditing}
+          verificationStatus={verificationStatus}
         />
 
         <DocumentUploadItem
@@ -44,6 +47,7 @@ const FinancialHRDocumentsSection = ({
           handleDelete={handleDelete}
           isEditing={isEditing}
           optional={true}
+          verificationStatus={verificationStatus}
         />
 
         <DocumentUploadItem
@@ -56,6 +60,7 @@ const FinancialHRDocumentsSection = ({
           handleDelete={handleDelete}
           isEditing={isEditing}
           optional={true}
+          verificationStatus={verificationStatus}
         />
 
         <DocumentUploadItem
@@ -68,6 +73,7 @@ const FinancialHRDocumentsSection = ({
           handleDelete={handleDelete}
           isEditing={isEditing}
           optional={true}
+          verificationStatus={verificationStatus}
         />
 
         <DocumentUploadItem
@@ -80,6 +86,7 @@ const FinancialHRDocumentsSection = ({
           handleDelete={handleDelete}
           isEditing={isEditing}
           optional={true}
+          verificationStatus={verificationStatus}
         />
       </div>
     </>

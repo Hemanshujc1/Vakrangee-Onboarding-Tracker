@@ -19,6 +19,7 @@ import SignatureSection from "../../Components/Employee/BasicInfo/SignatureSecti
 const BasicInformation = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [previewImage, setPreviewImage] = useState(null);
@@ -50,7 +51,12 @@ const BasicInformation = () => {
     email: commonSchemas.emailOptional.nullable(),
     personal_email_id: commonSchemas.emailOptional.nullable(),
     phone: commonSchemas.mobileOptional.label("Phone"),
-    date_of_birth: commonSchemas.datePastOptional.label("Date of Birth"),
+    date_of_birth: commonSchemas.datePastOptional
+      .max(
+        new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+        "Must be 18 years or older"
+      )
+      .label("Date of Birth"),
     gender: Yup.string().nullable().optional(),
 
     // Address
@@ -96,10 +102,20 @@ const BasicInformation = () => {
       ),
     pan_number: Yup.string()
       .nullable()
+      .transform((value) => (value ? value.toUpperCase() : value))
       .test(
         "valid-pan",
         "Invalid PAN Format",
         (val) => !val || commonPatterns.pan.test(val)
+      ),
+    degree_name: Yup.string().required("Degree Name is required"),
+    degree_percentage: Yup.number()
+      .typeError("Must be a number")
+      .min(0, "Min 0")
+      .max(100, "Max 100")
+      .required("Degree Percentage is required")
+      .transform((value, originalValue) =>
+        originalValue === "" ? null : value
       ),
   });
 
@@ -137,6 +153,8 @@ const BasicInformation = () => {
       country: "India",
       tenth_percentage: "",
       twelfth_percentage: "",
+      degree_name: "",
+      degree_percentage: "",
       adhar_number: "",
       pan_number: "",
     },
@@ -256,6 +274,8 @@ const BasicInformation = () => {
           country: record.country || "India",
           tenth_percentage: record.tenth_percentage || "",
           twelfth_percentage: record.twelfth_percentage || "",
+          degree_name: record.degree_name || "",
+          degree_percentage: record.degree_percentage || "",
           adhar_number: record.adhar_number || "",
           pan_number: record.pan_number || "",
         });
@@ -363,6 +383,7 @@ const BasicInformation = () => {
 
       if (response.data.status === "00") {
         setPanVerified(true);
+        setValue("pan_number", pan_number.toUpperCase());
         if (response.data.firstName)
           setValue("firstname", response.data.firstName);
         if (response.data.middleName)
@@ -449,6 +470,8 @@ const BasicInformation = () => {
     if (file) {
       setSignatureFile(file);
       setPreviewSignature(URL.createObjectURL(file));
+      // Sync with documents
+      handleUpload(file, "Signature");
     }
   };
 
@@ -518,6 +541,7 @@ const BasicInformation = () => {
     );
     if (!isConfirmed) return;
 
+    setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
       await axios.post(
@@ -540,6 +564,8 @@ const BasicInformation = () => {
         type: "error",
         text: error.response?.data?.message || "Failed to submit profile.",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -573,10 +599,11 @@ const BasicInformation = () => {
       "district",
       "state",
       "pincode",
-      "tenth_percentage",
-      "twelfth_percentage",
+      "post_office",
       "adhar_number",
       "pan_number",
+      "degree_name",
+      "degree_percentage",
     ];
     for (const field of requiredFields) {
       if (!formData[field]) return false;
@@ -589,6 +616,8 @@ const BasicInformation = () => {
       "12th Marksheet",
       "Degree Certificate",
       "Cancelled Cheque",
+      "Passport Size Photo",
+      "Signature"
     ];
     for (const docKey of requiredDocs) {
       const doc = documents.find((d) => d.document_type === docKey);
@@ -600,6 +629,23 @@ const BasicInformation = () => {
     if (!panVerified) return false;
     return true;
   };
+
+  // Case Logic for Locking
+  const isBasicInfoLocked = 
+    verificationStatus === "SUBMITTED" || 
+    verificationStatus === "VERIFIED" ||
+    (verificationStatus === "REJECTED" && documents.some(d => d.status === "REJECTED") && !rejectionReason); 
+    // Wait, let's simplify based on the 4 cases:
+    
+    // Case 1 (11): status=VERIFIED -> BasicInfo=Locked
+    // Case 2 (01): status=REJECTED (Basic), Docs=All Verified -> BasicInfo=Editable
+    // Case 3 (10): status=VERIFIED (Basic), some Docs=REJECTED -> BasicInfo=Locked
+    // Case 4 (00): status=REJECTED (Basic), some Docs=REJECTED -> BasicInfo=Editable
+
+    const effectiveBasicInfoLocked = 
+        verificationStatus === "SUBMITTED" || 
+        verificationStatus === "VERIFIED"; // If status is VERIFIED, it means Basic Info is approved (Case 1 or 3)
+
 
   if (loading)
     return (
@@ -622,6 +668,7 @@ const BasicInformation = () => {
             fetchProfile();
           }}
           onSubmitVerification={handleSubmitForVerification}
+          onSubmitLoading={submitting}
           saving={saving}
           verifiedByName={verifiedByName}
           rejectionReason={rejectionReason}
@@ -629,7 +676,7 @@ const BasicInformation = () => {
           documents={documents}
         />
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 md:p-8">
           {message.text && (
             <div
               className={`mb-6 p-4 rounded-lg text-sm font-medium ${
@@ -646,6 +693,8 @@ const BasicInformation = () => {
             previewImage={previewImage}
             isEditing={isEditing}
             handleImageChange={handleImageChange}
+            isLocked={effectiveBasicInfoLocked}
+            photoStatus={getDocStatus("Passport Size Photo")}
           />
 
           <div className="flex flex-col gap-8">
@@ -664,6 +713,7 @@ const BasicInformation = () => {
               panVerificationFailed={panVerificationFailed}
               panFormatError={panFormatError}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
             />
             <JobInformationSection
               register={register}
@@ -678,6 +728,7 @@ const BasicInformation = () => {
               isEditing={isEditing}
               formData={formData}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
             />
 
             <AddressInformationSection
@@ -689,6 +740,7 @@ const BasicInformation = () => {
               watch={watch}
               trigger={trigger}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
             />
 
             <AcademicDetailsSection
@@ -701,6 +753,7 @@ const BasicInformation = () => {
               handleUpload={handleUpload}
               handleDelete={handleDelete}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
             />
 
             <FinancialHRDocumentsSection
@@ -710,6 +763,7 @@ const BasicInformation = () => {
               handleUpload={handleUpload}
               handleDelete={handleDelete}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
             />
 
             <SignatureSection
@@ -717,6 +771,8 @@ const BasicInformation = () => {
               isEditing={isEditing}
               handleSignatureChange={handleSignatureChange}
               verificationStatus={verificationStatus}
+              isLocked={effectiveBasicInfoLocked}
+              signatureStatus={getDocStatus("Signature")}
             />
           </div>
         </div>

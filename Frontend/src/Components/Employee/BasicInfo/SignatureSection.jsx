@@ -5,13 +5,13 @@ const SignatureSection = ({
   previewSignature,
   isEditing,
   handleSignatureChange,
-  verificationStatus,
+  isLocked,
+  signatureStatus,
 }) => {
-  const isLocked = verificationStatus === "VERIFIED";
   return (
-    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pt-6 border-t border-gray-100 text-center sm:text-left">
-      <div className="relative group">
-        <div className="w-48 h-20 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
+    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 pt-6 border-t border-gray-100 text-center sm:text-left">
+      <div className="relative group shrink-0">
+        <div className="w-40 sm:w-48 h-16 sm:h-20 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
           {previewSignature ? (
             <img
               src={previewSignature}
@@ -37,7 +37,7 @@ const SignatureSection = ({
           </label>
         )}
       </div>
-      <div className="pt-2">
+      <div className="pt-2 flex-1">
         <h3 className="font-semibold text-lg text-gray-800">
           Digital Signature
         </h3>
@@ -46,6 +46,13 @@ const SignatureSection = ({
             ? "Upload a clear image of your handwritten signature."
             : "Your official signature."}
         </p>
+        {signatureStatus?.status === "REJECTED" &&
+          signatureStatus.data?.rejection_reason && (
+            <div className="mt-2 text-[10px] text-red-600 font-medium bg-red-50 p-2 rounded border border-red-100 max-w-sm">
+              <span className="font-bold">Rejection Reason:</span>{" "}
+              {signatureStatus.data.rejection_reason}
+            </div>
+          )}
       </div>
     </div>
   );

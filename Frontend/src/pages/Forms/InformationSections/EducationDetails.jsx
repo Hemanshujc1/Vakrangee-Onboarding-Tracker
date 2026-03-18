@@ -62,6 +62,11 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               register={register}
               error={errors.educational_details?.[index]?.pin}
               required
+              maxLength={6}
+              minLength={6}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
             />
 
             <FormInput

@@ -127,7 +127,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const [designations, setDesignations] = useState([]);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
-  const DROPDOWN_BASE_URL = "/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
 
   useEffect(() => {
     if (isOpen) {

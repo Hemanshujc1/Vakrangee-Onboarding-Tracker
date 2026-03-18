@@ -38,7 +38,12 @@ const useFormEPF = () => {
       Yup.object().shape({
         isDraft: Yup.boolean(),
         member_name_aadhar: commonSchemas.nameString,
-        dob: commonSchemas.datePast,
+        dob: commonSchemas.datePast
+          .max(
+            new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
+            "Must be 18 years or older"
+          )
+          .required("Date of Birth is required"),
         gender: Yup.string().required("Required"),
         marital_status: Yup.string().required("Required"),
         relationship_type: Yup.string().nullable().optional(),

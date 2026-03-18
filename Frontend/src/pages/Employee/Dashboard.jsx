@@ -37,11 +37,12 @@ const Dashboard = () => {
       )
   }
 
-  const { progress, basicInfoStatus, onboardingStage, nextAction } = stats || {};
+  const { progress, basicInfoStatus, onboardingStage, docsVerified, nextAction } = stats || {};
 
   // Helper to determine stage styles
   const getBasicInfoStage = () => {
-    if (basicInfoStatus === 'VERIFIED') return { status: 'Completed', color: 'green', icon: CheckCircle };
+    if (basicInfoStatus === 'VERIFIED' && docsVerified) return { status: 'Completed', color: 'green', icon: CheckCircle };
+    if (basicInfoStatus === 'VERIFIED' && !docsVerified) return { status: 'Docs Pending Verification', color: 'yellow', icon: Clock };
     if (basicInfoStatus === 'SUBMITTED') return { status: 'Under Review', color: 'yellow', icon: Clock };
     if (basicInfoStatus === 'REJECTED') return { status: 'Action Needed', color: 'red', icon: AlertCircle };
     return { status: 'Pending', color: 'blue', icon: AlertCircle };

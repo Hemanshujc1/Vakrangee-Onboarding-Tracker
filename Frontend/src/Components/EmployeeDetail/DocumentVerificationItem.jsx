@@ -33,7 +33,13 @@ const DocumentVerificationItem = ({ doc, handleDocumentVerification }) => {
 
         <div className="flex items-center gap-1.5">
           <a
-            href={`/uploads/documents/${doc.file_path}`}
+            href={
+              doc.document_type === "Passport Size Photo"
+                ? `/uploads/profilepic/${doc.file_path}`
+                : doc.document_type === "Signature"
+                ? `/uploads/signatures/${doc.file_path}`
+                : `/uploads/documents/${doc.file_path}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="p-1 rounded bg-white border border-gray-200 text-blue-500 hover:bg-gray-100"

@@ -26,6 +26,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        '/vakrangee-onboarding-portal/vakrangee-connect': {
+          target: 'https://vkmssit.vakrangee.in',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/vakrangee-onboarding-portal\/vakrangee-connect/, '/vakrangee-connect')
+        },
         '/nsdl-api': {
           target: 'https://vkms.vakrangee.in',
           changeOrigin: true,

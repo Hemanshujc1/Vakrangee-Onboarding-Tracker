@@ -16,20 +16,24 @@ const ProfileIdentitySection = ({
   panVerificationFailed,
   panFormatError,
   verificationStatus,
+  isLocked,
 }) => {
-  const isLocked = verificationStatus === "VERIFIED";
   const panDoc = getDocStatus("PAN Card");
   const aadhaarDoc = getDocStatus("Aadhar Card");
 
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
+
   return (
     <>
-      <div className="md:col-span-2">
-        <h4 className="font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+      <div className="mb-4">
+        <h4 className="font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
            Profile & Identity Verification
         </h4>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 md:col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5 md:col-span-2">
         <div>
           <label className="block text-sm text-gray-500 mb-1">
             First Name (as per PAN) <span className="text-red-500">*</span>
@@ -111,6 +115,7 @@ const ProfileIdentitySection = ({
               <input
                 {...register("date_of_birth")}
                 type="date"
+                max={maxDate}
                 readOnly={panVerified || isLocked}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
@@ -127,8 +132,8 @@ const ProfileIdentitySection = ({
           )}
         </div>
 
-        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="sm:col-span-2">
+        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
             <label className="block text-sm text-gray-500 mb-1">
               PAN Number <span className="text-red-500">*</span>
             </label>
@@ -204,11 +209,12 @@ const ProfileIdentitySection = ({
               handleUpload={handleUpload}
               handleDelete={handleDelete}
               isEditing={isEditing}
+              verificationStatus={verificationStatus}
             />
           </div>
         </div>
 
-        <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-gray-500 mb-1">
               Aadhaar Number <span className="text-red-500">*</span>
@@ -219,6 +225,11 @@ const ProfileIdentitySection = ({
                   {...register("adhar_number")}
                   readOnly={isLocked}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.adhar_number ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  maxLength={12}
+                minLength={12}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  }}
                 />
                 {errors.adhar_number && (
                   <p className="text-red-500 text-xs mt-1">
@@ -242,6 +253,7 @@ const ProfileIdentitySection = ({
               handleUpload={handleUpload}
               handleDelete={handleDelete}
               isEditing={isEditing}
+              verificationStatus={verificationStatus}
             />
           </div>
         </div>

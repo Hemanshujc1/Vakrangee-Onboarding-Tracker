@@ -42,7 +42,7 @@ const useEmployeeDetail = () => {
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
     try {
-      const BASE_URL = "/vakrangee-connect/OnBoarding";
+      const BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
       const responses = await Promise.all([
         fetch(`${BASE_URL}/department-list`),
         fetch(`${BASE_URL}/designation-list`),
@@ -364,10 +364,40 @@ const useEmployeeDetail = () => {
   const isEverythingReviewed = () => {
     if (!employee) return false;
     
-    const isBasicInfoReviewed = employee.basicInfoStatus !== "PENDING" && employee.basicInfoStatus !== "SUBMITTED";
-    const areAllDocumentsReviewed = documents.length > 0 && documents.every(doc => doc.status !== "PENDING" && doc.status !== "UPLOADED");
+    // Basic info is reviewed if it is explicitly VERIFIED or REJECTED.
+    // SUBMITTED status means it's waiting for review.
+    const isBasicInfoReviewed = 
+      employee.basicInfoStatus === "VERIFIED" || employee.basicInfoStatus === "REJECTED";
+
+    const areAllDocumentsReviewed = 
+      documents.length > 0 && 
+      documents.every(doc => doc.status !== "PENDING" && doc.status !== "UPLOADED" && doc.status !== "SUBMITTED");
     
     return isBasicInfoReviewed && areAllDocumentsReviewed;
+  };
+
+  const isEverythingVerified = () => {
+    if (!employee) return false;
+
+    const isBasicInfoVerified = employee.basicInfoStatus === "VERIFIED";
+
+    const mandatoryDocs = [
+      "PAN Card",
+      "Aadhar Card",
+      "10th Marksheet",
+      "12th Marksheet",
+      "Degree Certificate",
+      "Cancelled Cheque",
+      "Passport Size Photo",
+      "Signature",
+    ];
+
+    const verifiedDocs = documents.filter((doc) => doc.status === "VERIFIED");
+    const areAllMandatoryDocsVerified = mandatoryDocs.every((docType) =>
+      verifiedDocs.some((d) => d.document_type === docType)
+    );
+
+    return isBasicInfoVerified && areAllMandatoryDocsVerified;
   };
 
   const handleDeptChange = (e) => {
@@ -421,6 +451,7 @@ const useEmployeeDetail = () => {
     handleToggleFormAccess,
     handleFinalVerify,
     isEverythingReviewed,
+    isEverythingVerified,
     isBasicInfoComplete,
     emailSent,
     departmentsList,

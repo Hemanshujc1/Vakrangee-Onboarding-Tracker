@@ -96,6 +96,11 @@ const ContactDetails = ({ register, errors }) => {
               register={register}
               error={errors.current_pin_code}
               required
+              maxLength={6}
+                minLength={6}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  }}
             />
           </div>
         </div>
@@ -199,6 +204,11 @@ const ContactDetails = ({ register, errors }) => {
               register={register}
               error={errors.permanent_pin_code}
               required
+              maxLength={6}
+              minLength={6}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
             />
           </div>
         </div>

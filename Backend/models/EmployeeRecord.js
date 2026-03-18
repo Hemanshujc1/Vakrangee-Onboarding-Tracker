@@ -50,6 +50,8 @@ const EmployeeRecord = sequelize.define(
     country: DataTypes.STRING,
     tenth_percentage: DataTypes.FLOAT,
     twelfth_percentage: DataTypes.FLOAT,
+    degree_name: DataTypes.STRING,
+    degree_percentage: DataTypes.FLOAT,
     adhar_number: DataTypes.STRING,
     pan_number: DataTypes.STRING,
     pan_verified: {

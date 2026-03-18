@@ -17,6 +17,10 @@ const PersonalDetailsSection = ({
   formData,
   formatDate,
 }) => {
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
+
   return (
     <>
       <div className="md:col-span-2 mt-4">
@@ -144,6 +148,11 @@ const PersonalDetailsSection = ({
               placeholder="9876543210"
               maxLength={10}
               minLength={10}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              }}
+              inputMode="numeric"
+
             />
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">
@@ -166,6 +175,7 @@ const PersonalDetailsSection = ({
             <input
               {...register("date_of_birth")}
               type="date"
+              max={maxDate}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
                 errors.date_of_birth ? "border-red-500" : "border-gray-200"
               }`}

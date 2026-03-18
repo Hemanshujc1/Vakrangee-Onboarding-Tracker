@@ -9,6 +9,10 @@ const EPFMemberDetails = ({
   relationshipType,
   autoFillData,
 }) => {
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
+
   return (
     <FormSection title="1. Member Details">
       <FormInput
@@ -26,6 +30,7 @@ const EPFMemberDetails = ({
           register={register}
           name="dob"
           error={errors.dob}
+          max={maxDate}
           disabled
         />
         <FormSelect

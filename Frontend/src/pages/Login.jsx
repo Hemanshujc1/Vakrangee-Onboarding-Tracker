@@ -39,6 +39,12 @@ const Login = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
+      // Force password change on first login for HR_ADMIN and EMPLOYEE
+      if (user.is_first_login) {
+        navigate("/reset-password", { state: { firstLogin: true } });
+        return;
+      }
+
       if (user.role === "HR_SUPER_ADMIN") {
         navigate("/hr-super-admin");
       } else if (user.role === "HR_ADMIN") {

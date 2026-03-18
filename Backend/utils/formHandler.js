@@ -137,11 +137,12 @@ exports.checkAndUpdateBasicInfoStage = async (employeeId) => {
         }
 
         if (allVerified) {
-            employee.onboarding_stage = 'PRE_JOINING';
-            employee.basic_info_rejection_reason = null; 
-            employee.disabled_forms = []; // Enable all forms for pre-joining
-            await employee.save();
-            logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING and enabled forms.`);
+            // employee.onboarding_stage = 'PRE_JOINING';
+            // employee.basic_info_rejection_reason = null; 
+            // employee.disabled_forms = []; // Enable all forms for pre-joining
+            // await employee.save();
+            // logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING and enabled forms.`);
+            logger.info(`Employee ${employeeId} has all basic info and documents verified. Waiting for manual stage advancement.`);
         }
 
     } catch (err) {

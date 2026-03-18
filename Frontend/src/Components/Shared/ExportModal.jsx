@@ -210,7 +210,6 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                                 jobTitle: filterJobTitle, setJobTitle: setFilterJobTitle,
                                 location: filterLocation, setLocation: setFilterLocation,
                                 assignedHR: filterAssignedHR, setAssignedHR: setFilterAssignedHR,
-                                sortConfig, setSortConfig,
                                 resetFilters: () => {
                                     setFilterStatus("");
                                     setFilterDepartment("");
@@ -222,6 +221,8 @@ const ExportModal = ({ isOpen, onClose, data, formatOptions = {}, fileName = "ex
                                 }
                             }}
                             options={{ statuses, departments, jobTitles, locations, hrOptions }}
+                            sortConfig={sortConfig}
+                            setSortConfig={setSortConfig}
                             variant="full"
                             {...filterProps}
                         />

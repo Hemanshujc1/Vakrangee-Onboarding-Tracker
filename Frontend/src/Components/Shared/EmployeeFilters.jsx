@@ -21,6 +21,7 @@ const EmployeeFilters = ({
         department, setDepartment,
         jobTitle, setJobTitle,
         location, setLocation,
+        assignedHR, setAssignedHR,
         resetFilters
     } = filters;
     
@@ -143,7 +144,7 @@ const EmployeeFilters = ({
         );
     };
 
-    const hasActiveFilters = status || department || jobTitle || location || filters.assignedHR;
+    const hasActiveFilters = status || department || jobTitle || location || assignedHR || (sortConfig?.key !== null && sortConfig?.key !== undefined && sortConfig?.key !== "");
 
     return (
         <div className={`bg-white rounded-xl shadow-sm border border-gray-100 shrink-0
@@ -227,8 +228,8 @@ const EmployeeFilters = ({
                         title="Assigned HR" 
                         icon={User} 
                         options={options.hrOptions} 
-                        value={filters.assignedHR} 
-                        onChange={filters.setAssignedHR} 
+                        value={assignedHR} 
+                        onChange={setAssignedHR} 
                     />
                 )}
             </div>

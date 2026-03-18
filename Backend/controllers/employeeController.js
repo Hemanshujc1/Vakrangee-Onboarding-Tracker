@@ -280,13 +280,44 @@ exports.getDashboardStats = async (req, res) => {
       }
 
       
-      const basicInfoProgress = ["SUBMITTED", "VERIFIED"].includes(employee.basic_info_status) ? 100 : 0;
-      
-      const submittedForms = await FormSubmission.count({
-          where: { employee_id: employee.id }
+      // 1. Basic Details Data Verification status
+      const isBasicInfoVerified = employee.basic_info_status === 'VERIFIED';
+
+      // 2. Mandatory Documents Verification status
+      const mandatoryDocs = [
+          "PAN Card", "Aadhar Card", "10th Marksheet", "12th Marksheet", 
+          "Degree Certificate", "Cancelled Cheque", "Passport Size Photo", "Signature"
+      ];
+      const verifiedDocsCount = await EmployeeDocument.count({
+          where: {
+              employee_id: employee.id,
+              status: 'VERIFIED',
+              document_type: mandatoryDocs
+          }
       });
-      const totalForms = 8;
-      const progressPercentage = Math.round(((basicInfoProgress > 0 ? 1 : 0) + submittedForms) / (1 + totalForms) * 100);
+      const areDocsVerified = verifiedDocsCount >= mandatoryDocs.length;
+
+      // Calculate Stage 1 Progress (33% total)
+      let stage1Progress = 0;
+      if (isBasicInfoVerified && areDocsVerified) {
+          stage1Progress = 33;
+      } else if (isBasicInfoVerified || areDocsVerified) {
+          stage1Progress = 17;
+      }
+
+      // Calculate Other Forms Progress (67% total)
+      // We count forms that are at least SUBMITTED (not just DRAFT)
+      const submittedForms = await FormSubmission.count({
+          where: { 
+              employee_id: employee.id,
+              status: ['SUBMITTED', 'VERIFIED'] 
+          }
+      });
+      
+      const totalOtherForms = 8;
+      const otherFormsProgress = totalOtherForms > 0 ? (submittedForms / totalOtherForms) * 67 : 0;
+
+      const progressPercentage = Math.round(stage1Progress + otherFormsProgress);
 
       // Determine next action
       let nextAction = null;
@@ -328,6 +359,7 @@ exports.getDashboardStats = async (req, res) => {
           basicInfoStatus: employee.basic_info_status,
           onboardingStage: employee.onboarding_stage,
           completedFormsCount: submittedForms,
+          docsVerified: areDocsVerified,
           nextAction
       });
 
@@ -376,6 +408,8 @@ exports.getEmployeeById = async (req, res) => {
             // Education & Identity
             "tenth_percentage",
             "twelfth_percentage",
+            "degree_name",
+            "degree_percentage",
             "adhar_number",
             "pan_number",
             "signature"
@@ -548,6 +582,8 @@ exports.getEmployeeById = async (req, res) => {
       // Education & Identity
       tenthPercentage: record.tenth_percentage,
       twelfthPercentage: record.twelfth_percentage,
+      degree_name: record.degree_name,
+      degree_percentage: record.degree_percentage,
       adharNumber: record.adhar_number,
       panNumber: record.pan_number,
       signature: record.signature,
@@ -685,24 +721,112 @@ exports.submitBasicInfo = async (req, res) => {
     const userId = req.user.id;
     const employee = await EmployeeMaster.findOne({
       where: { employee_id: userId },
+      include: [{ model: EmployeeRecord }]
     });
 
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // Only allow submission if PENDING or REJECTED or if there are REJECTED documents
+    const record = employee.EmployeeRecord;
+    if (!record) {
+      return res.status(400).json({ message: "Personal details not found. Please save your profile first." });
+    }
+
+    // 1. Check Mandatory Fields in EmployeeRecord
+    const mandatoryFields = [
+      "firstname",
+      "lastname",
+      "personal_email_id",
+      "phone",
+      "gender",
+      "date_of_birth",
+      "adhar_number",
+      "pan_number",
+      "address_line1",
+      "city",
+      "district",
+      "state",
+      "pincode",
+      "post_office",
+      "signature",
+      "degree_name",
+      "degree_percentage"
+    ];
+
+    const missingFields = mandatoryFields.filter(field => {
+      const val = record[field];
+      return val === null || val === undefined || String(val).trim() === "";
+    });
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: "Please complete all mandatory fields before submitting.",
+        missingFields 
+      });
+    }
+
+    // 2. Check Mandatory Documents in EmployeeDocument
     const documents = await EmployeeDocument.findAll({ where: { employee_id: employee.id } });
+    const mandatoryDocs = [
+      "PAN Card",
+      "Aadhar Card",
+      "10th Marksheet",
+      "12th Marksheet",
+      "Degree Certificate",
+      "Cancelled Cheque",
+      "Passport Size Photo",
+      "Signature"
+    ];
+
+    const missingDocs = mandatoryDocs.filter(docType => {
+      const doc = documents.find(d => d.document_type === docType);
+      return !doc || doc.status === 'REJECTED';
+    });
+
+    if (missingDocs.length > 0) {
+      return res.status(400).json({ 
+        message: "Please upload all mandatory documents (and replace rejected ones) before submitting.",
+        missingDocs 
+      });
+    }
+
+    // 3. Check PAN Verification Status (Optional but recommended if frontend enforces it)
+    if (!record.pan_verified && !employee.pan_verified) { // Checking both as pan_verified might be in Master too depending on sync
+        // If we want to strictly enforce NSDL verification:
+        // return res.status(400).json({ message: "Please verify your PAN number before submitting." });
+    }
+
+    // 4. Validate Submission State
     const hasRejectedDocs = documents.some(doc => doc.status === 'REJECTED');
-    const canSubmit = ["PENDING", "REJECTED"].includes(employee.basic_info_status) || hasRejectedDocs;
+    const hasUploadedDocs = documents.some(doc => doc.status === 'UPLOADED');
+    const canSubmit = ["PENDING", "REJECTED"].includes(employee.basic_info_status) || hasRejectedDocs || hasUploadedDocs;
 
     if (!canSubmit) {
       return res
         .status(400)
-        .json({ message: "Profile is already submitted or verified, and no items are rejected." });
+        .json({ message: "Profile is already submitted or verified, and no items are pending resubmission." });
     }
 
-    employee.basic_info_status = "SUBMITTED";
+    if (employee.basic_info_status !== "VERIFIED") {
+      employee.basic_info_status = "SUBMITTED";
+      // Clear verification data on resubmission to ensure fresh review
+      employee.basic_info_verified_by = null;
+      employee.basic_info_verified_at = null;
+    }
+    
+    // Transition documents to SUBMITTED state so they are considered "waiting for review"
+    await EmployeeDocument.update(
+        { status: 'SUBMITTED' },
+        { 
+            where: { 
+                employee_id: employee.id,
+                status: ['UPLOADED', 'REJECTED']
+            }
+        }
+    );
+
+    employee.final_verification_email_sent = false;
     await employee.save();
 
     // Notify HR
@@ -735,12 +859,14 @@ exports.verifyBasicInfo = async (req, res) => {
     }
 
     employee.basic_info_status = status;
-    employee.basic_info_verified_by = hrUserId;
-    employee.basic_info_verified_at = new Date();
-
+    
     if (status === "VERIFIED") {
+      employee.basic_info_verified_by = hrUserId;
+      employee.basic_info_verified_at = new Date();
       employee.basic_info_rejection_reason = null; // Clear reason
     } else {
+      employee.basic_info_verified_by = null;
+      employee.basic_info_verified_at = null;
       employee.basic_info_rejection_reason =
         rejectionReason || "Details mismatch or incomplete";
       // Stage "BASIC_INFO" allows edits
@@ -810,7 +936,7 @@ exports.advanceOnboardingStage = async (req, res) => {
     // Allowed transitions usually handled by specific actions, but this is a manual override/progression
     // e.g. PRE_JOINING -> POST_JOINING
     
-    if (!['POST_JOINING', 'ONBOARDED'].includes(stage)) {
+    if (!['PRE_JOINING', 'POST_JOINING', 'ONBOARDED'].includes(stage)) {
        return res.status(400).json({ message: "Invalid stage transition requested." });
     }
 
@@ -820,6 +946,10 @@ exports.advanceOnboardingStage = async (req, res) => {
     }
 
     employee.onboarding_stage = stage;
+    if (stage === 'PRE_JOINING') {
+      employee.disabled_forms = [];
+      employee.basic_info_rejection_reason = null; 
+    }
     await employee.save();
 
     res.json({
@@ -880,46 +1010,54 @@ exports.finalVerifyEmployee = async (req, res) => {
     let subject, html;
 
     if (isSuccess) {
-      subject = "Verification Completed";
+      subject = "Verification Completed - All Details Approved";
       html = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #2e7d32;">Verification Completed</h2>
+          <h2 style="color: #2e7d32;">Verification Successful</h2>
           <p>Dear <strong>${employeeName}</strong>,</p>
-          <p>Your basic details and documents have been successfully verified.</p>
+          <p>We are pleased to inform you that all your basic details and uploaded documents have been successfully verified.</p>
+          <div style="background-color: #f1f8e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
+             <strong>Status:</strong> Approved
+          </div>
+          <p>You can now proceed with the next stages of your onboarding.</p>
           <br/>
           <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
         </div>
       `;
     } else {
-      subject = "Verification Rejected";
+      subject = "Onboarding Verification Summary - Action Required";
       
-      let rejectedItemsHtml = "";
-      if (isBasicInfoRejected) {
-        rejectedItemsHtml += `
-          <div style="margin-bottom: 15px;">
-            <strong>Basic Details</strong><br/>
-            Reason: ${employee.basic_info_rejection_reason || "Details mismatch"}
-          </div>
-        `;
-      }
+      let itemsListHtml = "";
+      
+      // Basic Details Info
+      itemsListHtml += `
+        <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
+          <strong style="color: ${isBasicInfoRejected ? '#d32f2f' : '#2e7d32'};">Basic Details: ${isBasicInfoRejected ? 'Rejected' : 'Verified'}</strong><br/>
+          ${isBasicInfoRejected ? `<span style="color: #d32f2f;">Reason: ${employee.basic_info_rejection_reason || "Details mismatch"}</span>` : 'Successfully verified.'}
+        </div>
+      `;
 
-      rejectedDocs.forEach(doc => {
-        rejectedItemsHtml += `
-          <div style="margin-bottom: 15px;">
-            <strong>${doc.document_type}</strong><br/>
-            Reason: ${doc.rejection_reason || "Document mismatch or unclear"}
+      // Documents Info
+      documents.forEach(doc => {
+        const isRejected = doc.status === 'REJECTED';
+        itemsListHtml += `
+          <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
+            <strong style="color: ${isRejected ? '#d32f2f' : '#2e7d32'};">${doc.document_type}: ${isRejected ? 'Rejected' : 'Verified'}</strong><br/>
+            ${isRejected ? `<span style="color: #d32f2f;">Reason: ${doc.rejection_reason || "Document mismatch or unclear"}</span>` : 'Successfully verified.'}
           </div>
         `;
       });
 
       html = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: left;">
-          <h2 style="color: #d32f2f;">Verification Rejected</h2>
+          <h2 style="color: #d32f2f;">Verification Update</h2>
           <p>Dear <strong>${employeeName}</strong>,</p>
-          <p>Your verification could not be completed.</p>
-          <h4 style="margin-bottom: 10px;">Rejected Items:</h4>
-          ${rejectedItemsHtml}
-          <p>Please log in to the portal to correct the details and resubmit.</p>
+          <p>Your profile verification has been processed. Some items require your attention.</p>
+          
+          <h4 style="margin-bottom: 10px; border-bottom: 2px solid #f44336; padding-bottom: 5px;">Review Summary:</h4>
+          ${itemsListHtml}
+          
+          <p style="margin-top: 20px; font-weight: bold;">Please log in to the portal to correct the rejected items and resubmit for verification.</p>
           <br/>
           <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
         </div>

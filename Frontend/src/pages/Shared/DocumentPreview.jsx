@@ -101,7 +101,13 @@ const DocumentPreview = () => {
 
   const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document.file_path);
   const isPDF = /\.pdf$/i.test(document.file_path);
-  const fileUrl = `/uploads/documents/${document.file_path}`;
+  const folder =
+    document.document_type === "Passport Size Photo"
+      ? "profilepic"
+      : document.document_type === "Signature"
+      ? "signatures"
+      : "documents";
+  const fileUrl = `/uploads/${folder}/${document.file_path}`;
 
   return (
     <DashboardLayout>
@@ -142,11 +148,11 @@ const DocumentPreview = () => {
           </div>
 
           {/* Preview Area */}
-          <div className="p-8 bg-gray-900 flex justify-center min-h-[600px]">
+          <div className="p-8 bg-gray-900 flex justify-center min-h-150">
             {isImage ? (
               <img src={fileUrl} alt={document.document_type} className="max-w-full h-auto shadow-2xl rounded-lg" />
             ) : isPDF ? (
-              <iframe src={fileUrl} className="w-full h-[800px] border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
+              <iframe src={fileUrl} className="w-full h-200 border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-400 gap-4">
                 <FileText size={64} />

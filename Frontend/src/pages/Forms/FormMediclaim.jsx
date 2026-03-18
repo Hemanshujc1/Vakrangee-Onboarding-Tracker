@@ -32,7 +32,6 @@ const FormMediclaim = () => {
     remove,
   } = useFormMediclaim();
 
-
   if (loading) return <div>Loading Form Data...</div>;
   const maritalStatus = watch("marital_status");
 
@@ -50,7 +49,7 @@ const FormMediclaim = () => {
       signaturePreview={signaturePreview}
       isLocked={isLocked}
       onSubmit={handleSubmit(onFormSubmit, (e) =>
-        onValidationFail(e, showAlert),
+        onValidationFail(e, showAlert)
       )}
       actions={{
         isSubmitting,
@@ -188,6 +187,11 @@ const FormMediclaim = () => {
             name="pincode"
             error={errors.pincode}
             required={true}
+            maxLength={6}
+            minLength={6}
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
           />
         </div>
       </FormSection>

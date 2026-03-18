@@ -4,6 +4,10 @@ import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
 
 const PersonalDetails = ({ register, errors, autoFillData }) => {
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
+
   return (
     <FormSection title="Personal Details">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -57,6 +61,7 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           register={register}
           error={errors.date_of_birth}
           required
+          max={maxDate}
           disabled
         />
         <FormInput
@@ -112,7 +117,6 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           name="passport_number"
           register={register}
           error={errors.passport_number}
-          disabled
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
@@ -154,6 +158,11 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           name="std_code"
           register={register}
           error={errors.std_code}
+          maxLength={3}
+                minLength={3}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  }}
         />
         <FormInput
           label="Alternate No"
@@ -161,7 +170,11 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           register={register}
           error={errors.alternate_no}
           required
-          disabled
+          maxLength={10}
+          minLength={10}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="Mobile No"
@@ -177,6 +190,11 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           error={errors.emergency_no}
           required
           disabled
+          maxLength={10}
+                minLength={10}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  }}
         />
         <FormInput
           label="Email ID"

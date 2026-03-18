@@ -11,6 +11,7 @@ const REQUIRED_DOCUMENTS = [
     { name: 'PAN Card', key: 'PAN Card', optional: false },
     { name: 'Cancelled Cheque', key: 'Cancelled Cheque', optional: false },
     { name: 'Passport Size Photo', key: 'Passport Size Photo', optional: false },
+    { name: 'Signature', key: 'Signature', optional: false },
     { name: 'Degree Certificate', key: 'Degree Certificate', optional: true },
     { name: 'Service Certificates', key: 'Service Certificates', optional: true },
     { name: 'Relieving Letter', key: 'Relieving Letter', optional: true },
@@ -184,10 +185,16 @@ const Documents = () => {
                             </div>
         
                             <div className="flex items-center gap-3 w-full md:w-auto justify-end md:justify-start">
-                                {data ? (
+                                {(data && status !== "REJECTED") ? (
                                     <>
                                         <a 
-                                            href={`/uploads/documents/${data.file_path}`} 
+                                            href={
+                                              reqDoc.key === "Passport Size Photo"
+                                                ? `/uploads/profilepic/${data.file_path}`
+                                                : reqDoc.key === "Signature"
+                                                ? `/uploads/signatures/${data.file_path}`
+                                                : `/uploads/documents/${data.file_path}`
+                                            }
                                             target="_blank" 
                                             rel="noopener noreferrer"
                                             className="p-2 text-gray-500 hover:text-(--color-primary) hover:bg-blue-50 rounded-lg transition-colors" 
@@ -195,16 +202,7 @@ const Documents = () => {
                                         >
                                             <Eye size={20} />
                                         </a>
-                                        {status !== 'VERIFIED' && (
-                                            <button 
-                                                onClick={() => handleDelete(data.id)}
-                                                className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" 
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
-                                        )}
-
+                                        {/* Removed Delete button as per requirements */}
                                     </>
                                 ) : (
                                     <div className="relative w-full md:w-auto">
@@ -214,14 +212,14 @@ const Documents = () => {
                                             className="hidden" 
                                             accept=".pdf,.jpg,.jpeg,.png"
                                             onChange={(e) => handleUpload(e.target.files[0], reqDoc.key)}
-                                            disabled={isUploading}
+                                            disabled={isUploading || status === "VERIFIED"}
                                         />
                                         <label 
                                             htmlFor={`file-${reqDoc.key}`}
-                                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-(--color-primary) hover:text-(--color-primary) hover:bg-blue-50 transition-all cursor-pointer w-full justify-center md:w-auto ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-(--color-primary) hover:text-(--color-primary) hover:bg-blue-50 transition-all cursor-pointer w-full justify-center md:w-auto ${(isUploading || status === "VERIFIED") ? 'opacity-50 pointer-events-none' : ''}`}
                                         >
                                             <Upload size={18} />
-                                            <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
+                                            <span>{isUploading ? 'Uploading...' : (data ? 'Re-upload' : 'Upload File')}</span>
                                         </label>
                                     </div>
                                 )}
