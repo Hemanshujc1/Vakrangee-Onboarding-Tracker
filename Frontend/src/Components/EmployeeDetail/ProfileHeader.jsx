@@ -52,7 +52,7 @@ const ProfileHeader = ({
       },
       PRE_JOINING_VERIFIED: {
         label: "Ready to Join",
-        color: "bg-(--color-accent-sage)/10 text-(--color-accent-sage)",
+        color: "bg-green-100 text-green-800",
         icon: ShieldCheck,
       },
       POST_JOINING: {

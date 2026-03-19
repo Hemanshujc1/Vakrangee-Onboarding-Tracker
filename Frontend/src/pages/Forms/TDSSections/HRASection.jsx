@@ -22,7 +22,13 @@ const HRASection = ({ register, errors, watchRelatedLandlord }) => {
           name="hra_months"
           error={errors.hra_months}
           min={0}
-          max={9999999999}
+          max={12}
+          minLength={1}
+          maxLength={2}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
+          
         />
       </div>
       <div className="mt-4 border-t pt-4">

@@ -38,7 +38,7 @@ const FormRow = ({
           <span
             className={`text-xs font-bold px-2 py-1 rounded transition-all ${
               status === "VERIFIED"
-                ? "bg-(--color-accent-sage)/10 text-(--color-accent-sage)"
+                ? "bg-green-100 text-green-800"
                 : status === "REJECTED"
                   ? "bg-(--color-accent-orange)/10 text-(--color-accent-orange)"
                   : status === "SUBMITTED"

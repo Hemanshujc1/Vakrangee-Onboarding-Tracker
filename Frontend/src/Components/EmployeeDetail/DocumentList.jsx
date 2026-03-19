@@ -31,7 +31,7 @@ const DocumentList = ({ documents, handleDocumentVerification }) => {
                   <span
                     className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded transition-all ${
                       doc.status === "VERIFIED"
-                        ? "bg-(--color-accent-sage)/10 text-(--color-accent-sage)"
+                        ? "bg-green-100 text-green-800"
                         : doc.status === "REJECTED"
                           ? "bg-(--color-accent-orange)/10 text-(--color-accent-orange)"
                           : "bg-(--color-primary)/10 text-(--color-primary)"

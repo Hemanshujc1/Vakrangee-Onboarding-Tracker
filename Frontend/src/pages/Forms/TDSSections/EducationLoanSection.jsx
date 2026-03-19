@@ -21,6 +21,9 @@ const EducationLoanSection = ({ register, errors }) => {
           register={register}
           name="education_loan_start_year"
           error={errors.education_loan_start_year}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="Interest Payable (Apr-Mar)"
