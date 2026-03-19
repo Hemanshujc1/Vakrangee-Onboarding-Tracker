@@ -187,7 +187,7 @@ const AddressInformationSection = ({
             }))}
             value={watchState}
             onChange={(e) => {
-              onStateChange(e.target.value, e.target.option.name);
+              onStateChange(e.target.value, e.target.option?.name || "");
             }}
             placeholder="Select State"
             required
@@ -204,7 +204,7 @@ const AddressInformationSection = ({
             }))}
             value={watchDistrict}
             onChange={(e) => {
-              onDistrictChange(e.target.value, e.target.option.name);
+              onDistrictChange(e.target.value, e.target.option?.name || "");
             }}
             placeholder="Select District"
             disabled={!selectedStateId || loadingRegions || isLocked}
@@ -220,7 +220,7 @@ const AddressInformationSection = ({
               name: v.village_name,
             }))}
             value={watch("city")}
-            onChange={(e) => onCityChange(e.target.option.name)}
+            onChange={(e) => onCityChange(e.target.option?.name || "")}
             placeholder="Select City"
             disabled={!selectedDistrictId || loadingRegions || isLocked}
             required

@@ -77,7 +77,7 @@ const SearchableSelect = ({
 
   const clearSelection = (e) => {
     e.stopPropagation();
-    onChange({ target: { name, value: "" } });
+    onChange({ target: { name, value: "", option: { id: "", name: "" } } });
   };
 
   return (

@@ -381,7 +381,7 @@ const ProfileEdit = ({
           }))}
           value={formData.state}
           onChange={(e) => {
-            onStateChange(e.target.value, e.target.option.name);
+            onStateChange(e.target.value, e.target.option?.name || "");
           }}
           placeholder="Select State"
           required
@@ -396,7 +396,7 @@ const ProfileEdit = ({
           }))}
           value={formData.district}
           onChange={(e) => {
-            onDistrictChange(e.target.value, e.target.option.name);
+            onDistrictChange(e.target.value, e.target.option?.name || "");
           }}
           placeholder="Select District"
           disabled={!selectedStateId || loadingRegions}
@@ -411,7 +411,7 @@ const ProfileEdit = ({
             name: v.village_name,
           }))}
           value={formData.city}
-          onChange={(e) => onCityChange(e.target.option.name)}
+          onChange={(e) => onCityChange(e.target.option?.name || "")}
           placeholder="Select City"
           disabled={!selectedDistrictId || loadingRegions}
           required

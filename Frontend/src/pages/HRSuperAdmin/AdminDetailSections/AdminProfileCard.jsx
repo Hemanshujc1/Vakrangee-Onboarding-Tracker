@@ -24,7 +24,7 @@ const AdminProfileCard = ({
   const handleDeptChange = (e) => {
     setEditForm((prev) => ({
       ...prev,
-      department: e.target.option.name,
+      department: e.target.option?.name || "",
       department_id: e.target.value,
     }));
   };
@@ -32,7 +32,7 @@ const AdminProfileCard = ({
   const handleDesigChange = (e) => {
     setEditForm((prev) => ({
       ...prev,
-      jobTitle: e.target.option.name,
+      jobTitle: e.target.option?.name || "",
       designation_id: e.target.value,
     }));
   };
