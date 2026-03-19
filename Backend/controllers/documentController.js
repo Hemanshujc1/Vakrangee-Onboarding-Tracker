@@ -83,7 +83,11 @@ exports.uploadDocument = async (req, res) => {
             
             // Delete the temp file from uploads/documents (multer saved it there)
             if (fs.existsSync(oldTempPath)) {
-                fs.unlinkSync(oldTempPath);
+                try {
+                    fs.unlinkSync(oldTempPath);
+                } catch (unlinkErr) {
+                    logger.warn('Failed to delete temp upload file: %o', unlinkErr);
+                }
             }
 
             finalPath = newFilename;
@@ -96,7 +100,11 @@ exports.uploadDocument = async (req, res) => {
                 if (oldVal) {
                     const oldFilePath = path.join(__dirname, '..', 'uploads', targetFolder, oldVal);
                     if (fs.existsSync(oldFilePath)) {
-                        fs.unlinkSync(oldFilePath);
+                        try {
+                            fs.unlinkSync(oldFilePath);
+                        } catch (unlinkErr) {
+                            logger.warn('Failed to delete old profile/sig file: %o', unlinkErr);
+                        }
                     }
                 }
                 
@@ -147,7 +155,11 @@ exports.uploadDocument = async (req, res) => {
     }
 
     // Reset final verification email flag so HR can send summary again after resubmission
-    await employee.update({ final_verification_email_sent: false });
+    try {
+        await employee.update({ final_verification_email_sent: false });
+    } catch (updateErr) {
+        logger.warn('Failed to reset final_verification_email_sent (possible schema mismatch): %o', updateErr);
+    }
 
     // Notify HR - SILENCED for individual documents (HR will be notified on final Submit/Resubmit for Verification)
     // await formHandler.sendHRSubmissionNotification(employee.id, `Document: ${documentType}`);

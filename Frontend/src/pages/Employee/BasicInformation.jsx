@@ -108,12 +108,13 @@ const BasicInformation = () => {
         "Invalid PAN Format",
         (val) => !val || commonPatterns.pan.test(val)
       ),
-    degree_name: Yup.string().required("Degree Name is required"),
+    degree_name: Yup.string().nullable().optional(),
     degree_percentage: Yup.number()
       .typeError("Must be a number")
       .min(0, "Min 0")
       .max(100, "Max 100")
-      .required("Degree Percentage is required")
+      .nullable()
+      .optional()
       .transform((value, originalValue) =>
         originalValue === "" ? null : value
       ),
@@ -330,7 +331,6 @@ const BasicInformation = () => {
       await axios.post("/api/documents/upload", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
       fetchDocuments();

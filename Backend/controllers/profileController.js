@@ -144,7 +144,7 @@ exports.updateProfile = async (req, res) => {
                 try {
                     fs.unlinkSync(oldPhotoPath);
                 } catch (err) {
-                    logger.error('Error deleting old profile photo: %o', err);
+                    logger.warn('Error deleting old profile photo: %o', err);
                 }
             }
         }
@@ -178,7 +178,7 @@ exports.updateProfile = async (req, res) => {
                 try {
                     fs.unlinkSync(oldSignaturePath);
                 } catch (err) {
-                    logger.error('Error deleting old signature: %o', err);
+                    logger.warn('Error deleting old signature: %o', err);
                 }
             }
         }
