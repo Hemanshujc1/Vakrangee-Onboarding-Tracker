@@ -62,7 +62,7 @@ const ProfileHeader = ({
       },
       ONBOARDED: {
         label: "Completed",
-        color: "text-(--color-accent-sage) bg-(--color-accent-sage)/10 border border-(--color-accent-sage)/20",
+        color: "bg-green-100 text-green-800 border border-(--color-accent-sage)/20",
         icon: CheckCircle,
       },
     };

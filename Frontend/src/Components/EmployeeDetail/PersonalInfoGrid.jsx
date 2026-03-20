@@ -60,7 +60,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Phone Number</p>
-              <p className="font-medium text-sm break-words">{employee.phone || "N/A"}</p>
+              <p className="font-medium text-sm wrap-break-word">{employee.phone || "N/A"}</p>
             </div>
           </div>
           {/* Gender */}
@@ -70,7 +70,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Gender</p>
-              <p className="font-medium text-sm break-words">{employee.gender || "N/A"}</p>
+              <p className="font-medium text-sm wrap-break-word">{employee.gender || "N/A"}</p>
             </div>
           </div>
           {/* Date of Birth */}
@@ -80,7 +80,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Date of Birth (as per PAN)</p>
-              <p className="font-medium text-sm break-words">
+              <p className="font-medium text-sm wrap-break-word">
                 {employee.date_of_birth || employee.dateOfBirth
                   ? new Date(employee.date_of_birth || employee.dateOfBirth).toLocaleDateString("en-GB")
                   : "N/A"}
@@ -108,7 +108,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Aadhaar Number</p>
-              <p className="font-medium text-sm break-words">
+              <p className="font-medium text-sm wrap-break-word">
                 {employee.adhar_number || employee.adharNumber
                   ? "XXXX XXXX " + (employee.adhar_number || employee.adharNumber).slice(-4)
                   : "N/A"}
@@ -163,7 +163,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Degree Name</p>
-              <p className="font-medium text-sm break-words">
+              <p className="font-medium text-sm wrap-break-word">
                 {employee.degree_name || "N/A"}
               </p>
             </div>
@@ -187,7 +187,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
           {/* Signature */}
           <div className="flex flex-col gap-1 text-gray-600 min-w-0">
             <span className="text-xs text-gray-400">Employee Signature</span>
-            <div className="bg-gray-50 rounded-lg border border-dashed border-gray-200 p-2 w-fit min-w-[120px] max-w-full">
+            <div className="bg-gray-50 rounded-lg border border-dashed border-gray-200 p-2 w-fit min-w-30 max-w-full">
               {employee.signature ? (
                 <img
                   src={`/uploads/signatures/${employee.signature}`}
