@@ -40,9 +40,6 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
         "/api/pan/verify",
         payload
       );
-      
-      console.log("PAN API Response:", response);
-      console.log("PAN API Data:", response.data);
 
       if (response.data.status === "00" || response.data.status === "01") { 
         setPanVerified(true);
@@ -61,8 +58,6 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
         );
       }
     } catch (error) {
-      console.error("PAN Verification Error Object:", error);
-      console.error("PAN Verification Response Data:", error.response?.data);
       setPanVerificationFailed(true);
       setPanVerified(false);
       showAlert("Verification failed. Please check your details and try again.", { type: "error" });

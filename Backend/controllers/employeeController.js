@@ -1116,7 +1116,7 @@ exports.deleteEmployee = async (req, res) => {
       status: "Inactive",
     });
   } catch (error) {
-    console.error("Error deleting employee:", error);
+    logger.error("Error deleting employee: %o", error);
     res.status(500).json({ message: "Server error deleting employee" });
   }
 };
