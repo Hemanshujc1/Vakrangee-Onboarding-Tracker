@@ -22,6 +22,7 @@ const BasicInfoHeader = ({
   rejectionReason,
   isProfileComplete,
   documents = [],
+  onSave,
 }) => {
   const hasRejectedDocs = documents.some((d) => d.status === "REJECTED");
   const hasUploadedDocs = documents.some((d) => d.status === "UPLOADED");
@@ -168,7 +169,8 @@ const BasicInfoHeader = ({
                 <span>Cancel</span>
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={onSave}
                 disabled={saving}
                 className={`flex items-center gap-2 bg-(--color-primary) text-white px-4 py-2 rounded-lg transition-all font-medium text-sm shadow-sm ${
                   saving ? "opacity-70 cursor-not-allowed" : "hover:brightness-110"

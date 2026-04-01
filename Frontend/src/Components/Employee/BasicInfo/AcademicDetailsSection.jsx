@@ -43,6 +43,18 @@ const AcademicDetailsSection = ({
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
                     errors.tenth_percentage ? "border-red-500" : "border-gray-200"
                   } ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  maxLength={3}
+                  onInput={(e) => {
+                    // Restrict to max 3 digits (e.g. 100) and allow optional decimals
+                    let val = e.target.value.replace(/[^0-9.]/g, "");
+                    if (val.includes(".")) {
+                      const parts = val.split(".");
+                      val = parts[0].slice(0, 3) + "." + parts.slice(1).join("").slice(0, 2);
+                    } else {
+                      val = val.slice(0, 3);
+                    }
+                    e.target.value = val;
+                  }}
                 />
                 {errors.tenth_percentage && (
                   <p className="text-red-500 text-xs mt-1">{errors.tenth_percentage.message}</p>
@@ -85,6 +97,17 @@ const AcademicDetailsSection = ({
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
                     errors.twelfth_percentage ? "border-red-500" : "border-gray-200"
                   } ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  maxLength={3}
+                  onInput={(e) => {
+                    let val = e.target.value.replace(/[^0-9.]/g, "");
+                    if (val.includes(".")) {
+                      const parts = val.split(".");
+                      val = parts[0].slice(0, 3) + "." + parts.slice(1).join("").slice(0, 2);
+                    } else {
+                      val = val.slice(0, 3);
+                    }
+                    e.target.value = val;
+                  }}
                 />
                 {errors.twelfth_percentage && (
                   <p className="text-red-500 text-xs mt-1">{errors.twelfth_percentage.message}</p>
@@ -149,6 +172,18 @@ const AcademicDetailsSection = ({
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
                     errors.degree_percentage ? "border-red-500" : "border-gray-200"
                   } ${isLockedInternal ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  maxLength={3}
+                  onInput={(e) => {
+                    let val = e.target.value.replace(/[^0-9.]/g, "");
+                    if (val.includes(".")) {
+                      const parts = val.split(".");
+                      val = parts[0].slice(0, 3) + "." + parts.slice(1).join("").slice(0, 2);
+                    } else {
+                      val = val.slice(0, 3);
+                    }
+                    e.target.value = val;
+                  }}
+
                 />
                 {errors.degree_percentage && (
                   <p className="text-red-500 text-xs mt-1">{errors.degree_percentage.message}</p>

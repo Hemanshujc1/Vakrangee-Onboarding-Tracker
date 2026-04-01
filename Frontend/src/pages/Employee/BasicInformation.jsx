@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import { useAlert } from "../../context/AlertContext";
-import axios from "axios";
+
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
-import { commonSchemas, commonPatterns } from "../../utils/validationSchemas";
+import { basicInfoValidationSchema, defaultBasicInfoValues, fieldToSectionMap } from "./BasicInfo/basicInfoSchema";
+import { usePanVerification } from "../../hooks/usePanVerification";
+import { useDocumentManager } from "../../hooks/useDocumentManager";
+import { useEmployeeProfile } from "../../hooks/useEmployeeProfile";
+import { formatDate, getSectionStatus, isProfileComplete } from "../../utils/basicInfoHelpers";
 import BasicInfoHeader from "../../Components/Employee/BasicInfo/BasicInfoHeader";
 import ProfilePhotoSection from "../../Components/Employee/BasicInfo/ProfilePhotoSection";
 import ProfileIdentitySection from "../../Components/Employee/BasicInfo/ProfileIdentitySection";
@@ -15,110 +18,22 @@ import AddressInformationSection from "../../Components/Employee/BasicInfo/Addre
 import AcademicDetailsSection from "../../Components/Employee/BasicInfo/AcademicDetailsSection";
 import FinancialHRDocumentsSection from "../../Components/Employee/BasicInfo/FinancialHRDocumentsSection";
 import SignatureSection from "../../Components/Employee/BasicInfo/SignatureSection";
+import AccordionSection from "../../Components/Employee/BasicInfo/AccordionSection";
 
 const BasicInformation = () => {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [expandedSection, setExpandedSection] = useState("identity");
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [previewImage, setPreviewImage] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [previewSignature, setPreviewSignature] = useState(null);
-  const [signatureFile, setSignatureFile] = useState(null);
   const { showConfirm, showAlert } = useAlert();
 
-  const [verificationStatus, setVerificationStatus] = useState("PENDING");
-  const [rejectionReason, setRejectionReason] = useState(null);
-  const [verifiedByName, setVerifiedByName] = useState(null);
-
-  // Document states
-  const [documents, setDocuments] = useState([]);
-  const [uploadingState, setUploadingState] = useState({});
-
-  // PAN Verification states
-  const [panVerifying, setPanVerifying] = useState(false);
-  const [panVerified, setPanVerified] = useState(false);
-  const [panVerificationFailed, setPanVerificationFailed] = useState(false);
-  const [panFormatError, setPanFormatError] = useState(null);
-  const [lastVerifiedPanData, setLastVerifiedPanData] = useState(null);
-
-  // Validation Schema
-  const validationSchema = Yup.object().shape({
-    firstname: commonSchemas.nameStringOptional.label("First Name"),
-    middlename: commonSchemas.nameStringOptional.label("Middle Name"),
-    lastname: commonSchemas.nameStringOptional.label("Last Name"),
-    email: commonSchemas.emailOptional.nullable(),
-    personal_email_id: commonSchemas.emailOptional.nullable(),
-    phone: commonSchemas.mobileOptional.label("Phone"),
-    date_of_birth: commonSchemas.datePastOptional
-      .max(
-        new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
-        "Must be 18 years or older"
-      )
-      .label("Date of Birth"),
-    gender: Yup.string().nullable().optional(),
-
-    // Address
-    address_line1: commonSchemas.addressStringOptional.label("Address Line 1"),
-    address_line2: commonSchemas.addressStringOptional.label("Address Line 2"),
-    landmark: commonSchemas.landmark.nullable(),
-    post_office: commonSchemas.stringOptional.label("Post Office").nullable(),
-    pincode: Yup.string()
-      .nullable()
-      .test(
-        "valid-pincode",
-        "Pincode must be 6 digits",
-        (val) => !val || commonPatterns.pincode.test(val)
-      ),
-    city: commonSchemas.stringOptional.nullable(),
-    district: commonSchemas.stringOptional.nullable(),
-    state: commonSchemas.stringOptional.nullable(),
-    country: commonSchemas.country.nullable().optional(),
-
-    // Education & IDs
-    tenth_percentage: Yup.number()
-      .typeError("Must be a number")
-      .min(0, "Min 0")
-      .max(100, "Max 100")
-      .nullable()
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : value
-      ),
-    twelfth_percentage: Yup.number()
-      .typeError("Must be a number")
-      .min(0, "Min 0")
-      .max(100, "Max 100")
-      .nullable()
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : value
-      ),
-    adhar_number: Yup.string()
-      .nullable()
-      .test(
-        "valid-aadhaar",
-        "Aadhaar must be 12 digits",
-        (val) => !val || commonPatterns.aadhaar.test(val)
-      ),
-    pan_number: Yup.string()
-      .nullable()
-      .transform((value) => (value ? value.toUpperCase() : value))
-      .test(
-        "valid-pan",
-        "Invalid PAN Format",
-        (val) => !val || commonPatterns.pan.test(val)
-      ),
-    degree_name: Yup.string().nullable().optional(),
-    degree_percentage: Yup.number()
-      .typeError("Must be a number")
-      .min(0, "Min 0")
-      .max(100, "Max 100")
-      .nullable()
-      .optional()
-      .transform((value, originalValue) =>
-        originalValue === "" ? null : value
-      ),
-  });
+  const {
+    documents,
+    uploadingState,
+    fetchDocuments,
+    handleUpload,
+    handleDelete,
+    getDocStatus,
+  } = useDocumentManager(showAlert, showConfirm);
 
   const {
     register,
@@ -129,403 +44,81 @@ const BasicInformation = () => {
     trigger,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(validationSchema),
-    defaultValues: {
-      firstname: "",
-      middlename: "",
-      lastname: "",
-      email: "",
-      personal_email_id: "",
-      phone: "",
-      date_of_birth: "",
-      gender: "",
-      job_title: "",
-      department_name: "",
-      work_location: "",
-      date_of_joining: "",
-      address_line1: "",
-      address_line2: "",
-      landmark: "",
-      post_office: "",
-      pincode: "",
-      city: "",
-      district: "",
-      state: "",
-      country: "India",
-      tenth_percentage: "",
-      twelfth_percentage: "",
-      degree_name: "",
-      degree_percentage: "",
-      adhar_number: "",
-      pan_number: "",
-    },
+    resolver: yupResolver(basicInfoValidationSchema),
+    defaultValues: defaultBasicInfoValues,
   });
 
   const formData = watch();
 
-  // PAN format: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g. ABCDE1234F)
-  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-  // Auto-verify PAN only when ALL required fields are filled and PAN format is valid
-  useEffect(() => {
-    if (panVerified) {
-      setPanFormatError(null); // Clear format error once verified
-      return;
-    }
-    if (panVerifying || !isEditing) return;
-
-    const { pan_number, firstname, lastname, date_of_birth } = formData;
-
-    // All required fields must be present
-    if (!pan_number || !firstname || !lastname || !date_of_birth) {
-      setPanFormatError(null); // Clear error if user hasn't typed enough yet
-      return;
-    }
-
-    // Validate PAN format first — must be exact 10-char uppercase format
-    const panUpper = pan_number.toUpperCase();
-    if (!PAN_REGEX.test(panUpper)) {
-      setPanFormatError("Invalid PAN number format (e.g. ABCDE1234F)");
-      setPanVerified(false);
-      return;
-    }
-
-    // Format is valid — clear any previous format error
-    setPanFormatError(null);
-
-    const currentDataString = `${panUpper}-${firstname}-${lastname}-${date_of_birth}`;
-    if (lastVerifiedPanData === currentDataString) return;
-
-    // Trigger verification automatically with a debounce
-    const timeoutId = setTimeout(() => {
-      handleVerifyPan(currentDataString);
-    }, 1000); // 1-second debounce after all fields are complete
-
-    return () => clearTimeout(timeoutId);
-  }, [
-    formData.pan_number,
-    formData.firstname,
-    formData.middlename,
-    formData.lastname,
-    formData.date_of_birth,
-    panVerified,
+  const {
     panVerifying,
-    isEditing,
-    lastVerifiedPanData,
-  ]);
+    panVerified,
+    setPanVerified,
+    panVerificationFailed,
+    panFormatError,
+    setLastVerifiedPanData
+  } = usePanVerification(formData, setValue, trigger, showAlert, isEditing);
+
+
+
+  const {
+    autoSaving,
+    lastSavedData,
+    setLastSavedData,
+    loading,
+    saving,
+    submitting,
+    verificationStatus,
+    rejectionReason,
+    verifiedByName,
+    previewImage,
+    previewSignature,
+    fetchProfile,
+    handleImageChange,
+    handleSignatureChange,
+    onSubmit,
+    handleSubmitForVerification,
+  } = useEmployeeProfile({
+    reset,
+    setIsEditing,
+    setPanVerified,
+    setLastVerifiedPanData,
+    handleUpload,
+    panVerified,
+    setMessage,
+    showConfirm,
+  });
 
   useEffect(() => {
     fetchProfile();
     fetchDocuments();
-  }, []);
+  }, [fetchProfile, fetchDocuments]);
 
-  const fetchProfile = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get("/api/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  const handleToggleSection = (sectionId) => {
+    setExpandedSection(expandedSection === sectionId ? null : sectionId);
+  };
 
-      const {
-        record,
-        basic_info_status,
-        basic_info_rejection_reason,
-        verifiedByName,
-      } = response.data;
+  const effectiveBasicInfoLocked = 
+      verificationStatus === "SUBMITTED" || 
+      verificationStatus === "VERIFIED";
 
-      setVerificationStatus(basic_info_status || "PENDING");
-      setRejectionReason(basic_info_rejection_reason);
-      setVerifiedByName(verifiedByName);
+  // Auto-save logic
+  useEffect(() => {
+    if (!isEditing || effectiveBasicInfoLocked) return;
 
-      if (record) {
-        const formatForDateInput = (dateString) => {
-          if (!dateString) return "";
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return "";
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        };
-
-        const dob = formatForDateInput(record.date_of_birth);
-        const doj = formatForDateInput(record.date_of_joining);
-
-        reset({
-          firstname: record.firstname || "",
-          middlename: record.middlename || "",
-          lastname: record.lastname || "",
-          email: response.data.email || "",
-          personal_email_id: record.personal_email_id || "",
-          phone: record.phone || "",
-          date_of_birth: dob,
-          gender: record.gender || "",
-          job_title: record.job_title || "",
-          department_name: record.department_name || "",
-          work_location: record.work_location || "",
-          date_of_joining: doj,
-          address_line1: record.address_line1 || "",
-          address_line2: record.address_line2 || "",
-          landmark: record.landmark || "",
-          post_office: record.post_office || "",
-          pincode: record.pincode || "",
-          city: record.city || "",
-          district: record.district || "",
-          state: record.state || "",
-          country: record.country || "India",
-          tenth_percentage: record.tenth_percentage || "",
-          twelfth_percentage: record.twelfth_percentage || "",
-          degree_name: record.degree_name || "",
-          degree_percentage: record.degree_percentage || "",
-          adhar_number: record.adhar_number || "",
-          pan_number: record.pan_number || "",
-        });
-
-        if (record.profile_photo) {
-          setPreviewImage(`/uploads/profilepic/${record.profile_photo}`);
-        }
-        if (response.data.signature) {
-          setPreviewSignature(`/uploads/signatures/${response.data.signature}`);
-        }
-
-        if (record.pan_verified) {
-          setPanVerified(true);
-          const currentDataString = `${record.pan_number}-${record.firstname}-${record.lastname}-${dob}`;
-          setLastVerifiedPanData(currentDataString);
-        }
-
-        if (!record.firstname) {
-          setIsEditing(true);
-        }
+    const delayDebounceFn = setTimeout(() => {
+      // Check if data actually changed to avoid redundant saves
+      const currentData = JSON.stringify(formData);
+      if (lastSavedData !== currentData && lastSavedData !== null) {
+        onSubmit(formData, true);
+        setLastSavedData(currentData);
+      } else if (lastSavedData === null) {
+        setLastSavedData(currentData);
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      setMessage({ type: "error", text: "Failed to load profile data." });
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 2000);
 
-  const fetchDocuments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get("/api/documents", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDocuments(response.data);
-    } catch (error) {
-      console.error("Error fetching docs:", error);
-    }
-  };
-
-  const handleUpload = async (file, docType) => {
-    if (!file) return;
-    const token = localStorage.getItem("token");
-    setUploadingState((prev) => ({ ...prev, [docType]: true }));
-
-    const formData = new FormData();
-    formData.append("documentType", docType);
-    formData.append("file", file);
-
-    try {
-      await axios.post("/api/documents/upload", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchDocuments();
-      showAlert("Document uploaded successfully!", { type: "success" });
-    } catch (error) {
-      console.error("Upload failed:", error);
-      showAlert("Upload failed. Please try again.", { type: "error" });
-    } finally {
-      setUploadingState((prev) => ({ ...prev, [docType]: false }));
-    }
-  };
-  const handleVerifyPan = async (currentDataString) => {
-    if (panVerifying) return; // double check
-
-    const { pan_number, firstname, middlename, lastname, date_of_birth } =
-      formData;
-
-    if (!pan_number || !firstname || !lastname || !date_of_birth) {
-      return; // Handled quietly
-    }
-
-    setPanVerifying(true);
-    setPanVerificationFailed(false);
-    setLastVerifiedPanData(currentDataString); // Mark this exact combination as attempted
-
-    try {
-      // Format DOB to DD/MM/YYYY
-      const dobParts = date_of_birth.split("-");
-      const formattedDob = `${dobParts[2]}/${dobParts[1]}/${dobParts[0]}`;
-
-      const payload = {
-        pan: pan_number,
-        name: `${firstname} ${
-          middlename ? middlename + " " : ""
-        }${lastname}`.trim(),
-        fathername: "",
-        dob: formattedDob,
-      };
-
-      const response = await axios.post(
-        "/nsdl-api/banking-kar-api-test/nsdl-pan-verification",
-        payload,
-        {
-          headers: {
-            "api-key":
-              "c4f67d09ff264a1ac9b0bdf61676d255c6b273d5b9634e5c951a3718e90bc86d",
-          },
-        }
-      );
-
-      if (response.data.status === "00") {
-        setPanVerified(true);
-        setValue("pan_number", pan_number.toUpperCase());
-        if (response.data.firstName)
-          setValue("firstname", response.data.firstName);
-        if (response.data.middleName)
-          setValue("middlename", response.data.middleName);
-        if (response.data.lastName)
-          setValue("lastname", response.data.lastName);
-        trigger(["firstname", "middlename", "lastname"]);
-        showAlert("PAN Verified Successfully! Name updated as per PAN.", {
-          type: "success",
-        });
-      } else {
-        setPanVerificationFailed(true);
-        setPanVerified(false);
-        showAlert(
-          response.data.statusDesc ||
-            "PAN Verification Failed. Please check your details.",
-          {
-            type: "error",
-          }
-        );
-      }
-    } catch (error) {
-      console.error("PAN Verification Error:", error);
-      setPanVerificationFailed(true);
-      setPanVerified(false);
-      showAlert(
-        "Verification failed. Please check your details and try again.",
-        { type: "error" }
-      );
-    } finally {
-      setPanVerifying(false);
-    }
-  };
-
-  const handleDelete = async (docId) => {
-    const isConfirmed = await showConfirm(
-      "Are you sure you want to delete this document?",
-      { type: "warning" }
-    );
-    if (!isConfirmed) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`/api/documents/${docId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchDocuments();
-      showAlert("Document deleted successfully.", { type: "success" });
-    } catch (error) {
-      console.error("Delete error:", error);
-      showAlert("Failed to delete.", { type: "error" });
-    }
-  };
-
-  const getDocStatus = (docKey) => {
-    const doc = documents.find((d) => d.document_type === docKey);
-    return doc
-      ? { status: doc.status || "UPLOADED", data: doc }
-      : { status: "PENDING", data: null };
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setPreviewImage(URL.createObjectURL(file));
-      // Special handling: Passport size photo is also handled here
-      handleUpload(file, "Passport Size Photo");
-    }
-  };
-
-  const handleSignatureChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSignatureFile(file);
-      setPreviewSignature(URL.createObjectURL(file));
-      // Sync with documents
-      handleUpload(file, "Signature");
-    }
-  };
-
-  const onSubmit = async (data) => {
-    setSaving(true);
-    setMessage({ type: "", text: "" });
-
-    try {
-      const token = localStorage.getItem("token");
-      const formPayload = new FormData();
-
-      Object.keys(data).forEach((key) => {
-        let val = data[key];
-        if (val instanceof Date && !isNaN(val.getTime())) {
-          const year = val.getFullYear();
-          const month = String(val.getMonth() + 1).padStart(2, "0");
-          const day = String(val.getDate()).padStart(2, "0");
-          val = `${year}-${month}-${day}`;
-        }
-        formPayload.append(key, val || "");
-      });
-
-      formPayload.append("pan_verified", panVerified.toString());
-
-      if (imageFile) {
-        formPayload.append("profile_photo", imageFile);
-      }
-      if (signatureFile) {
-        formPayload.append("signature", signatureFile);
-      }
-
-      await axios.put("/api/profile", formPayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setMessage({
-        type: "success",
-        text: "Information updated successfully!",
-      });
-      setIsEditing(false);
-      fetchProfile();
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to update information. Please try again.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [formData, isEditing, effectiveBasicInfoLocked, lastSavedData, onSubmit, setLastSavedData]);
 
   const onError = (errors) => {
     console.error("Form Validation Errors:", errors);
@@ -533,39 +126,30 @@ const BasicInformation = () => {
       type: "error",
       text: "Please fix the validation errors highlighting in red before saving.",
     });
-  };
 
-  const handleSubmitForVerification = async () => {
-    const isConfirmed = await showConfirm(
-      "Are you sure you want to submit your profile? You won't be able to edit it afterwards until verified."
-    );
-    if (!isConfirmed) return;
-
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "/api/employees/submit-basic-info",
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setVerificationStatus("SUBMITTED");
-      setMessage({
-        type: "success",
-        text: "Profile submitted successfully for HR verification.",
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error submitting profile:", error);
-      setMessage({
-        type: "error",
-        text: error.response?.data?.message || "Failed to submit profile.",
-      });
-    } finally {
-      setSubmitting(false);
+    const firstErrorField = Object.keys(errors)[0];
+    if (firstErrorField) {
+      const sectionToExpand = fieldToSectionMap[firstErrorField];
+      if (sectionToExpand) {
+        setExpandedSection(sectionToExpand);
+        
+        setTimeout(() => {
+          const inputElement = document.querySelector(`[name="${firstErrorField}"]`);
+          if (inputElement) {
+            inputElement.focus({ preventScroll: true }); 
+            const yOffset = -150; 
+            const y = inputElement.getBoundingClientRect().top + window.scrollY + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          } else {
+            const sectionEl = document.getElementById(sectionToExpand);
+            if (sectionEl) {
+              const yOffset = -100;
+              const y = sectionEl.getBoundingClientRect().top + window.scrollY + yOffset;
+              window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+          }
+        }, 300);
+      }
     }
   };
 
@@ -586,67 +170,15 @@ const BasicInformation = () => {
     .filter(Boolean)
     .join(", ");
 
-  const isProfileComplete = () => {
-    const requiredFields = [
-      "firstname",
-      "lastname",
-      "personal_email_id",
-      "phone",
-      "date_of_birth",
-      "gender",
-      "address_line1",
-      "city",
-      "district",
-      "state",
-      "pincode",
-      "post_office",
-      "adhar_number",
-      "pan_number",
-      "degree_name",
-      "degree_percentage",
-    ];
-    for (const field of requiredFields) {
-      if (!formData[field]) return false;
-    }
+  const _getSectionStatus = (id) => getSectionStatus(id, { formData, getDocStatus, panVerified });
 
-    const requiredDocs = [
-      "PAN Card",
-      "Aadhar Card",
-      "10th Marksheet",
-      "12th Marksheet",
-      "Degree Certificate",
-      "Cancelled Cheque",
-      "Passport Size Photo",
-      "Signature"
-    ];
-    for (const docKey of requiredDocs) {
-      const doc = documents.find((d) => d.document_type === docKey);
-      if (!doc || doc.status === "REJECTED") return false;
-    }
-
-    if (!previewImage) return false;
-    if (!previewSignature) return false;
-    if (!panVerified) return false;
-    return true;
-  };
-
-  // Case Logic for Locking
-  const isBasicInfoLocked = 
-    verificationStatus === "SUBMITTED" || 
-    verificationStatus === "VERIFIED" ||
-    (verificationStatus === "REJECTED" && documents.some(d => d.status === "REJECTED") && !rejectionReason); 
-    // Wait, let's simplify based on the 4 cases:
-    
-    // Case 1 (11): status=VERIFIED -> BasicInfo=Locked
-    // Case 2 (01): status=REJECTED (Basic), Docs=All Verified -> BasicInfo=Editable
-    // Case 3 (10): status=VERIFIED (Basic), some Docs=REJECTED -> BasicInfo=Locked
-    // Case 4 (00): status=REJECTED (Basic), some Docs=REJECTED -> BasicInfo=Editable
-
-    const effectiveBasicInfoLocked = 
-        verificationStatus === "SUBMITTED" || 
-        verificationStatus === "VERIFIED"; // If status is VERIFIED, it means Basic Info is approved (Case 1 or 3)
-
-
+  const isComplete = isProfileComplete({
+    formData,
+    documents,
+    previewImage,
+    previewSignature,
+    panVerified
+  });
   if (loading)
     return (
       <DashboardLayout>
@@ -658,7 +190,7 @@ const BasicInformation = () => {
 
   return (
     <DashboardLayout>
-      <form onSubmit={handleSubmit(onSubmit, onError)}>
+      <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
         <BasicInfoHeader
           verificationStatus={verificationStatus}
           isEditing={isEditing}
@@ -672,8 +204,9 @@ const BasicInformation = () => {
           saving={saving}
           verifiedByName={verifiedByName}
           rejectionReason={rejectionReason}
-          isProfileComplete={isProfileComplete()}
+          isProfileComplete={isComplete}
           documents={documents}
+          onSave={handleSubmit(onSubmit, onError)}
         />
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 md:p-8">
@@ -689,91 +222,155 @@ const BasicInformation = () => {
             </div>
           )}
 
-          <ProfilePhotoSection
-            previewImage={previewImage}
-            isEditing={isEditing}
-            handleImageChange={handleImageChange}
-            isLocked={effectiveBasicInfoLocked}
-            photoStatus={getDocStatus("Passport Size Photo")}
-          />
+          {autoSaving && (
+            <div className="fixed bottom-6 right-6 bg-white shadow-lg border border-blue-100 px-4 py-2 rounded-full flex items-center gap-2 animate-pulse z-50">
+               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+               <span className="text-sm text-blue-600 font-medium">Auto-saving...</span>
+            </div>
+          )}
 
-          <div className="flex flex-col gap-8">
-            <ProfileIdentitySection
-              register={register}
-              errors={errors}
+          <div className="flex flex-col gap-2">
+            <ProfilePhotoSection
+              previewImage={previewImage}
               isEditing={isEditing}
-              formData={formData}
-              formatDate={formatDate}
-              getDocStatus={getDocStatus}
-              uploadingState={uploadingState}
-              handleUpload={handleUpload}
-              handleDelete={handleDelete}
-              panVerifying={panVerifying}
-              panVerified={panVerified}
-              panVerificationFailed={panVerificationFailed}
-              panFormatError={panFormatError}
-              verificationStatus={verificationStatus}
+              handleImageChange={handleImageChange}
               isLocked={effectiveBasicInfoLocked}
-            />
-            <JobInformationSection
-              register={register}
-              formData={formData}
-              formatDate={formatDate}
-              verificationStatus={verificationStatus}
+              photoStatus={getDocStatus("Passport Size Photo")}
             />
 
-            <ContactInfoSection
-              register={register}
-              errors={errors}
-              isEditing={isEditing}
-              formData={formData}
-              verificationStatus={verificationStatus}
-              isLocked={effectiveBasicInfoLocked}
-            />
+            <AccordionSection
+              id="identity"
+              title="Personal Details & Identity"
+              isOpen={expandedSection === "identity"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("identity")}
+            >
+              <ProfileIdentitySection
+                register={register}
+                errors={errors}
+                isEditing={isEditing}
+                formData={formData}
+                formatDate={formatDate}
+                getDocStatus={getDocStatus}
+                uploadingState={uploadingState}
+                handleUpload={handleUpload}
+                handleDelete={handleDelete}
+                panVerifying={panVerifying}
+                panVerified={panVerified}
+                panVerificationFailed={panVerificationFailed}
+                panFormatError={panFormatError}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+              />
+            </AccordionSection>
 
-            <AddressInformationSection
-              register={register}
-              errors={errors}
-              isEditing={isEditing}
-              fullAddress={fullAddress}
-              setValue={setValue}
-              watch={watch}
-              trigger={trigger}
-              verificationStatus={verificationStatus}
-              isLocked={effectiveBasicInfoLocked}
-            />
+            <AccordionSection
+              id="job"
+              title="Job Information"
+              isOpen={expandedSection === "job"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("job")}
+            >
+              <JobInformationSection
+                register={register}
+                formData={formData}
+                formatDate={formatDate}
+                verificationStatus={verificationStatus}
+              />
+            </AccordionSection>
 
-            <AcademicDetailsSection
-              register={register}
-              errors={errors}
-              isEditing={isEditing}
-              formData={formData}
-              getDocStatus={getDocStatus}
-              uploadingState={uploadingState}
-              handleUpload={handleUpload}
-              handleDelete={handleDelete}
-              verificationStatus={verificationStatus}
-              isLocked={effectiveBasicInfoLocked}
-            />
+            <AccordionSection
+              id="contact"
+              title="Contact Information"
+              isOpen={expandedSection === "contact"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("contact")}
+            >
+              <ContactInfoSection
+                register={register}
+                errors={errors}
+                isEditing={isEditing}
+                formData={formData}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+              />
+            </AccordionSection>
 
-            <FinancialHRDocumentsSection
-              isEditing={isEditing}
-              getDocStatus={getDocStatus}
-              uploadingState={uploadingState}
-              handleUpload={handleUpload}
-              handleDelete={handleDelete}
-              verificationStatus={verificationStatus}
-              isLocked={effectiveBasicInfoLocked}
-            />
+            <AccordionSection
+              id="address"
+              title="Address Information"
+              isOpen={expandedSection === "address"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("address")}
+            >
+              <AddressInformationSection
+                register={register}
+                errors={errors}
+                isEditing={isEditing}
+                fullAddress={fullAddress}
+                setValue={setValue}
+                watch={watch}
+                trigger={trigger}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+              />
+            </AccordionSection>
 
-            <SignatureSection
-              previewSignature={previewSignature}
-              isEditing={isEditing}
-              handleSignatureChange={handleSignatureChange}
-              verificationStatus={verificationStatus}
-              isLocked={effectiveBasicInfoLocked}
-              signatureStatus={getDocStatus("Signature")}
-            />
+            <AccordionSection
+              id="academic"
+              title="Academic Details"
+              isOpen={expandedSection === "academic"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("academic")}
+            >
+              <AcademicDetailsSection
+                register={register}
+                errors={errors}
+                isEditing={isEditing}
+                formData={formData}
+                getDocStatus={getDocStatus}
+                uploadingState={uploadingState}
+                handleUpload={handleUpload}
+                handleDelete={handleDelete}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+              />
+            </AccordionSection>
+
+            <AccordionSection
+              id="financial"
+              title="Financial & HR Documents"
+              isOpen={expandedSection === "financial"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("financial")}
+            >
+              <FinancialHRDocumentsSection
+                isEditing={isEditing}
+                getDocStatus={getDocStatus}
+                uploadingState={uploadingState}
+                handleUpload={handleUpload}
+                handleDelete={handleDelete}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+              />
+            </AccordionSection>
+
+            <AccordionSection
+              id="signature"
+              title="Signature"
+              isOpen={expandedSection === "signature"}
+              onToggle={handleToggleSection}
+              isCompleted={_getSectionStatus("signature")}
+            >
+              <SignatureSection
+                previewSignature={previewSignature}
+                isEditing={isEditing}
+                handleSignatureChange={handleSignatureChange}
+                verificationStatus={verificationStatus}
+                isLocked={effectiveBasicInfoLocked}
+                signatureStatus={getDocStatus("Signature")}
+              />
+            </AccordionSection>
           </div>
         </div>
       </form>
