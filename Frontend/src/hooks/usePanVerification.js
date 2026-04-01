@@ -37,13 +37,8 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
       };
 
       const response = await axios.post(
-        "/nsdl-api/banking-kar-api-test/nsdl-pan-verification",
-        payload,
-        {
-          headers: {
-            "api-key": "c4f67d09ff264a1ac9b0bdf61676d255c6b273d5b9634e5c951a3718e90bc86d",
-          },
-        }
+        "/api/pan/verify",
+        payload
       );
       
       console.log("PAN API Response:", response);

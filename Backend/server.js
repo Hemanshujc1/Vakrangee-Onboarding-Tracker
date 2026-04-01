@@ -24,6 +24,7 @@ const emailRoutes = require('./routes/emailRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const formRoutes = require('./routes/formRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const panRoutes = require('./routes/panRoutes');
 const path = require('path');
 
 app.use('/api/auth', authRoutes);
@@ -32,6 +33,7 @@ app.use('/api/email', emailRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/pan', panRoutes);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
