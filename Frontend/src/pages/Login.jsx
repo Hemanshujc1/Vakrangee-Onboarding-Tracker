@@ -92,9 +92,10 @@ const Login = () => {
           <div>
             <div className="flex items-center gap-3 mb-12">
               <img
-                src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+                // src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+                src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
                 alt="Vakrangee Logo"
-                className="h-30 w-100 object-contain brightness"
+                className="h-30 w-75 object-contain brightness"
               />
             </div>
           </div>
