@@ -1,6 +1,7 @@
 const { Sequelize } = require("sequelize");
 const logger = require("../utils/logger");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,

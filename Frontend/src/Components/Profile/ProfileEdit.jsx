@@ -5,6 +5,12 @@ const ProfileEdit = ({
   formData,
   errors,
   handleInputChange,
+  validateField,
+  handleDeptChange,
+  handleJobTitleChange,
+  departments,
+  designations,
+  loadingDropdowns,
   onCancel,
   onSubmit,
   saving,
@@ -20,7 +26,7 @@ const ProfileEdit = ({
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   // Fetch States on mount
   useEffect(() => {
@@ -34,7 +40,7 @@ const ProfileEdit = ({
           // If we have an initial state name, try to find its ID for subsequent fetches
           if (formData.state) {
             const foundState = data.data.find(
-              (s) => s.state_name === formData.state
+              (s) => s.state_name === formData.state,
             );
             if (foundState) setSelectedStateId(foundState.lg_state_id);
           }
@@ -57,7 +63,7 @@ const ProfileEdit = ({
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`
+          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
         );
         const data = await response.json();
         if (data?.status) {
@@ -66,7 +72,7 @@ const ProfileEdit = ({
           // If we have an initial district name, try to find its ID for subsequent fetches
           if (formData.district) {
             const foundDist = data.data.find(
-              (d) => d.district_name === formData.district
+              (d) => d.district_name === formData.district,
             );
             if (foundDist) setSelectedDistrictId(foundDist.district_id);
           }
@@ -91,7 +97,7 @@ const ProfileEdit = ({
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`
+          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
         );
         const data = await response.json();
         if (data?.status) {
@@ -151,6 +157,7 @@ const ProfileEdit = ({
             name="firstname"
             value={formData.firstname}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("firstname", e.target.value)}
             disabled={role === "HR_ADMIN" && !!initialRecord.firstname}
             className={`w-full px-4 py-2 border rounded-lg outline-none transition-all ${
               errors.firstname ? "border-red-500" : "border-gray-200"
@@ -173,6 +180,7 @@ const ProfileEdit = ({
             name="lastname"
             value={formData.lastname}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("lastname", e.target.value)}
             disabled={role === "HR_ADMIN" && !!initialRecord.lastname}
             className={`w-full px-4 py-2 border rounded-lg outline-none transition-all ${
               errors.lastname ? "border-red-500" : "border-gray-200"
@@ -190,50 +198,45 @@ const ProfileEdit = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
         {/* Professional Fields */}
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Department <span className="text-red-500">*</span>
-          </label>
-          <input
-            name="department_name"
-            value={formData.department_name}
-            onChange={handleInputChange}
-            disabled={role === "HR_ADMIN" && !!initialRecord.department_name}
-            className={`w-full px-4 py-2 border rounded-lg outline-none transition-all ${
-              errors.department_name ? "border-red-500" : "border-gray-200"
-            } ${
-              role === "HR_ADMIN" && !!initialRecord.department_name
-                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "focus:ring-2 focus:ring-purple-100 focus:border-purple-500"
-            }`}
-          />
-          {errors.department_name && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.department_name}
-            </p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Job Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            name="job_title"
-            value={formData.job_title}
-            onChange={handleInputChange}
-            disabled={role === "HR_ADMIN" && !!initialRecord.job_title}
-            className={`w-full px-4 py-2 border rounded-lg outline-none transition-all ${
-              errors.job_title ? "border-red-500" : "border-gray-200"
-            } ${
-              role === "HR_ADMIN" && !!initialRecord.job_title
-                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "focus:ring-2 focus:ring-purple-100 focus:border-purple-500"
-            }`}
-          />
-          {errors.job_title && (
-            <p className="text-red-500 text-xs mt-1">{errors.job_title}</p>
-          )}
-        </div>
+        <SearchableSelect
+          label="Department"
+          name="department_name"
+          options={departments.map((dept) => ({
+            id: dept.department_id,
+            name: dept.department_name,
+          }))}
+          value={formData.department_name}
+          onChange={handleDeptChange}
+          placeholder="Select Department"
+          required
+          disabled={
+            loadingDropdowns ||
+            (role === "HR_ADMIN" && !!initialRecord.department_name)
+          }
+        />
+        {errors.department_name && (
+          <p className="text-red-500 text-xs -mt-4">{errors.department_name}</p>
+        )}
+
+        <SearchableSelect
+          label="Job Title"
+          name="job_title"
+          options={designations.map((des) => ({
+            id: des.designation_id,
+            name: des.designation_name,
+          }))}
+          value={formData.job_title}
+          onChange={handleJobTitleChange}
+          placeholder="Select Job Title"
+          required
+          disabled={
+            loadingDropdowns ||
+            (role === "HR_ADMIN" && !!initialRecord.job_title)
+          }
+        />
+        {errors.job_title && (
+          <p className="text-red-500 text-xs -mt-4">{errors.job_title}</p>
+        )}
 
         {/* Location & Contact */}
         <div className="space-y-2">
@@ -244,6 +247,7 @@ const ProfileEdit = ({
             name="work_location"
             value={formData.work_location}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("work_location", e.target.value)}
             disabled={role === "HR_ADMIN" && !!initialRecord.work_location}
             className={`w-full px-4 py-2 border rounded-lg outline-none transition-all ${
               errors.work_location ? "border-red-500" : "border-gray-200"
@@ -265,6 +269,7 @@ const ProfileEdit = ({
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("phone", e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.phone ? "border-red-500" : "border-gray-200"
             }`}
@@ -290,6 +295,7 @@ const ProfileEdit = ({
             max={maxDate}
             value={formData.date_of_birth}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("date_of_birth", e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.date_of_birth ? "border-red-500" : "border-gray-200"
             }`}
@@ -306,6 +312,7 @@ const ProfileEdit = ({
             name="gender"
             value={formData.gender}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("gender", e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all bg-white ${
               errors.gender ? "border-red-500" : "border-gray-200"
             }`}
@@ -335,7 +342,8 @@ const ProfileEdit = ({
             name="address_line1"
             value={formData.address_line1}
             onChange={handleInputChange}
-            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
+            onBlur={(e) => validateField("address_line1", e.target.value)}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.address_line1 ? "border-red-500" : "border-gray-200"
             }`}
           />
@@ -345,13 +353,14 @@ const ProfileEdit = ({
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">
-            Address Line 2 <span className="text-red-500">*</span>
+            Address Line 2
           </label>
           <input
             name="address_line2"
             value={formData.address_line2}
             onChange={handleInputChange}
-            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
+            onBlur={(e) => validateField("address_line2", e.target.value)}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.address_line2 ? "border-red-500" : "border-gray-200"
             }`}
           />
@@ -435,14 +444,15 @@ const ProfileEdit = ({
             name="pincode"
             value={formData.pincode}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("pincode", e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all ${
               errors.pincode ? "border-red-500" : "border-gray-200"
             }`}
             maxLength={6}
-                minLength={6}
-              onInput={(e) => {
-                e.target.value = e.target.value.replace(/[^0-9]/g, "");
-              }}
+            minLength={6}
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
           />
           {errors.pincode && (
             <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>
@@ -483,6 +493,7 @@ const ProfileEdit = ({
             name="personal_email_id"
             value={formData.personal_email_id}
             onChange={handleInputChange}
+            onBlur={(e) => validateField("personal_email_id", e.target.value)}
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all ${
               errors.personal_email_id ? "border-red-500" : "border-gray-200"
             }`}

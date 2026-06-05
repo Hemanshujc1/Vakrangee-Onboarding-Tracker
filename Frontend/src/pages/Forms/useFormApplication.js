@@ -48,6 +48,7 @@ const useFormApplication = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues,
   });

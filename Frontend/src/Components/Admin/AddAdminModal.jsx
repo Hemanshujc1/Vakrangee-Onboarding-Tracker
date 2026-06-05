@@ -4,6 +4,7 @@ import { X, Plus, UserPlus, Mail } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import SearchableSelect from "../UI/SearchableSelect";
+import { commonSchemas } from "../../utils/validationSchemas";
 
 const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
@@ -21,6 +22,30 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  const schemaMap = {
+    firstName: commonSchemas.nameString,
+    lastName: commonSchemas.nameString,
+    email: commonSchemas.email,
+  };
+
+  const validateField = async (name, value) => {
+    const schema = schemaMap[name];
+    if (!schema) return true;
+    try {
+      await schema.validate(value);
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+      return true;
+    } catch (err) {
+      setFieldErrors((prev) => ({ ...prev, [name]: err.message }));
+      return false;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,18 +53,20 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       ...prev,
       [name]: value,
     }));
+    // Re-validate live only if the field already has an error shown
+    if (fieldErrors[name]) validateField(name, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.firstName) {
-      await showAlert(
-        "Please fill in First Name and Email before adding admin.",
-        { type: "warning" },
-      );
-      return;
-    }
+    // Validate required fields before submitting
+    const [fnOk, lnOk, emailOk] = await Promise.all([
+      validateField("firstName", formData.firstName),
+      validateField("lastName", formData.lastName),
+      validateField("email", formData.email),
+    ]);
+    if (!fnOk || !lnOk || !emailOk) return;
 
     setLoading(true);
     try {
@@ -127,7 +154,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const [designations, setDesignations] = useState([]);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
-  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   useEffect(() => {
     if (isOpen) {
@@ -249,10 +276,19 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
+                  onBlur={(e) => validateField("firstName", e.target.value)}
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
+                    fieldErrors.firstName
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                  }`}
                   placeholder="Admin"
                 />
+                {fieldErrors.firstName && (
+                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
+                    <span>⚠</span> {fieldErrors.firstName}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -263,10 +299,19 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
+                  onBlur={(e) => validateField("lastName", e.target.value)}
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
+                    fieldErrors.lastName
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                  }`}
                   placeholder="User"
                 />
+                {fieldErrors.lastName && (
+                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
+                    <span>⚠</span> {fieldErrors.lastName}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -280,10 +325,19 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  required
-                  placeholder="admin@vakrange.in"
+                  onBlur={(e) => validateField("email", e.target.value)}
+                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
+                    fieldErrors.email
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                  }`}
+                  placeholder="admin@vakrangee.in"
                 />
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
+                    <span>⚠</span> {fieldErrors.email}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

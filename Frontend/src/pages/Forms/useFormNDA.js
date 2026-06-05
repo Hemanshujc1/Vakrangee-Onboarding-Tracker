@@ -94,6 +94,7 @@ const useFormNDA = () => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues: {
       employee_full_name: "",

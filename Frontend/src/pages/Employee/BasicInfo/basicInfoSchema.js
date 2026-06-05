@@ -1,80 +1,54 @@
 import * as Yup from "yup";
-import { commonSchemas, commonPatterns } from "../../../utils/validationSchemas";
+import {
+  commonSchemas,
+  commonPatterns,
+} from "../../../utils/validationSchemas";
 
 export const basicInfoValidationSchema = Yup.object().shape({
-  firstname: commonSchemas.nameStringOptional.label("First Name"),
-  middlename: commonSchemas.nameStringOptional.label("Middle Name"),
-  lastname: commonSchemas.nameStringOptional.label("Last Name"),
+  firstname: commonSchemas.nameString.label("First Name"),
+  middlename: commonSchemas.nameString.label("Middle Name"),
+  lastname: commonSchemas.nameString.label("Last Name"),
   email: commonSchemas.emailOptional.nullable(),
-  personal_email_id: commonSchemas.emailOptional.nullable(),
-  phone: commonSchemas.mobileOptional.label("Phone"),
-  date_of_birth: commonSchemas.datePastOptional
+  personal_email_id: commonSchemas.email.label("Personal Email"),
+  phone: commonSchemas.mobile.label("Phone"),
+  date_of_birth: commonSchemas.datePast
     .max(
       new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
-      "Must be 18 years or older"
+      "Must be 18 years or older",
     )
     .label("Date of Birth"),
-  gender: Yup.string().nullable().optional(),
+  gender: Yup.string().required("Required"),
 
   // Address
-  address_line1: commonSchemas.addressStringOptional.label("Address Line 1"),
+  address_line1: commonSchemas.addressString.label("Address Line 1"),
   address_line2: commonSchemas.addressStringOptional.label("Address Line 2"),
   landmark: commonSchemas.landmark.nullable(),
-  post_office: commonSchemas.stringOptional.label("Post Office").nullable(),
-  pincode: Yup.string()
-    .nullable()
-    .test(
-      "valid-pincode",
-      "Pincode must be 6 digits",
-      (val) => !val || commonPatterns.pincode.test(val)
-    ),
-  city: commonSchemas.stringOptional.nullable(),
-  district: commonSchemas.stringOptional.nullable(),
-  state: commonSchemas.stringOptional.nullable(),
-  country: commonSchemas.country.nullable().optional(),
+  post_office: commonSchemas.stringRequired.label("Post Office"),
+  pincode: commonSchemas.pincode.label("Pincode"),
+  city: commonSchemas.stringRequired.label("City"),
+  district: commonSchemas.stringRequired.label("District"),
+  state: commonSchemas.stringRequired.label("State"),
+  country: commonSchemas.country.label("Country"),
 
   // Education & IDs
   tenth_percentage: Yup.number()
     .typeError("Must be a number")
     .min(0, "Min 0")
     .max(100, "Max 100")
-    .nullable()
-    .transform((value, originalValue) =>
-      originalValue === "" ? null : value
-    ),
+    .required("Required"),
   twelfth_percentage: Yup.number()
     .typeError("Must be a number")
     .min(0, "Min 0")
     .max(100, "Max 100")
-    .nullable()
-    .transform((value, originalValue) =>
-      originalValue === "" ? null : value
-    ),
-  adhar_number: Yup.string()
-    .nullable()
-    .test(
-      "valid-aadhaar",
-      "Aadhaar must be 12 digits",
-      (val) => !val || commonPatterns.aadhaar.test(val)
-    ),
-  pan_number: Yup.string()
-    .nullable()
-    .transform((value) => (value ? value.toUpperCase() : value))
-    .test(
-      "valid-pan",
-      "Invalid PAN Format",
-      (val) => !val || commonPatterns.pan.test(val)
-    ),
-  degree_name: Yup.string().nullable().optional(),
+    .required("Required"),
+  adhar_number: commonSchemas.aadhaar.label("Aadhaar Number"),
+  pan_number: commonSchemas.pan.label("PAN Number"),
+  degree_name: commonSchemas.stringRequired.label("Degree Name"),
   degree_percentage: Yup.number()
     .typeError("Must be a number")
     .min(0, "Min 0")
     .max(100, "Max 100")
-    .nullable()
-    .optional()
-    .transform((value, originalValue) =>
-      originalValue === "" ? null : value
-    ),
+    .required("Required"),
 });
 
 export const defaultBasicInfoValues = {
@@ -115,11 +89,11 @@ export const fieldToSectionMap = {
   gender: "identity",
   pan_number: "identity",
   adhar_number: "identity",
-  
+
   email: "contact",
   personal_email_id: "contact",
   phone: "contact",
-  
+
   address_line1: "address",
   address_line2: "address",
   landmark: "address",
@@ -129,7 +103,7 @@ export const fieldToSectionMap = {
   district: "address",
   state: "address",
   country: "address",
-  
+
   tenth_percentage: "academic",
   twelfth_percentage: "academic",
   degree_name: "academic",

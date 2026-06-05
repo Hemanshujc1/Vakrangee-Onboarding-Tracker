@@ -47,6 +47,7 @@ const useFormInformation = () => {
     reset,
     formState: { isSubmitting, errors },
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues,
   });

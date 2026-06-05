@@ -41,6 +41,11 @@ const EditProfileForm = () => {
   const [imageFile, setImageFile] = useState(null);
   const [initialRecord, setInitialRecord] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+
+  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   // Validation Schema
   const validationSchema = Yup.object().shape({
@@ -50,16 +55,15 @@ const EditProfileForm = () => {
     job_title: commonSchemas.stringRequired.label("Job Title"),
     work_location: commonSchemas.stringRequired.label("Work Location"),
     phone: commonSchemas.mobile,
-    personal_email_id: commonSchemas.email,
-    date_of_birth: commonSchemas.datePast
+    personal_email_id: commonSchemas.emailOptional,
+    date_of_birth: commonSchemas.datePastOptional
       .max(
         new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
         "Must be 18 years or older"
-      )
-      .required("Date of Birth is required"),
-    gender: Yup.string().required("Gender is required"),
+      ),
+    gender: Yup.string().optional(),
     address_line1: commonSchemas.addressString.label("Address Line 1"),
-    address_line2: commonSchemas.addressString.label("Address Line 2"),
+    address_line2: commonSchemas.addressStringOptional.label("Address Line 2"),
     landmark: commonSchemas.landmark,
     post_office: Yup.string().label("Post Office"),
     pincode: commonSchemas.pincode,
@@ -71,6 +75,7 @@ const EditProfileForm = () => {
 
   useEffect(() => {
     fetchProfile();
+    fetchDropdownData();
   }, []);
 
   const fetchProfile = async () => {
@@ -124,12 +129,55 @@ const EditProfileForm = () => {
     }
   };
 
+  const fetchDropdownData = async () => {
+    setLoadingDropdowns(true);
+    try {
+      const responses = await Promise.all([
+        fetch(`${DROPDOWN_BASE_URL}/department-list`),
+        fetch(`${DROPDOWN_BASE_URL}/designation-list`),
+      ]);
+      const [deptRes, desRes] = await Promise.all(
+        responses.map((r) => r.json())
+      );
+      if (deptRes?.status) setDepartments(deptRes.data);
+      if (desRes?.status) setDesignations(desRes.data);
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    } finally {
+      setLoadingDropdowns(false);
+    }
+  };
+
+  const validateField = async (name, value) => {
+    try {
+      await validationSchema.validateAt(name, { ...formData, [name]: value });
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, [name]: err.message }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
+    // Re-validate live only if the field already has an error shown
+    if (errors[name]) validateField(name, value);
+  };
+
+  // Handles department SearchableSelect — updates both name and ID atomically
+  const handleDeptChange = (e) => {
+    const id = e.target.value;
+    const name = e.target.option?.name || "";
+    setFormData((prev) => ({ ...prev, department_id: id, department_name: name }));
+    if (errors.department_name) validateField("department_name", name);
+  };
+
+  // Handles job title SearchableSelect — updates both name and ID atomically
+  const handleJobTitleChange = (e) => {
+    const id = e.target.value;
+    const name = e.target.option?.name || "";
+    setFormData((prev) => ({ ...prev, designation_id: id, job_title: name }));
+    if (errors.job_title) validateField("job_title", name);
   };
 
   const handleImageChange = (e) => {
@@ -251,6 +299,12 @@ const EditProfileForm = () => {
                 formData={formData}
                 errors={errors}
                 handleInputChange={handleInputChange}
+                validateField={validateField}
+                handleDeptChange={handleDeptChange}
+                handleJobTitleChange={handleJobTitleChange}
+                departments={departments}
+                designations={designations}
+                loadingDropdowns={loadingDropdowns}
                 onCancel={() => {
                   setIsEditing(false);
                   fetchProfile();

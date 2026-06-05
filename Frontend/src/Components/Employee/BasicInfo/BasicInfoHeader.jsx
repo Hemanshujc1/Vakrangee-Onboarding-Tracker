@@ -23,6 +23,7 @@ const BasicInfoHeader = ({
   isProfileComplete,
   documents = [],
   onSave,
+  onTrySubmitIncomplete,
 }) => {
   const hasRejectedDocs = documents.some((d) => d.status === "REJECTED");
   const hasUploadedDocs = documents.some((d) => d.status === "UPLOADED");
@@ -147,9 +148,9 @@ const BasicInfoHeader = ({
               ) : (
                 <button
                   type="button"
-                  disabled
+                  onClick={onTrySubmitIncomplete}
                   title="Complete your profile and upload all required documents to submit for verification."
-                  className="flex items-center gap-2 bg-gray-300 text-white px-4 py-2 rounded-lg cursor-not-allowed font-medium text-sm shadow-sm"
+                  className="flex items-center gap-2 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 hover:text-white transition-all font-medium text-sm shadow-sm"
                 >
                   <ShieldCheck size={16} />
                   <span>{isResubmission ? "Resubmit" : "Submit"}</span>

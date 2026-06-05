@@ -42,7 +42,7 @@ const ProfileHeader = ({
         {formData.firstname} {formData.lastname}
       </h2>
       <p className="text-(--color-primary) font-medium">
-        {role.replace(/_/g, " ")}
+        {formData.job_title || role.replace(/_/g, " ")}
       </p>
       {companyEmail && (
         <p className="text-sm text-gray-500 mt-1">{companyEmail}</p>

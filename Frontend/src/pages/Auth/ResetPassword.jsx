@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, Check, Eye, EyeOff } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
+import { commonSchemas } from '../../utils/validationSchemas';
+import * as Yup from 'yup';
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -11,6 +13,8 @@ const ResetPassword = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmError, setConfirmError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const { showAlert } = useAlert();
@@ -28,16 +32,39 @@ const ResetPassword = () => {
     );
   }
 
+  const validatePassword = async (value) => {
+    try {
+      await commonSchemas.password.validate(value);
+      setPasswordError('');
+      return true;
+    } catch (err) {
+      setPasswordError(err.message);
+      return false;
+    }
+  };
+
+  const validateConfirm = async (value, pw = newPassword) => {
+    try {
+      await Yup.string()
+        .oneOf([pw], 'Passwords do not match')
+        .required('Required')
+        .validate(value);
+      setConfirmError('');
+      return true;
+    } catch (err) {
+      setConfirmError(err.message);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
+
+    const [pwOk, confirmOk] = await Promise.all([
+      validatePassword(newPassword),
+      validateConfirm(confirmPassword),
+    ]);
+    if (!pwOk || !confirmOk) return;
 
     setLoading(true);
     setError('');
@@ -100,10 +127,19 @@ const ResetPassword = () => {
               <input
                 type={showNew ? 'text' : 'password'}
                 required
-                className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                className={`w-full pl-10 pr-10 py-3 bg-gray-50 border rounded-xl focus:ring-2 transition-all outline-none ${
+                  passwordError
+                    ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
+                    : 'border-gray-200 focus:border-blue-500 focus:ring-blue-100'
+                }`}
                 placeholder="••••••••"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  if (passwordError) validatePassword(e.target.value);
+                  if (confirmPassword) validateConfirm(confirmPassword, e.target.value);
+                }}
+                onBlur={(e) => validatePassword(e.target.value)}
               />
               <button
                 type="button"
@@ -113,6 +149,11 @@ const ResetPassword = () => {
                 {showNew ? <Eye size={18} /> : <EyeOff size={18} />}
               </button>
             </div>
+            {passwordError && (
+              <p className="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                <span>⚠</span> {passwordError}
+              </p>
+            )}
           </div>
 
           <div>
@@ -124,10 +165,18 @@ const ResetPassword = () => {
               <input
                 type={showConfirm ? 'text' : 'password'}
                 required
-                className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                className={`w-full pl-10 pr-10 py-3 bg-gray-50 border rounded-xl focus:ring-2 transition-all outline-none ${
+                  confirmError
+                    ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
+                    : 'border-gray-200 focus:border-blue-500 focus:ring-blue-100'
+                }`}
                 placeholder="••••••••"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (confirmError) validateConfirm(e.target.value);
+                }}
+                onBlur={(e) => validateConfirm(e.target.value)}
               />
               <button
                 type="button"
@@ -137,6 +186,11 @@ const ResetPassword = () => {
                 {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
               </button>
             </div>
+            {confirmError && (
+              <p className="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                <span>⚠</span> {confirmError}
+              </p>
+            )}
           </div>
 
           <button

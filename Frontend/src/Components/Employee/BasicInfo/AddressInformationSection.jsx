@@ -22,7 +22,7 @@ const AddressInformationSection = ({
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-  const DROPDOWN_BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
+  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   // Fetch States on mount
   useEffect(() => {
@@ -228,8 +228,8 @@ const AddressInformationSection = ({
           />
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Post Office
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Post Office <span className="text-red-500">*</span>
             </label>
             <input
               {...register("post_office")}

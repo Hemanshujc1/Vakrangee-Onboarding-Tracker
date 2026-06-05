@@ -22,7 +22,7 @@ const ProfilePhotoSection = ({
             <User size={32} className="text-gray-400" />
           )}
         </div>
-        {isEditing && !isLocked && (
+        {isEditing && (!isLocked || photoStatus?.status === "REJECTED") && (
           <label className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 border border-gray-200">
             <Camera size={16} className="text-gray-600" />
             <input

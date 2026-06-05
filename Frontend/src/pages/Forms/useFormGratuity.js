@@ -129,6 +129,7 @@ const useFormGratuity = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
+    mode: "all",
     resolver: useCallback(async (values, context, options) => {
       const resolver = yupResolver(validationSchemaRef.current);
       return resolver(values, context, options);

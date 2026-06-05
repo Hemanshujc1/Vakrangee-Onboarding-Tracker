@@ -103,6 +103,7 @@ const useFormTDS = () => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues: {
       financial_year: "2024-25",

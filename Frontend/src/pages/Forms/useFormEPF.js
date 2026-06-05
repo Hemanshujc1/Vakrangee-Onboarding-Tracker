@@ -149,6 +149,7 @@ const useFormEPF = () => {
     formState: { errors, isSubmitting },
     getValues,
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues: {
       prev_epf_member: "No",

@@ -78,6 +78,7 @@ const useFormDeclaration = () => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm({
+    mode: "all",
     resolver: yupResolver(validationSchema),
     defaultValues: {
       title: "Mr.",

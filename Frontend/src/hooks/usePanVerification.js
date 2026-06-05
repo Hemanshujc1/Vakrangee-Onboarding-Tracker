@@ -4,7 +4,13 @@ import axios from "axios";
 // PAN format: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g. ABCDE1234F)
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-export const usePanVerification = (formData, setValue, trigger, showAlert, isEditing) => {
+export const usePanVerification = (
+  formData,
+  setValue,
+  trigger,
+  showAlert,
+  isEditing,
+) => {
   const [panVerifying, setPanVerifying] = useState(false);
   const [panVerified, setPanVerified] = useState(false);
   const [panVerificationFailed, setPanVerificationFailed] = useState(false);
@@ -14,7 +20,8 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
   const handleVerifyPan = async (currentDataString) => {
     if (panVerifying) return; // double check
 
-    const { pan_number, firstname, middlename, lastname, date_of_birth } = formData;
+    const { pan_number, firstname, middlename, lastname, date_of_birth } =
+      formData;
 
     if (!pan_number || !firstname || !lastname || !date_of_birth) {
       return; // Handled quietly
@@ -36,31 +43,37 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
         dob: formattedDob,
       };
 
-      const response = await axios.post(
-        "/api/pan/verify",
-        payload
-      );
+      const response = await axios.post("/api/pan/verify", payload);
 
-      if (response.data.status === "00" || response.data.status === "01") { 
+      if (response.data.status === "00" || response.data.status === "01") {
         setPanVerified(true);
         setValue("pan_number", pan_number.toUpperCase());
-        if (response.data.firstName) setValue("firstname", response.data.firstName);
-        if (response.data.middleName) setValue("middlename", response.data.middleName);
-        if (response.data.lastName) setValue("lastname", response.data.lastName);
+        if (response.data.firstName)
+          setValue("firstname", response.data.firstName);
+        if (response.data.middleName)
+          setValue("middlename", response.data.middleName);
+        if (response.data.lastName)
+          setValue("lastname", response.data.lastName);
         trigger(["firstname", "middlename", "lastname"]);
-        showAlert("PAN Verified Successfully! Name updated as per PAN.", { type: "success" });
+        showAlert("PAN Verified Successfully! Name updated as per PAN.", {
+          type: "success",
+        });
       } else {
         setPanVerificationFailed(true);
         setPanVerified(false);
         showAlert(
-          response.data.statusDesc || "PAN Verification Failed. Please check your details.",
-          { type: "error" }
+          response.data.statusDesc ||
+            "PAN Verification Failed. Please check your details.",
+          { type: "error" },
         );
       }
     } catch (error) {
       setPanVerificationFailed(true);
       setPanVerified(false);
-      showAlert("Verification failed. Please check your details and try again.", { type: "error" });
+      showAlert(
+        "Verification failed. Please check your details and try again.",
+        { type: "error" },
+      );
     } finally {
       setPanVerifying(false);
     }
@@ -85,7 +98,7 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
     // Validate PAN format first — must be exact 10-char uppercase format
     const panUpper = pan_number.toUpperCase();
     if (!PAN_REGEX.test(panUpper)) {
-      setPanFormatError("Invalid PAN number format (e.g. ABCDE1234F)");
+      setPanFormatError("Invalid PAN number format (e.g. ABCPE1234F)");
       setPanVerified(false);
       return;
     }
@@ -121,6 +134,6 @@ export const usePanVerification = (formData, setValue, trigger, showAlert, isEdi
     panVerificationFailed,
     panFormatError,
     handleVerifyPan,
-    setLastVerifiedPanData
+    setLastVerifiedPanData,
   };
 };

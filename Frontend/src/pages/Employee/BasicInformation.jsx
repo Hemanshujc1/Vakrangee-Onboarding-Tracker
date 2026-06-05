@@ -42,10 +42,13 @@ const BasicInformation = () => {
     watch,
     setValue,
     trigger,
+    getValues,
+    clearErrors,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(basicInfoValidationSchema),
     defaultValues: defaultBasicInfoValues,
+    mode: "all",
   });
 
   const formData = watch();
@@ -206,7 +209,17 @@ const BasicInformation = () => {
           rejectionReason={rejectionReason}
           isProfileComplete={isComplete}
           documents={documents}
-          onSave={handleSubmit(onSubmit, onError)}
+          onSave={() => {
+            clearErrors();
+            onSubmit(getValues());
+          }}
+          onTrySubmitIncomplete={() => {
+            setIsEditing(true);
+            setTimeout(() => {
+              trigger();
+              showAlert("Please fill all the required fields and upload required documents to submit.", { type: "error" });
+            }, 100);
+          }}
         />
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 md:p-8">

@@ -226,7 +226,7 @@ const ProfileIdentitySection = ({
                   readOnly={isLocked}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.adhar_number ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                   maxLength={12}
-                minLength={12}
+                  minLength={12}
                   onInput={(e) => {
                     e.target.value = e.target.value.replace(/[^0-9]/g, "");
                   }}

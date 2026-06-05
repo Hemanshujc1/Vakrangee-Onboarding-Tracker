@@ -25,7 +25,7 @@ const SignatureSection = ({
             </div>
           )}
         </div>
-        {isEditing && !isLocked && (
+        {isEditing && (!isLocked || signatureStatus?.status === "REJECTED") && (
           <label className="absolute -bottom-3 -right-3 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 border border-gray-200">
             <Upload size={16} className="text-gray-600" />
             <input

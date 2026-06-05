@@ -5,20 +5,37 @@ import axios from "axios";
 // import { useAlert } from "../context/AlertContext";
 import Logger from "../utils/Logger";
 import OfficeBackground from "../assets/office_image.avif";
+import { commonSchemas } from "../utils/validationSchemas";
 
 const Login = () => {
   const navigate = useNavigate();
   // const { showAlert } = useAlert();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const validateEmail = async (value) => {
+    try {
+      await commonSchemas.email.validate(value);
+      setEmailError("");
+      return true;
+    } catch (validationErr) {
+      setEmailError(validationErr.message);
+      return false;
+    }
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
     Logger.log("Attempting login with:", email);
     setError("");
+
+    const isEmailValid = await validateEmail(email);
+    if (!isEmailValid) return;
+
     setLoading(true);
 
     try {
@@ -56,15 +73,27 @@ const Login = () => {
       Logger.error("Auth Error details:", err);
 
       if (err.response) {
-        // Backend responded (401, 400, 500, etc.)
+        // Backend responded — differentiate by status code
         Logger.log("Backend error response:", err.response.data);
-        setError(err.response.data?.message || "Invalid credentials");
+        const status = err.response.status;
+        if (status === 429) {
+          // Rate limit hit — show the backend's message directly
+          setError(
+            err.response.data?.message ||
+              "Too many login attempts. Please try again later.",
+          );
+        } else if (status === 400 || status === 401 || status === 403) {
+          setError(err.response.data?.message || "Invalid credentials.");
+        } else {
+          // 404, 500, or any other unexpected status
+          setError("Something went wrong. Please try again later.");
+        }
       } else if (err.request) {
-        // Request sent but no response (server down)
+        // Request sent but no response (server down / network issue)
         Logger.log("No response received (request made)");
         setError("Server is unreachable. Please try again later.");
       } else {
-        // Something else went wrong
+        // Error setting up the request itself
         Logger.log("Error setting up request:", err.message);
         setError("Something went wrong. Please try again.");
       }
@@ -147,11 +176,23 @@ const Login = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:ring-1 focus:ring-blue-200 transition-all font-medium text-gray-800 placeholder:text-gray-400"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) validateEmail(e.target.value);
+                }}
+                onBlur={(e) => validateEmail(e.target.value)}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:outline-none focus:ring-1 transition-all font-medium text-gray-800 placeholder:text-gray-400 ${
+                  emailError
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-200 bg-red-50"
+                    : "border-gray-200 focus:border-blue-500 focus:bg-blue-50 focus:ring-blue-200"
+                }`}
                 placeholder="emp@vakrangee.in"
-                required
               />
+              {emailError && (
+                <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
+                  <span>⚠</span> {emailError}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -210,7 +251,7 @@ const Login = () => {
                   type="button"
                   onClick={() => {
                     setEmail("superhr@admin.com");
-                    setPassword("admin@123");
+                    setPassword("Admin@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
@@ -220,7 +261,7 @@ const Login = () => {
                   type="button"
                   onClick={() => {
                     setEmail("hemanshuwork26@gmail.com");
-                    setPassword("admin@123");
+                    setPassword("Admin@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
@@ -230,7 +271,7 @@ const Login = () => {
                   type="button"
                   onClick={() => {
                     setEmail("hemanshujc01@gmail.com");
-                    setPassword("user@123");
+                    setPassword("User@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
@@ -241,7 +282,7 @@ const Login = () => {
                   type="button"
                   onClick={() => {
                     setEmail("221220@iiitt.ac.in");
-                    setPassword("user@123");
+                    setPassword("User@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
@@ -251,7 +292,7 @@ const Login = () => {
                   type="button"
                   onClick={() => {
                     setEmail("hemanshuwork26@gmail.com");
-                    setPassword("user@123");
+                    setPassword("User@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"
                 >
