@@ -18,9 +18,9 @@ export const commonPatterns = {
   password:
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])\S{8,}$/,
   // Address patterns (per spec)
-  address1: /^[a-zA-Z0-9\s,.\-\/]{3,100}$/, // letters, digits, space, comma, hyphen, slash
-  address2: /^[a-zA-Z0-9\s.]{3,100}$/, // letters, digits, space
-  landmark: /^[a-zA-Z\s.]{3,100}$/, // letters and space only
+  address1: /^[a-zA-Z0-9\s,.\-\/]{3,200}$/, // letters, digits, space, comma, hyphen, slash
+  address2: /^[a-zA-Z0-9\s.]{3,200}$/, // letters, digits, space
+  landmark: /^[a-zA-Z\s.]{3,200}$/, // letters and space only
 };
 
 export const commonSchemas = {
@@ -141,7 +141,7 @@ export const commonSchemas = {
   // --- Address Lines ---
   addressString: Yup.string()
     .min(3, "Minimum 3 characters required")
-    .max(100, "Maximum 100 characters allowed")
+    .max(200, "Maximum 200 characters allowed")
     .matches(
       commonPatterns.address1,
       "Only letters, dots, digits, spaces, commas, hyphens and slashes allowed",
@@ -153,7 +153,7 @@ export const commonSchemas = {
     .nullable()
     .transform((v) => (v === "" ? null : v))
     .min(3, "Minimum 3 characters required")
-    .max(100, "Maximum 100 characters allowed")
+    .max(200, "Maximum 200 characters allowed")
     .matches(
       commonPatterns.address2,
       "Only letters, dots, digits and spaces allowed",
@@ -164,7 +164,7 @@ export const commonSchemas = {
     .nullable()
     .transform((value) => (value === "" ? null : value))
     .min(5, "Minimum 5 characters required")
-    .max(100, "Maximum 100 characters allowed")
+    .max(200, "Maximum 200 characters allowed")
     .matches(commonPatterns.landmark, "Only letters, dots and spaces allowed")
     .optional(),
 

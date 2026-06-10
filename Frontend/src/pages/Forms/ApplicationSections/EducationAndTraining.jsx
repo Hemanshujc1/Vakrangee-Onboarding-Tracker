@@ -43,6 +43,9 @@ const EducationAndTraining = ({ register, errors, control, educationFields, appe
                 register={register(`education.${index}.percentage`)}
                 error={errors.education?.[index]?.percentage}
                 required
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
               />
               <TableInput register={register(`education.${index}.location`)} />
             </>

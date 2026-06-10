@@ -133,7 +133,14 @@ const useEmployeeDetail = () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      await axios.put(`/api/employees/${id}`, editForm, config);
+      const payload = {
+        ...editForm,
+        department_id: editForm.department_id === "" ? null : editForm.department_id,
+        designation_id: editForm.designation_id === "" ? null : editForm.designation_id,
+        onboardingHrId: editForm.onboardingHrId === "" ? null : editForm.onboardingHrId,
+      };
+
+      await axios.put(`/api/employees/${id}`, payload, config);
 
       await fetchEmployeeDetails();
       setIsEditing(false);
