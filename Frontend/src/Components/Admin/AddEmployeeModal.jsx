@@ -7,9 +7,14 @@ import SearchableSelect from "../UI/SearchableSelect";
 import { commonSchemas } from "../../utils/validationSchemas";
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
-  const today = new Date().toISOString().split("T")[0];
+  const todayObj = new Date();
+  const today = todayObj.toISOString().split("T")[0];
+  const maxDateObj = new Date();
+  maxDateObj.setDate(todayObj.getDate() + 15);
+  const maxDate = maxDateObj.toISOString().split("T")[0];
   const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
+    employee_id: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -18,11 +23,12 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     role: "EMPLOYEE",
     jobTitle: "",
     department: "",
-    location: "",
+    band: "",
+    level: "",
     startDate: "",
     managerId: "",
     onboarding_stage: "BASIC_INFO",
-    password: "user@123",
+    password: "User@123",
   });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
@@ -35,6 +41,19 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+
+  // New location states
+  const [workLocation, setWorkLocation] = useState({
+    state: "",
+    district: "",
+    city: "",
+  });
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedStateId, setSelectedStateId] = useState("");
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [loadingRegions, setLoadingRegions] = useState(false);
 
   const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
@@ -51,23 +70,90 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       const responses = await Promise.all([
         fetch(`${DROPDOWN_BASE_URL}/department-list`),
         fetch(`${DROPDOWN_BASE_URL}/designation-list`),
+        fetch(`${DROPDOWN_BASE_URL}/state-list`),
       ]);
 
-      const [deptRes, desRes] = await Promise.all(
-        responses.map((r) => r.json())
+      const [deptRes, desRes, stateRes] = await Promise.all(
+        responses.map((r) => r.json()),
       );
 
-      if (deptRes?.status) {
-        setDepartments(deptRes.data);
-      }
-      if (desRes?.status) {
-        setDesignations(desRes.data);
-      }
+      if (deptRes?.status) setDepartments(deptRes.data);
+      if (desRes?.status) setDesignations(desRes.data);
+      if (stateRes?.status) setStates(stateRes.data);
     } catch (error) {
       console.error("Error fetching dropdown data:", error);
     } finally {
       setLoadingDropdowns(false);
     }
+  };
+
+  // Fetch Districts when selectedStateId changes
+  useEffect(() => {
+    if (!selectedStateId) {
+      setDistricts([]);
+      return;
+    }
+    const fetchDistricts = async () => {
+      setLoadingRegions(true);
+      try {
+        const response = await fetch(
+          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
+        );
+        const data = await response.json();
+        if (data?.status) setDistricts(data.data);
+      } catch (error) {
+        console.error("Error fetching districts:", error);
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchDistricts();
+  }, [selectedStateId]);
+
+  // Fetch Cities when selectedDistrictId changes
+  useEffect(() => {
+    if (!selectedStateId || !selectedDistrictId) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      setLoadingRegions(true);
+      try {
+        const response = await fetch(
+          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
+        );
+        const data = await response.json();
+        if (data?.status) setCities(data.data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchCities();
+  }, [selectedDistrictId, selectedStateId]);
+
+  const handleStateChange = (id, name) => {
+    setSelectedStateId(id);
+    setSelectedDistrictId("");
+    setDistricts([]);
+    setCities([]);
+    setWorkLocation((prev) => ({
+      ...prev,
+      state: name,
+      district: "",
+      city: "",
+    }));
+  };
+
+  const handleDistrictChange = (id, name) => {
+    setSelectedDistrictId(id);
+    setCities([]);
+    setWorkLocation((prev) => ({ ...prev, district: name, city: "" }));
+  };
+
+  const handleCityChange = (name) => {
+    setWorkLocation((prev) => ({ ...prev, city: name }));
   };
 
   const fetchManagers = async () => {
@@ -80,6 +166,16 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         console.error("No authentication token found");
         return;
       }
+
+      // Fetch logged in user to auto-select
+      const userStr = localStorage.getItem("user");
+      const loggedInUser = userStr
+        ? JSON.parse(userStr)
+        : userInfo
+          ? JSON.parse(userInfo)
+          : null;
+      const loggedInEmployeeId = loggedInUser?.employeeId || loggedInUser?.userId || loggedInUser?.id;
+
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const { data } = await axios.get("/api/employees", config);
@@ -88,13 +184,26 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       const filteredManagers = data.filter(
         (emp) =>
           adminRoles.includes(emp.role) &&
-          emp.accountStatus?.toUpperCase() === "ACTIVE"
+          emp.accountStatus?.toUpperCase() === "ACTIVE",
       );
 
       const sortedManagers = filteredManagers.sort((a, b) =>
-        a.firstName.localeCompare(b.firstName)
+        a.firstName.localeCompare(b.firstName),
       );
       setManagers(sortedManagers);
+
+      // Auto-select logged-in HR if they are in the managers list
+      if (loggedInEmployeeId) {
+        const isUserInManagers = sortedManagers.some(
+          (m) => String(m.employeeId) === String(loggedInEmployeeId),
+        );
+        if (isUserInManagers) {
+          setFormData((prev) => ({
+            ...prev,
+            managerId: String(loggedInEmployeeId),
+          }));
+        }
+      }
     } catch (error) {
       console.error("Error fetching managers:", error);
     }
@@ -160,7 +269,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
       let hrDesignation = "";
       if (formData.managerId) {
         const selectedManager = managers.find(
-          (m) => m.userId === parseInt(formData.managerId)
+          (m) => m.employeeId === formData.managerId,
         );
         if (selectedManager) {
           hrName = `${selectedManager.firstName} ${selectedManager.lastName}`;
@@ -170,10 +279,10 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
 
       // 1a. Map Department and Designation strings back out from the IDs
       const selectedDept = departments.find(
-        (d) => String(d.department_id) === String(formData.department)
+        (d) => String(d.department_id) === String(formData.department),
       );
       const selectedDesig = designations.find(
-        (d) => String(d.designation_id) === String(formData.jobTitle)
+        (d) => String(d.designation_id) === String(formData.jobTitle),
       );
 
       const departmentName = selectedDept
@@ -183,24 +292,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         ? selectedDesig.designation_name
         : formData.jobTitle;
 
-      // 1b. Send Welcome Email
-      await axios.post(
-        "/api/email/send-welcome",
-        {
-          email: formData.email,
-          firstName: formData.firstName,
-          password: formData.password,
-          jobTitle: designationName,
-          startDate: formData.startDate,
-          location: formData.location || "Mumbai",
-          hrName: hrName,
-          hrDesignation: hrDesignation,
-          cc: formData.cc,
-        },
-        config
-      );
-
-      // 2. Add Employee
+      // 1b. Add Employee
       await onAdd({
         ...formData,
         department_name: departmentName,
@@ -210,9 +302,32 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         hrName,
         hrDesignation,
         onboarding_hr_id: formData.managerId,
+        work_location: workLocation,
       });
 
+      // 2. Send Welcome Email (only after successful registration)
+      try {
+        await axios.post(
+          "/api/email/send-welcome",
+          {
+            email: formData.email,
+            firstName: formData.firstName,
+            password: formData.password,
+            jobTitle: designationName,
+            startDate: formData.startDate,
+            location: workLocation.city || "Not Set",
+            hrName: hrName,
+            hrDesignation: hrDesignation,
+            cc: formData.cc,
+          },
+          config,
+        );
+      } catch (emailErr) {
+        console.error("Welcome email failed to send:", emailErr);
+      }
+
       setFormData({
+        employee_id: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -221,18 +336,22 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         role: "EMPLOYEE",
         jobTitle: "",
         department: "",
-        location: "",
+        band: "",
+        level: "",
         startDate: "",
         managerId: "",
         onboarding_stage: "BASIC_INFO",
-        password: "user@123",
+        password: "User@123",
       });
+      setWorkLocation({ state: "", district: "", city: "" });
+      setSelectedStateId("");
+      setSelectedDistrictId("");
     } catch (error) {
       console.error("Error adding employee:", error);
       await showAlert(
         error.response?.data?.message ||
           "Failed to process employee addition and email.",
-        { type: "error" }
+        { type: "error" },
       );
     } finally {
       setLoading(false);
@@ -266,7 +385,40 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
+                  Employee ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="employee_id"
+                  value={formData.employee_id}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                  placeholder="EMP1001"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Joining Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  min={today}
+                  max={maxDate}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                  style={{ colorScheme: "light" }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -280,6 +432,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
                   placeholder="Rohit"
+                  required
                 />
                 {fieldErrors.firstName && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -289,7 +442,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -303,6 +456,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
                   placeholder="Sharma"
+                  required
                 />
                 {fieldErrors.lastName && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -315,7 +469,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Personal Email
+                  Personal Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -329,6 +483,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
                   placeholder="rohit@gmail.com"
+                  required
                 />
                 {fieldErrors.email && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -347,6 +502,37 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
                   placeholder="hr@example.com, manager@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Band <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="band"
+                  value={formData.band}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                  placeholder="E.g. B1"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Level <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="level"
+                  value={formData.level}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                  placeholder="E.g. L1"
+                  required
                 />
               </div>
             </div>
@@ -379,40 +565,9 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
               disabled={loadingDropdowns}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Joining Date
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  min={today}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  style={{ colorScheme: "light" }}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="Mumbai"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                HR Name
+                HR Name <span className="text-red-500">*</span>
               </label>
               <select
                 name="managerId"
@@ -423,11 +578,70 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
               >
                 <option value="">Select HR</option>
                 {managers.map((manager) => (
-                  <option key={manager.id} value={manager.userId}>
+                  <option key={manager.id} value={manager.employeeId}>
                     {manager.firstName} {manager.lastName} ({manager.role})
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Hierarchical Location */}
+            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">
+                Work Location <span className="text-red-500">*</span>
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <SearchableSelect
+                  label="State"
+                  name="state"
+                  options={states.map((s) => ({
+                    id: s.lg_state_id,
+                    name: s.state_name,
+                  }))}
+                  value={workLocation.state}
+                  onChange={(e) =>
+                    handleStateChange(
+                      e.target.value,
+                      e.target.option?.name || "",
+                    )
+                  }
+                  placeholder="State"
+                  required
+                />
+                <SearchableSelect
+                  label="District"
+                  name="district"
+                  options={districts.map((d) => ({
+                    id: d.district_id,
+                    name: d.district_name,
+                  }))}
+                  value={workLocation.district}
+                  onChange={(e) =>
+                    handleDistrictChange(
+                      e.target.value,
+                      e.target.option?.name || "",
+                    )
+                  }
+                  placeholder="District"
+                  disabled={!selectedStateId || loadingRegions}
+                  required
+                />
+                <SearchableSelect
+                  label="City"
+                  name="city"
+                  options={cities.map((c) => ({
+                    id: c.lg_village_id,
+                    name: c.village_name,
+                  }))}
+                  value={workLocation.city}
+                  onChange={(e) =>
+                    handleCityChange(e.target.option?.name || "")
+                  }
+                  placeholder="City"
+                  disabled={!selectedDistrictId || loadingRegions}
+                  required
+                />
+              </div>
             </div>
 
             <div className="flex justify-center items-center gap-3 pt-4">

@@ -9,16 +9,16 @@ import { commonSchemas } from "../../utils/validationSchemas";
 const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
   const [formData, setFormData] = useState({
+    employee_id: "",
     firstName: "",
     lastName: "",
     email: "",
     cc: "",
-    phone: null,
     role: "HR_ADMIN",
     department: "Human Resource",
     jobTitle: "",
     location: "",
-    password: "admin@123",
+    password: "Admin@123",
   });
 
   const [loading, setLoading] = useState(false);
@@ -98,36 +98,42 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
         ? selectedDesig.designation_name
         : formData.jobTitle;
 
-      // 1b. Send Admin Welcome Email
-      await axios.post(
-        "/api/email/send-admin-welcome",
-        {
-          email: formData.email,
-          firstName: formData.firstName,
-          password: formData.password,
-          cc: formData.cc,
-          portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
-          hrName: hrDetails.name,
-          hrDesignation: hrDetails.designation,
-        },
-        config,
-      );
-
-      // 2. Add Admin
+      // 1b. Add Admin
       await onAdd({
         ...formData,
         department_name: departmentName,
         department_id: parseInt(formData.department) || null,
         job_title: designationName,
         designation_id: parseInt(formData.jobTitle) || null,
+        location: workLocation.city || "Not Set",
+        work_location: workLocation,
       });
 
+      // 2. Send Admin Welcome Email (only after successful registration)
+      try {
+        await axios.post(
+          "/api/email/send-admin-welcome",
+          {
+            email: formData.email,
+            firstName: formData.firstName,
+            password: formData.password,
+            cc: formData.cc,
+            portalUrl: `${window.location.origin}${import.meta.env.BASE_URL}`,
+            hrName: hrDetails.name,
+            hrDesignation: hrDetails.designation,
+          },
+          config,
+        );
+      } catch (emailErr) {
+        console.error("Admin welcome email failed to send:", emailErr);
+      }
+
       setFormData({
+        employee_id: "",
         firstName: "",
         lastName: "",
         email: "",
         cc: "",
-        phone: "",
         role: "HR_ADMIN",
         department:
           departments
@@ -135,8 +141,11 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
             ?.department_id.toString() || "Human Resource",
         jobTitle: "",
         location: "",
-        password: "admin@123",
+        password: "Admin@123",
       });
+      setWorkLocation({ state: "", district: "", city: "" });
+      setSelectedStateId("");
+      setSelectedDistrictId("");
     } catch (error) {
       console.error("Error adding admin:", error);
       await showAlert(
@@ -154,6 +163,19 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const [designations, setDesignations] = useState([]);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
+  // New location states
+  const [workLocation, setWorkLocation] = useState({
+    state: "",
+    district: "",
+    city: "",
+  });
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedStateId, setSelectedStateId] = useState("");
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [loadingRegions, setLoadingRegions] = useState(false);
+
   const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   useEffect(() => {
@@ -169,9 +191,10 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       const responses = await Promise.all([
         fetch(`${DROPDOWN_BASE_URL}/department-list`),
         fetch(`${DROPDOWN_BASE_URL}/designation-list`),
+        fetch(`${DROPDOWN_BASE_URL}/state-list`),
       ]);
 
-      const [deptRes, desRes] = await Promise.all(
+      const [deptRes, desRes, stateRes] = await Promise.all(
         responses.map((r) => r.json()),
       );
 
@@ -195,11 +218,83 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
       if (desRes?.status) {
         setDesignations(desRes.data);
       }
+      if (stateRes?.status) {
+        setStates(stateRes.data);
+      }
     } catch (error) {
       console.error("Error fetching dropdown data:", error);
     } finally {
       setLoadingDropdowns(false);
     }
+  };
+
+  // Fetch Districts when selectedStateId changes
+  useEffect(() => {
+    if (!selectedStateId) {
+      setDistricts([]);
+      return;
+    }
+    const fetchDistricts = async () => {
+      setLoadingRegions(true);
+      try {
+        const response = await fetch(
+          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
+        );
+        const data = await response.json();
+        if (data?.status) setDistricts(data.data);
+      } catch (error) {
+        console.error("Error fetching districts:", error);
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchDistricts();
+  }, [selectedStateId]);
+
+  // Fetch Cities when selectedDistrictId changes
+  useEffect(() => {
+    if (!selectedStateId || !selectedDistrictId) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      setLoadingRegions(true);
+      try {
+        const response = await fetch(
+          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
+        );
+        const data = await response.json();
+        if (data?.status) setCities(data.data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchCities();
+  }, [selectedDistrictId, selectedStateId]);
+
+  const handleStateChange = (id, name) => {
+    setSelectedStateId(id);
+    setSelectedDistrictId("");
+    setDistricts([]);
+    setCities([]);
+    setWorkLocation((prev) => ({
+      ...prev,
+      state: name,
+      district: "",
+      city: "",
+    }));
+  };
+
+  const handleDistrictChange = (id, name) => {
+    setSelectedDistrictId(id);
+    setCities([]);
+    setWorkLocation((prev) => ({ ...prev, district: name, city: "" }));
+  };
+
+  const handleCityChange = (name) => {
+    setWorkLocation((prev) => ({ ...prev, city: name }));
   };
 
   const fetchCurrentUserDetails = async () => {
@@ -266,10 +361,25 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Employee ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="employee_id"
+                value={formData.employee_id}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
+                placeholder="EMP2001"
+                required
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -282,7 +392,8 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                       ? "border-red-400 focus:border-red-500 focus:ring-red-100"
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
-                  placeholder="Admin"
+                  placeholder="Rahul"
+                  required
                 />
                 {fieldErrors.firstName && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -292,7 +403,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -305,7 +416,8 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                       ? "border-red-400 focus:border-red-500 focus:ring-red-100"
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
-                  placeholder="User"
+                  placeholder="Verma"
+                  required
                 />
                 {fieldErrors.lastName && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -318,7 +430,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Email
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -331,7 +443,8 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                       ? "border-red-400 focus:border-red-500 focus:ring-red-100"
                       : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
                   }`}
-                  placeholder="admin@vakrangee.in"
+                  placeholder="rahul.v@company.com"
+                  required
                 />
                 {fieldErrors.email && (
                   <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
@@ -341,7 +454,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CC (Optional)
+                  CC Email (Optional)
                 </label>
                 <input
                   type="text"
@@ -349,7 +462,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
                   value={formData.cc}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="hr@vakrangee.in"
+                  placeholder="manager@company.com"
                 />
               </div>
             </div>
@@ -382,19 +495,66 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
               disabled={loadingDropdowns}
             />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Location
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                placeholder="Mumbai"
-              />
+            {/* Hierarchical Location */}
+            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">
+                Work Location <span className="text-red-500">*</span>
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <SearchableSelect
+                  label="State"
+                  name="state"
+                  options={states.map((s) => ({
+                    id: s.lg_state_id,
+                    name: s.state_name,
+                  }))}
+                  value={workLocation.state}
+                  onChange={(e) =>
+                    handleStateChange(
+                      e.target.value,
+                      e.target.option?.name || "",
+                    )
+                  }
+                  placeholder="State"
+                  required
+                />
+                <SearchableSelect
+                  label="District"
+                  name="district"
+                  options={districts.map((d) => ({
+                    id: d.district_id,
+                    name: d.district_name,
+                  }))}
+                  value={workLocation.district}
+                  onChange={(e) =>
+                    handleDistrictChange(
+                      e.target.value,
+                      e.target.option?.name || "",
+                    )
+                  }
+                  placeholder="District"
+                  disabled={!selectedStateId || loadingRegions}
+                  required
+                />
+                <SearchableSelect
+                  label="City"
+                  name="city"
+                  options={cities.map((c) => ({
+                    id: c.lg_village_id,
+                    name: c.village_name,
+                  }))}
+                  value={workLocation.city}
+                  onChange={(e) =>
+                    handleCityChange(e.target.option?.name || "")
+                  }
+                  placeholder="City"
+                  disabled={!selectedDistrictId || loadingRegions}
+                  required
+                />
+              </div>
             </div>
+
+            {/* Removed phone block per user request */}
 
             <div className="flex justify-center items-center gap-3 pt-4">
               <button

@@ -12,6 +12,9 @@ import {
   Fingerprint,
   Award,
   Percent,
+  Activity,
+  PhoneCall,
+  User,
 } from "lucide-react";
 
 const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
@@ -48,7 +51,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                 />
               ) : (
                 <p className="font-medium text-sm break-all">
-                  {employee.personal_email_id || employee.personalEmail || "N/A"}
+                  {employee.personal_email_id ||
+                    employee.personalEmail ||
+                    "N/A"}
                 </p>
               )}
             </div>
@@ -60,7 +65,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Phone Number</p>
-              <p className="font-medium text-sm wrap-break-word">{employee.phone || "N/A"}</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.phone || "N/A"}
+              </p>
             </div>
           </div>
           {/* Gender */}
@@ -70,7 +77,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Gender</p>
-              <p className="font-medium text-sm wrap-break-word">{employee.gender || "N/A"}</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.gender || "N/A"}
+              </p>
             </div>
           </div>
           {/* Date of Birth */}
@@ -79,11 +88,28 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
               <CalendarDays size={18} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-400">Date of Birth (as per PAN)</p>
+              <p className="text-xs text-gray-400">
+                Date of Birth (as per PAN)
+              </p>
               <p className="font-medium text-sm wrap-break-word">
                 {employee.date_of_birth || employee.dateOfBirth
-                  ? new Date(employee.date_of_birth || employee.dateOfBirth).toLocaleDateString("en-GB")
+                  ? new Date(
+                      employee.date_of_birth || employee.dateOfBirth,
+                    ).toLocaleDateString("en-GB")
                   : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Blood Group */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <Activity size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Blood Group</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.bloodGroup || employee.blood_group || "N/A"}
               </p>
             </div>
           </div>
@@ -110,8 +136,64 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
               <p className="text-xs text-gray-400">Aadhaar Number</p>
               <p className="font-medium text-sm wrap-break-word">
                 {employee.adhar_number || employee.adharNumber
-                  ? "XXXX XXXX " + (employee.adhar_number || employee.adharNumber).slice(-4)
+                  ? "XXXX XXXX " +
+                    (employee.adhar_number || employee.adharNumber).slice(-4)
                   : "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Emergency Contact Header */}
+          <div className="col-span-full mt-4 mb-2 pb-2 border-b border-gray-50 flex items-center gap-2">
+            <div className="p-1 bg-(--color-primary)/10 text-(--color-primary) rounded-lg">
+              <PhoneCall size={16} />
+            </div>
+            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+              Emergency Contact Details
+            </h4>
+          </div>
+
+          {/* Emergency Contact Name */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <User size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Contact Name</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.emergencyContactName ||
+                  employee.emergency_contact_name ||
+                  "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Emergency Contact Relationship */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <Users size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Relationship</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.emergencyContactRelationship ||
+                  employee.emergency_contact_relationship ||
+                  "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Emergency Contact Number */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <PhoneCall size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Contact Number</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.emergencyContactNumber ||
+                  employee.emergency_contact_number ||
+                  "N/A"}
               </p>
             </div>
           </div>
@@ -177,7 +259,8 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
             <div className="min-w-0">
               <p className="text-xs text-gray-400">Degree Percentage</p>
               <p className="font-medium text-sm">
-                {employee.degree_percentage !== undefined && employee.degree_percentage !== null
+                {employee.degree_percentage !== undefined &&
+                employee.degree_percentage !== null
                   ? `${employee.degree_percentage}%`
                   : "N/A"}
               </p>
@@ -199,7 +282,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                   <div className="mx-auto w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-300 mb-1">
                     <Save size={12} />
                   </div>
-                  <p className="text-gray-400 text-[9px] italic">No signature found</p>
+                  <p className="text-gray-400 text-[9px] italic">
+                    No signature found
+                  </p>
                 </div>
               )}
             </div>

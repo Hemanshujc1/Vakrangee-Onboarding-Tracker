@@ -85,7 +85,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: CheckCircle,
       path: "/employee/post-joining",
     },
-    { name: "My HR", icon: User, path: "/employee/myHr" },
     {
       name: "Company Overview",
       icon: Building2,
@@ -135,7 +134,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         style={{ backgroundColor: "var(--color-secondary)" }}
       >
         <div className="p-6 flex items-center justify-between border-b border-[rgba(255,255,255,0.1)]">
-          <h1 className="text-xl font-bold tracking-wider">VAKRANGEE</h1>
+          <img src={`${import.meta.env.BASE_URL}vakrangee-logo-white.png`} alt="Vakrangee Logo" className="h-20 w-auto" />
           <button
             onClick={onClose}
             className="lg:hidden text-white/80 hover:text-white transition-colors cursor-pointer"

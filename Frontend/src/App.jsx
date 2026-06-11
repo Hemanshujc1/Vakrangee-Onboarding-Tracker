@@ -21,7 +21,6 @@ import BasicInformation from "./pages/Employee/BasicInformation";
 import Documents from "./pages/Employee/Documents";
 import PreJoiningForms from "./pages/Employee/PreJoiningForms";
 import PostJoiningForms from "./pages/Employee/PostJoiningForms";
-import MyHR from "./pages/Employee/MyHR";
 import FormInformation from "./pages/Forms/FormInformation";
 import FormMediclaim from "./pages/Forms/FormMediclaim";
 import FormNDA from "./pages/Forms/FormNDA";
@@ -59,7 +58,6 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        
 
         {/* HR Super Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["HR_SUPER_ADMIN"]} />}>
@@ -109,7 +107,6 @@ const App = () => {
           <Route path="/employee/documents" element={<Documents />} />
           <Route path="/employee/pre-joining" element={<PreJoiningForms />} />
           <Route path="/employee/post-joining" element={<PostJoiningForms />} />
-          <Route path="/employee/myHr" element={<MyHR />} />
           <Route
             path="/employee/company-overview"
             element={<CompanyOverview />}
@@ -181,3 +178,6 @@ const App = () => {
 };
 
 export default App;
+
+
+// in the basic details add the blood Group in the [ProfileIdentitySection.jsx](file;file:///Users/hemanshu/Desktop/Hemanshu/coding/webdev/intern/Vakrangee/Onboarding%20Portal/Frontend/src/Components/Employee/BasicInfo/ProfileIdentitySection.jsx) section and also add the emergency contact number, realtionship, name in the [ContactInfoSection.jsx](file;file:///Users/hemanshu/Desktop/Hemanshu/coding/webdev/intern/Vakrangee/Onboarding%20Portal/Frontend/src/Components/Employee/BasicInfo/ContactInfoSection.jsx) section and add the required coloumns in the table employee_records, 

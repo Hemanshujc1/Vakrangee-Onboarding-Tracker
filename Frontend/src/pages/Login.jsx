@@ -112,17 +112,17 @@ const Login = () => {
             src={OfficeBackground}
             alt="Office Background"
             loading="lazy"
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/90"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-black/95"></div>
         </div>
 
-        <div className="flex flex-col justify-center items-center align-middle text-center gap-15 relative z-10 h-full">
+        <div className="flex flex-col justify-center items-center align-middle text-center gap-5 relative z-10 h-full">
           <div>
-            <div className="flex items-center gap-3 mb-12">
+            <div className="flex items-center gap-3 mb-8">
               <img
-                // src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
-                src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
+                // src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
+                src={`${import.meta.env.BASE_URL}vakrangee-logo-white.png`}
                 alt="Vakrangee Logo"
                 className="h-30 w-75 object-contain brightness"
               />
@@ -147,7 +147,7 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="flex justify-center mb-6 lg:hidden">
             <img
-              src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+              src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
               alt="Vakrangee Logo"
               className="h-16 w-auto object-contain"
             />
@@ -281,7 +281,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail("221220@iiitt.ac.in");
+                    setEmail("hemanshuwork26@vakrangee.com");
                     setPassword("User@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"

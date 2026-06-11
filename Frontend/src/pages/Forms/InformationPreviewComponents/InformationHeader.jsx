@@ -5,7 +5,7 @@ const InformationHeader = ({ data, record }) => {
     <div className="text-center mb-6 relative">
       <div className="flex flex-col md:block print:block">
         <img
-          src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+          src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
           alt="Vakrangee"
           className="h-20 mx-auto mb-2"
         />

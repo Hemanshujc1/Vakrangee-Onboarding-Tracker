@@ -6,7 +6,7 @@ const createSuperAdmin = async () => {
     const t = await sequelize.transaction();
     try {
         const email = 'superhr@admin.com';
-        const password = 'admin@123';
+        const password = 'Admin@123';
         const role = 'HR_SUPER_ADMIN';
 
         console.log(`Creating Super Admin...`);
@@ -27,30 +27,67 @@ const createSuperAdmin = async () => {
         // 3. Create User
         const user = await User.create({
             username: email,
-            password: hashedPassword
+            password: hashedPassword,
+            employee_id: 'SUPERADMIN'
         }, { transaction: t });
 
-        // 4. Create EmployeeMaster
+        // 4. Create EmployeeMaster with new JSON groups
         const empMaster = await EmployeeMaster.create({
-            employee_id: user.id,
+            employee_id: 'SUPERADMIN',
             role: role,
-            onboarding_stage: 'ONBOARDED',
-            account_status: 'ACTIVE', // Ensure active
             company_email_id: email,
-            first_login_at: new Date() // Mark as logged in so they don't get stuck in "First Login" flows if any
+            employee_status: {
+                onboarding_stage: 'ONBOARDED',
+                account_status: 'ACTIVE',
+                first_login_at: new Date(),
+                last_login_at: null,
+                is_first_login: false,
+                is_deleted: false,
+                deleted_at: null,
+                deleted_by: null,
+            },
+            basic_info: {
+                basic_info_status: 'VERIFIED',
+                basic_info_verified_at: new Date(),
+                basic_info_verified_by: null,
+                basic_info_rejection_reason: null,
+                final_verification_email_sent: true,
+            },
         }, { transaction: t });
 
-        // 5. Create Minimal EmployeeRecord (Required for some profile views)
+        // 5. Create Minimal EmployeeRecord using JSON groups
         await EmployeeRecord.create({
-            employee_id: empMaster.id,
-            firstname: 'Super',
-            lastname: 'Admin',
-            designation_id: null, 
-            department_id: 6,
-            department_name: "Human Resource",
-            job_title: 'HR Super Admin',
-            personal_email_id: email,
-            date_of_joining: new Date()
+            employee_id: empMaster.employee_id,
+            onboarding_hr_id: null,
+            onboarding_hr_assigned_at: null,
+            personal_info: {
+                firstname: 'Super',
+                middlename: null,
+                lastname: 'Admin',
+                date_of_birth: null,
+                gender: null,
+                adhar_number: null,
+                pan_number: null,
+                pan_verified: false,
+                blood_group: null,
+            },
+            contact_info: {
+                personal_email_id: email,
+                phone: null,
+                emergency_contact_number: null,
+                emergency_contact_name: null,
+                emergency_contact_relationship: null,
+            },
+            job_info: {
+                department_name: 'Human Resource',
+                department_id: 6,
+                job_title: 'HR Super Admin',
+                designation_id: null,
+                date_of_joining: new Date(),
+                band: null,
+                level: null,
+            },
+            work_location: null,
         }, { transaction: t });
 
         await t.commit();

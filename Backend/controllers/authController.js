@@ -7,6 +7,10 @@ const logger = require('../utils/logger');
 
 const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
+// ─── Helpers for JSON group access ────────────────────────────────────────────
+const getEmpStatus = (emp) => emp?.employee_status || {};
+const getBasicInfo = (emp) => emp?.basic_info || {};
+
 // Register a new user
 exports.register = async (req, res) => {
   const t = await sequelize.transaction();
@@ -17,18 +21,29 @@ exports.register = async (req, res) => {
         return res.status(403).json({ message: 'Access denied. Only HR Admins can create new users.' });
     }
 
-    // destructuring
     const { 
         username, password, role, 
         firstName, lastName, department, jobTitle, location, phone, startDate, onboarding_hr_id,
-        department_id, designation_id 
+        department_id, designation_id,
+        band, level, work_location, employee_id: employee_code
     } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
       await t.rollback();
-      return res.status(400).json({ message: 'Username/Email already exists' });
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    // Check if Employee ID already exists in the system
+    if (employee_code) {
+      const existingRecord = await EmployeeMaster.findOne({
+        where: { employee_id: employee_code }
+      });
+      if (existingRecord) {
+        await t.rollback();
+        return res.status(400).json({ message: 'Employee ID already exists in the system' });
+      }
     }
 
     // Hash password
@@ -39,41 +54,83 @@ exports.register = async (req, res) => {
     const newUser = await User.create({
       username,
       password: hashedPassword,
+      employee_id: employee_code || null,
     }, { transaction: t });
 
-    // Determine emails based on role
-    // For EMPLOYEE: company_email_id = null, personal_email_id = username
-    // For ADMIN: company_email_id = username, personal_email_id = null (as per previous request)
+    // Determine email placement based on role
     const isEmployee = (role === 'EMPLOYEE');
     
-    // Create EmployeeMaster entry
+    // Create EmployeeMaster entry with JSON groups
     const newEmployee = await EmployeeMaster.create({
-      employee_id: newUser.id,
+      employee_id: newUser.employee_id,
       role: role || 'EMPLOYEE',
-      onboarding_stage: 'BASIC_INFO',
-      company_email_id: isEmployee ? null : username, 
+      company_email_id: isEmployee ? null : username,
+      employee_status: {
+        onboarding_stage: 'BASIC_INFO',
+        account_status: 'INVITED',
+        first_login_at: null,
+        last_login_at: null,
+        is_first_login: true,
+        is_deleted: false,
+        deleted_at: null,
+        deleted_by: null,
+      },
+      basic_info: {
+        basic_info_status: 'PENDING',
+        basic_info_verified_at: null,
+        basic_info_verified_by: null,
+        basic_info_rejection_reason: null,
+        final_verification_email_sent: false,
+      },
     }, { transaction: t });
 
-    // Create EmployeeRecord entry
+    // Resolve work_location: accept object { state, district, city } or legacy string
+    let resolvedWorkLocation = null;
+    if (work_location && typeof work_location === 'object') {
+      resolvedWorkLocation = work_location;
+    } else if (location) {
+      // Legacy: store as city field only for backward compat
+      resolvedWorkLocation = { state: null, district: null, city: location };
+    }
+
+    // Create EmployeeRecord entry with JSON groups
     await EmployeeRecord.create({
-        employee_id: newEmployee.id,
-        firstname: firstName,
-        lastname: lastName,
-        department_name: department,
-        department_id: department_id,
-        job_title: jobTitle,
-        designation_id: designation_id,
-        work_location: location,
-        phone: phone,
-        date_of_joining: startDate,
-        personal_email_id: isEmployee ? username : null,
-        onboarding_hr_id: onboarding_hr_id, // Set HR ID
-        onboarding_hr_assigned_at: onboarding_hr_id ? new Date() : null
+        employee_id: newEmployee.employee_id,
+        // Flat FK columns (kept outside JSON for queryability)
+        onboarding_hr_id: onboarding_hr_id || null,
+        onboarding_hr_assigned_at: onboarding_hr_id ? new Date() : null,
+        // JSON groups
+        personal_info: {
+          firstname: firstName || null,
+          middlename: null,
+          lastname: lastName || null,
+          date_of_birth: null,
+          gender: null,
+          adhar_number: null,
+          pan_number: null,
+          pan_verified: false,
+          blood_group: null,
+        },
+        contact_info: {
+          personal_email_id: isEmployee ? username : null,
+          phone: phone || null,
+          emergency_contact_number: null,
+          emergency_contact_name: null,
+          emergency_contact_relationship: null,
+        },
+        job_info: {
+          department_name: department || null,
+          department_id: department_id || null,
+          job_title: jobTitle || null,
+          designation_id: designation_id || null,
+          date_of_joining: startDate || null,
+          band: band || null,
+          level: level || null,
+        },
+        work_location: resolvedWorkLocation,
     }, { transaction: t });
 
     await t.commit();
-
-// if successfully registered
 
     res.status(201).json({ 
         message: 'User registered successfully', 
@@ -81,7 +138,7 @@ exports.register = async (req, res) => {
             id: newUser.id, 
             username: newUser.username, 
             role: newEmployee.role,
-            employeeId: newEmployee.id
+            employeeId: newEmployee.employee_id
         } 
     });
   } catch (error) {
@@ -113,16 +170,17 @@ exports.login = async (req, res) => {
     }
 
     // Fetch Role from EmployeeMaster
-    const employeeRecord = await EmployeeMaster.findOne({ where: { employee_id: user.id } });
+    const employeeRecord = await EmployeeMaster.findOne({ where: { employee_id: user.employee_id } });
     
     if (!employeeRecord) {
         return res.status(403).json({ message: 'User exists but no employee record found. Contact Admin.' });
     }
 
+    // Read status from JSON group
+    const empStatus = getEmpStatus(employeeRecord);
+
     // Check Access Control
-
-
-    if (employeeRecord.account_status === 'Inactive' || employeeRecord.is_deleted) {
+    if (empStatus.account_status === 'Inactive' || empStatus.is_deleted) {
         logger.warn(`Login failed: User ${username} account is inactive or deleted.`);
         return res.status(403).json({ message: 'Your account is inactive. Please contact administrator.' });
     }
@@ -131,23 +189,26 @@ exports.login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: role },
+      { id: user.id, employee_id: user.employee_id, username: user.username, role: role },
       secretKey,
       { expiresIn: '24h' }
     );
 
-    // Update login timestamp
-    await employeeRecord.update({ last_login_at: new Date() });
-    if (!employeeRecord.first_login_at) {
-        await employeeRecord.update({ first_login_at: new Date() });
+    // Update login timestamps in employee_status JSON
+    const updatedStatus = {
+      ...empStatus,
+      last_login_at: new Date(),
+      first_login_at: empStatus.first_login_at || new Date(),
+    };
+
+    // Activate account if INVITED
+    if (!empStatus.account_status || empStatus.account_status === 'INVITED') {
+      logger.info(`Activating user ${user.username} (ID: ${user.id}). Old Status: ${empStatus.account_status}`);
+      updatedStatus.account_status = 'ACTIVE';
     }
-    
-    // Check if status is null (legacy) or 'INVITED'
-    if (!employeeRecord.account_status || employeeRecord.account_status === 'INVITED') {
-        logger.info(`Activating user ${user.username} (ID: ${user.id}). Old Status: ${employeeRecord.account_status}`);
-        employeeRecord.account_status = 'ACTIVE';
-        await employeeRecord.save();
-    }
+
+    employeeRecord.employee_status = updatedStatus;
+    await employeeRecord.save();
 
     res.json({
       message: 'Login successful',
@@ -156,8 +217,8 @@ exports.login = async (req, res) => {
         id: user.id,
         username: user.username,
         role: role,
-        employeeId: employeeRecord.id,
-        is_first_login: (role === 'HR_ADMIN' || role === 'EMPLOYEE') ? employeeRecord.is_first_login : false,
+        employeeId: employeeRecord.employee_id,
+        is_first_login: (role === 'HR_ADMIN' || role === 'EMPLOYEE') ? empStatus.is_first_login : false,
       }
     });
 
@@ -170,7 +231,7 @@ exports.login = async (req, res) => {
 // Forgot Password
 exports.forgotPassword = async (req, res) => {
     try {
-        const { email } = req.body; // Can be username or email
+        const { email } = req.body;
 
         const user = await User.findOne({ where: { username: email } });
         if (!user) {
@@ -188,7 +249,7 @@ exports.forgotPassword = async (req, res) => {
         user.reset_password_expire = expiry;
         await user.save();
 
-        // Send Email (Production ready)
+        // Send Email
         await sendEmail({
             to: user.username, 
             subject: 'Password Reset OTP - Vakrangee',
@@ -221,7 +282,6 @@ exports.verifyOTP = async (req, res) => {
         if (user.reset_password_expire < new Date()) {
             return res.status(400).json({ message: 'OTP Expired' });
         }
-      // Return OTP to include in reset request if needed for double check
        res.json({ message: 'OTP Verified Successfully', otp: otp }); 
     } catch (error) {
         logger.error('Verify OTP Error: %o', error);
@@ -275,14 +335,17 @@ exports.changePasswordFirstLogin = async (req, res) => {
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
-    const employeeRecord = await EmployeeMaster.findOne({ where: { employee_id: req.user.id } });
+    const employeeRecord = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
     if (!employeeRecord) return res.status(404).json({ message: 'Employee record not found.' });
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
-    await employeeRecord.update({ is_first_login: false });
+    // Update is_first_login inside employee_status JSON
+    const empStatus = getEmpStatus(employeeRecord);
+    employeeRecord.employee_status = { ...empStatus, is_first_login: false };
+    await employeeRecord.save();
 
     res.json({ message: 'Password changed successfully.' });
   } catch (error) {

@@ -12,12 +12,12 @@ const AccordionSection = ({
   children,
 }) => {
   return (
-    <div id={id} className="border border-gray-200 rounded-xl overflow-hidden mb-4 bg-white shadow-sm transition-all duration-300">
+    <div id={id} className={`border border-gray-200 rounded-xl mb-4 bg-white shadow-sm transition-all duration-300 relative ${isOpen ? "z-50" : "z-10"}`}>
       <button
         type="button"
         onClick={() => onToggle(id)}
         className={`w-full flex items-center justify-between p-5 text-left transition-colors ${
-          isOpen ? "bg-blue-50/50" : "hover:bg-gray-50"
+          isOpen ? "bg-blue-50/50 rounded-t-xl" : "hover:bg-gray-50 rounded-xl"
         }`}
       >
         <div className="flex items-center gap-4">
@@ -49,12 +49,12 @@ const AccordionSection = ({
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ height: 0, opacity: 0, overflow: "hidden" }}
+            animate={{ height: "auto", opacity: 1, transitionEnd: { overflow: "visible" } }}
+            exit={{ height: 0, opacity: 0, overflow: "hidden" }}
             transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
           >
-            <div className="p-6 border-t border-gray-100 bg-white">
+            <div className="p-6 border-t border-gray-100 bg-white rounded-b-xl">
               {children}
             </div>
           </motion.div>

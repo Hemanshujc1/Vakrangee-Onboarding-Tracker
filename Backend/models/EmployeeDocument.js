@@ -8,7 +8,7 @@ const EmployeeDocument = sequelize.define('EmployeeDocument', {
     autoIncrement: true,
   },
   employee_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false
   },
   document_type: {
@@ -36,7 +36,7 @@ const EmployeeDocument = sequelize.define('EmployeeDocument', {
     allowNull: true
   },
   verified_by: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: true
   },
   rejection_reason: {

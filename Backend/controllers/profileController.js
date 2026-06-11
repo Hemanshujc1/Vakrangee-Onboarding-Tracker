@@ -3,26 +3,35 @@ const logger = require('../utils/logger');
 const fs = require('fs');
 const path = require('path');
 
+// ─── JSON group helpers ────────────────────────────────────────────────────────
+const getBasicInfo = (emp) => emp?.basic_info || {};
+const getPersonalInfo = (rec) => rec?.personal_info || {};
+
 const resolveVerifierName = async (verifierId) => {
     if (!verifierId) return null;
-    const user = await User.findByPk(verifierId);
+    const user = await User.findOne({ where: { employee_id: verifierId } });
     if (!user) return "Unknown";
-    
+
     // Try to find employee record for name
-    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.id } });
+    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.employee_id } });
     if (!empMaster) return user.username;
-    
-    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.id }});
-    return empRecord ? `${empRecord.firstname} ${empRecord.lastname}` : user.username;
+
+    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.employee_id } });
+    if (!empRecord) return user.username;
+    const pi = getPersonalInfo(empRecord);
+    return pi.firstname ? `${pi.firstname} ${pi.lastname || ''}`.trim() : user.username;
 };
 
-// Get Profile
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/profile
+// Returns the full record with JSON groups (frontend hook maps them)
+// ─────────────────────────────────────────────────────────────────────────────
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
     const employeeMaster = await EmployeeMaster.findOne({
-      where: { employee_id: userId },
+      where: { employee_id: req.user.employee_id },
       include: [{ model: EmployeeRecord }]
     });
 
@@ -30,18 +39,22 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ message: 'Employee record not found' });
     }
 
-    const verifiedByName = await resolveVerifierName(employeeMaster.basic_info_verified_by);
+    const bi = getBasicInfo(employeeMaster);
+    const verifiedByName = await resolveVerifierName(bi.basic_info_verified_by);
 
     res.json({
       id: employeeMaster.id,
       userId: employeeMaster.employee_id,
+      employeeId: employeeMaster.employee_id || "",
       role: employeeMaster.role,
       email: employeeMaster.company_email_id,
-      basic_info_status: employeeMaster.basic_info_status,
-      basic_info_rejection_reason: employeeMaster.basic_info_rejection_reason,
-      verifiedByName: verifiedByName,
-      signature: employeeMaster.EmployeeRecord ? employeeMaster.EmployeeRecord.signature : null,
-      record: employeeMaster.EmployeeRecord // Added to return full record
+      // Read from basic_info JSON
+      basic_info_status: bi.basic_info_status,
+      basic_info_rejection_reason: bi.basic_info_rejection_reason,
+      verifiedByName,
+      signature: employeeMaster.EmployeeRecord?.signature || null,
+      // Return the full EmployeeRecord (frontend hook reads JSON groups)
+      record: employeeMaster.EmployeeRecord || null,
     });
 
   } catch (error) {
@@ -50,192 +63,283 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// Update Profile
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/profile
+// Accepts flat fields from frontend, maps them into JSON group columns
+// ─────────────────────────────────────────────────────────────────────────────
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { 
-        firstname, middlename, lastname, department_name, job_title, work_location, phone,
-        address_line1, address_line2, landmark, post_office, pincode, city, district, state, country,
-        date_of_birth, personal_email_id, gender,
-        tenth_percentage, twelfth_percentage, degree_name, degree_percentage, adhar_number, pan_number, pan_verified,
-        department_id, designation_id
+
+    // ── Personal Info ─────────────────────────────────────────────────────────
+    const {
+      firstname, middlename, lastname, date_of_birth, gender,
+      adhar_number, pan_number, pan_verified, blood_group,
     } = req.body;
 
-    // Helper to convert empty string to null and ensure YYYY-MM-DD format
+    // ── Contact Info ──────────────────────────────────────────────────────────
+    const {
+      personal_email_id, phone,
+      emergency_contact_name, emergency_contact_relationship, emergency_contact_number,
+    } = req.body;
+
+    // ── Permanent Address (perm_* prefix) ─────────────────────────────────────
+    const {
+      perm_address_line1, perm_address_line2, perm_landmark, perm_post_office,
+      perm_pincode, perm_city, perm_district, perm_state, perm_country,
+    } = req.body;
+
+    // ── Communication Address (comm_* prefix) ─────────────────────────────────
+    const {
+      comm_same_as_permanent,
+      comm_address_line1, comm_address_line2, comm_landmark, comm_post_office,
+      comm_pincode, comm_city, comm_district, comm_state, comm_country,
+    } = req.body;
+
+    // ── Academic Details ──────────────────────────────────────────────────────
+    const {
+      tenth_percentage, twelfth_percentage, degree_name, degree_percentage,
+    } = req.body;
+
+    // ── Job Info (read-only from employee perspective; HR can update separately) ─
+    const { department_name, job_title, work_location } = req.body;
+
+    // Helper utilities
     const cleanDate = (date) => {
-        if (!date || date === "") return null;
-        const d = new Date(date);
-        if (isNaN(d.getTime())) return null;
-        return d.toISOString().split('T')[0];
+      if (!date || date === '') return null;
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return null;
+      return d.toISOString().split('T')[0];
     };
-    const cleanNumber = (num) => num === "" ? null : num;
+    const cleanNumber = (num) => (num === '' || num === null || num === undefined) ? null : Number(num);
+    const cleanBool = (val) => val === true || val === 'true';
 
-    const cleanedData = {
-        firstname, middlename, lastname, department_name, job_title, work_location, phone,
-        address_line1, address_line2, landmark, post_office, pincode, city, district, state, country,
-        personal_email_id, gender, adhar_number, pan_number, degree_name,
-        pan_verified: pan_verified === 'true' || pan_verified === true,
-        date_of_birth: cleanDate(date_of_birth),
-        tenth_percentage: cleanNumber(tenth_percentage),
-        twelfth_percentage: cleanNumber(twelfth_percentage),
-        degree_percentage: cleanNumber(degree_percentage),
-        department_id: cleanNumber(department_id),
-        designation_id: cleanNumber(designation_id)
-    };
-    
-    // profile_photo & signature
-    const profile_photo = req.body.profile_photo; 
-    const signature = req.body.signature_path;
-
-    // Find EmployeeMaster
-    const employeeMaster = await EmployeeMaster.findOne({ where: { employee_id: userId } });
+    // ── Find EmployeeMaster ────────────────────────────────────────────────────
+    const employeeMaster = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
     if (!employeeMaster) {
       return res.status(404).json({ message: 'Employee master not found' });
     }
 
-    // Check Lock Status
-    if (employeeMaster.basic_info_status === 'SUBMITTED') {
-        return res.status(403).json({ 
-            message: 'Profile is locked for verification. Updates not allowed.',
-            status: employeeMaster.basic_info_status 
-        });
+    // ── Lock Checks ───────────────────────────────────────────────────────────
+    const bi = getBasicInfo(employeeMaster);
+    if (bi.basic_info_status === 'SUBMITTED') {
+      return res.status(403).json({
+        message: 'Profile is locked for verification. Updates not allowed.',
+        status: bi.basic_info_status,
+      });
     }
 
-    if (employeeMaster.basic_info_status === 'VERIFIED') {
-        // Allow update if some docs are REJECTED or newly UPLOADED (waiting for resubmission)
-        const pendingDocsCount = await EmployeeDocument.count({
-            where: {
-                employee_id: employeeMaster.id,
-                status: ['REJECTED', 'UPLOADED']
-            }
+    if (bi.basic_info_status === 'VERIFIED') {
+      const pendingDocsCount = await EmployeeDocument.count({
+        where: {
+          employee_id: employeeMaster.employee_id,
+          status: ['REJECTED', 'UPLOADED'],
+        },
+      });
+      if (pendingDocsCount === 0 && bi.final_verification_email_sent) {
+        return res.status(403).json({
+          message: 'Profile is verified and locked. Updates not allowed.',
+          status: bi.basic_info_status,
         });
-
-        // Also allow if final summary email hasn't been sent (implies HR expectations of resubmission)
-        if (pendingDocsCount === 0 && employeeMaster.final_verification_email_sent) {
-            return res.status(403).json({ 
-                message: 'Profile is verified and locked. Updates not allowed.',
-                status: employeeMaster.basic_info_status 
-            });
-        }
-    }
-
-    // Find or Create EmployeeRecord
-    let [record, created] = await EmployeeRecord.findOrCreate({
-      where: { employee_id: employeeMaster.id },
-      defaults: {
-        ...cleanedData,
-        profile_photo,
-        signature
       }
+    }
+
+    // ── Build JSON Groups ─────────────────────────────────────────────────────
+    const personalInfoData = {
+      firstname: firstname || null,
+      middlename: middlename || null,
+      lastname: lastname || null,
+      date_of_birth: cleanDate(date_of_birth),
+      gender: gender || null,
+      adhar_number: adhar_number || null,
+      pan_number: pan_number || null,
+      pan_verified: cleanBool(pan_verified),
+      blood_group: blood_group || null,
+    };
+
+    const contactInfoData = {
+      personal_email_id: personal_email_id || null,
+      phone: phone || null,
+      emergency_contact_name: emergency_contact_name || null,
+      emergency_contact_relationship: emergency_contact_relationship || null,
+      emergency_contact_number: emergency_contact_number || null,
+    };
+
+    // Build permanent address object
+    const permAddr = {
+      address_type: 'Permanent',
+      address_line1: perm_address_line1 || null,
+      address_line2: perm_address_line2 || null,
+      landmark: perm_landmark || null,
+      post_office: perm_post_office || null,
+      pincode: perm_pincode || null,
+      city: perm_city || null,
+      district: perm_district || null,
+      state: perm_state || null,
+      country: perm_country || 'India',
+      is_same_as_permanent: false,
+    };
+
+    // Build communication address object
+    // When is_same_as_permanent = true: store a full copy of permanent data
+    const isSameAsPermanent = cleanBool(comm_same_as_permanent);
+    let commAddr;
+    if (isSameAsPermanent) {
+      commAddr = {
+        ...permAddr,
+        address_type: 'Communication Address',
+        is_same_as_permanent: true,
+      };
+    } else {
+      commAddr = {
+        address_type: 'Communication Address',
+        address_line1: comm_address_line1 || null,
+        address_line2: comm_address_line2 || null,
+        landmark: comm_landmark || null,
+        post_office: comm_post_office || null,
+        pincode: comm_pincode || null,
+        city: comm_city || null,
+        district: comm_district || null,
+        state: comm_state || null,
+        country: comm_country || 'India',
+        is_same_as_permanent: false,
+      };
+    }
+
+    const addressInfoData = [permAddr, commAddr];
+
+    const academicDetailsData = {
+      tenth_percentage: cleanNumber(tenth_percentage),
+      twelfth_percentage: cleanNumber(twelfth_percentage),
+      degree_name: degree_name || null,
+      degree_percentage: cleanNumber(degree_percentage),
+    };
+
+    // Resolve work_location: accept JSON object or legacy string
+    let resolvedWorkLocation = undefined;
+    if (work_location) {
+      if (typeof work_location === 'object') {
+        resolvedWorkLocation = work_location;
+      } else {
+        try {
+          resolvedWorkLocation = JSON.parse(work_location);
+        } catch {
+          resolvedWorkLocation = { state: null, district: null, city: work_location };
+        }
+      }
+    }
+
+    // Profile photo & signature filenames (set by upload middleware)
+    const profile_photo_file = req.body.profile_photo;
+    const signature_file = req.body.signature_path;
+
+    // ── Find or Create EmployeeRecord ─────────────────────────────────────────
+    let [record, created] = await EmployeeRecord.findOrCreate({
+      where: { employee_id: employeeMaster.employee_id },
+      defaults: {
+        personal_info: personalInfoData,
+        contact_info: contactInfoData,
+        address_info: addressInfoData,
+        academic_details: academicDetailsData,
+        work_location: resolvedWorkLocation || null,
+        profile_photo: profile_photo_file || null,
+        signature: signature_file || null,
+      },
     });
 
     if (!created) {
-      // Update existing record
-      const updateData = {
-        ...cleanedData
+      // Update JSON groups — preserve job_info HR fields (band, level, designation etc.)
+      const existingJobInfo = record.job_info || {};
+      const jobInfoUpdate = department_name || job_title
+        ? {
+            ...existingJobInfo,
+            department_name: department_name || existingJobInfo.department_name,
+            job_title: job_title || existingJobInfo.job_title,
+          }
+        : existingJobInfo;
+
+      const updatePayload = {
+        personal_info: personalInfoData,
+        contact_info: contactInfoData,
+        address_info: addressInfoData,
+        academic_details: academicDetailsData,
+        job_info: jobInfoUpdate,
       };
-      // Only update photo if a new one was uploaded
-      if (profile_photo) {
-        // Delete old profile photo if exists
+
+      if (resolvedWorkLocation !== undefined) {
+        updatePayload.work_location = resolvedWorkLocation;
+      }
+
+      // Handle profile photo
+      if (profile_photo_file) {
         if (record.profile_photo) {
-            const oldPhotoPath = path.join(__dirname, '..', 'uploads', 'profilepic', record.profile_photo);
-            if (fs.existsSync(oldPhotoPath)) {
-                try {
-                    fs.unlinkSync(oldPhotoPath);
-                } catch (err) {
-                    logger.warn('Error deleting old profile photo: %o', err);
-                }
-            }
+          const oldPhotoPath = path.join(__dirname, '..', 'uploads', 'profilepic', record.profile_photo);
+          if (fs.existsSync(oldPhotoPath)) {
+            try { fs.unlinkSync(oldPhotoPath); } catch (err) { logger.warn('Error deleting old profile photo: %o', err); }
+          }
         }
-        updateData.profile_photo = profile_photo;
+        updatePayload.profile_photo = profile_photo_file;
 
         // Sync with EmployeeDocument
-        await EmployeeDocument.findOrCreate({
-            where: { 
-                employee_id: employeeMaster.id,
-                document_type: 'Passport Size Photo'
-            },
-            defaults: {
-                file_path: profile_photo,
-                status: 'UPLOADED'
-            }
-        }).then(([doc, created]) => {
-            if (!created) {
-                return doc.update({
-                    file_path: profile_photo,
-                    status: 'UPLOADED',
-                    uploaded_at: new Date()
-                });
-            }
+        const [photoDoc] = await EmployeeDocument.findOrCreate({
+          where: { employee_id: employeeMaster.employee_id, document_type: 'Passport Size Photo' },
+          defaults: { file_path: profile_photo_file, status: 'UPLOADED' },
         });
+        if (!photoDoc.isNewRecord) {
+          await photoDoc.update({ file_path: profile_photo_file, status: 'UPLOADED', uploaded_at: new Date() });
+        }
       }
-      if (signature) {
-        // Delete old signature if exists
+
+      // Handle signature
+      if (signature_file) {
         if (record.signature) {
-            const oldSignaturePath = path.join(__dirname, '..', 'uploads', 'signatures', record.signature);
-            if (fs.existsSync(oldSignaturePath)) {
-                try {
-                    fs.unlinkSync(oldSignaturePath);
-                } catch (err) {
-                    logger.warn('Error deleting old signature: %o', err);
-                }
-            }
+          const oldSigPath = path.join(__dirname, '..', 'uploads', 'signatures', record.signature);
+          if (fs.existsSync(oldSigPath)) {
+            try { fs.unlinkSync(oldSigPath); } catch (err) { logger.warn('Error deleting old signature: %o', err); }
+          }
         }
-        updateData.signature = signature;
+        updatePayload.signature = signature_file;
 
-        // Sync with EmployeeDocument
-        await EmployeeDocument.findOrCreate({
-            where: { 
-                employee_id: employeeMaster.id,
-                document_type: 'Signature'
-            },
-            defaults: {
-                file_path: signature,
-                status: 'UPLOADED'
-            }
-        }).then(([doc, created]) => {
-            if (!created) {
-                return doc.update({
-                    file_path: signature,
-                    status: 'UPLOADED',
-                    uploaded_at: new Date()
-                });
-            }
+        const [sigDoc] = await EmployeeDocument.findOrCreate({
+          where: { employee_id: employeeMaster.employee_id, document_type: 'Signature' },
+          defaults: { file_path: signature_file, status: 'UPLOADED' },
         });
+        if (!sigDoc.isNewRecord) {
+          await sigDoc.update({ file_path: signature_file, status: 'UPLOADED', uploaded_at: new Date() });
+        }
       }
 
-      await record.update(updateData);
+      await record.update(updatePayload);
     } else {
-        // Record was just created, sync docs if photo/sig provided
-        if (profile_photo) {
-            await EmployeeDocument.create({
-                employee_id: employeeMaster.id,
-                document_type: 'Passport Size Photo',
-                file_path: profile_photo,
-                status: 'UPLOADED'
-            });
-        }
-        if (signature) {
-            await EmployeeDocument.create({
-                employee_id: employeeMaster.id,
-                document_type: 'Signature',
-                file_path: signature,
-                status: 'UPLOADED'
-            });
-        }
+      // Record was just created — sync docs if photo/sig provided
+      if (profile_photo_file) {
+        await EmployeeDocument.create({
+          employee_id: employeeMaster.employee_id,
+          document_type: 'Passport Size Photo',
+          file_path: profile_photo_file,
+          status: 'UPLOADED',
+        });
+      }
+      if (signature_file) {
+        await EmployeeDocument.create({
+          employee_id: employeeMaster.employee_id,
+          document_type: 'Signature',
+          file_path: signature_file,
+          status: 'UPLOADED',
+        });
+      }
     }
 
-    // Confirm if email update is requested
+    // Optional company email update
     const { email } = req.body;
     if (email) {
-        employeeMaster.company_email_id = email;
-        await employeeMaster.save();
-        
-        // Sync with User table
-        await User.update({ username: email }, { where: { id: userId } });
+      employeeMaster.company_email_id = email;
+      await employeeMaster.save();
+      await User.update({ username: email }, { where: { id: userId } });
     }
 
+    // Reload for response
+    await record.reload();
     res.json({ message: 'Profile updated successfully', record });
 
   } catch (error) {

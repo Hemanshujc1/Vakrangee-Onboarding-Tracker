@@ -29,7 +29,7 @@ const ProfileIdentitySection = ({
     <>
       <div className="mb-4">
         <h4 className="font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
-           Profile & Identity Verification
+          Profile & Identity Verification
         </h4>
       </div>
 
@@ -43,7 +43,7 @@ const ProfileIdentitySection = ({
               <input
                 {...register("firstname")}
                 readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.firstname ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.firstname ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.firstname && (
                 <p className="text-red-500 text-xs mt-1">
@@ -60,14 +60,14 @@ const ProfileIdentitySection = ({
 
         <div>
           <label className="block text-sm text-gray-500 mb-1">
-            Middle Name (as per PAN)  <span className="text-red-500">*</span>
+            Middle Name (as per PAN)
           </label>
           {isEditing ? (
             <>
               <input
                 {...register("middlename")}
                 readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.middlename ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.middlename ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.middlename && (
                 <p className="text-red-500 text-xs mt-1">
@@ -91,7 +91,7 @@ const ProfileIdentitySection = ({
               <input
                 {...register("lastname")}
                 readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.lastname ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.lastname ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.lastname && (
                 <p className="text-red-500 text-xs mt-1">
@@ -117,7 +117,7 @@ const ProfileIdentitySection = ({
                 type="date"
                 max={maxDate}
                 readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
               />
               {errors.date_of_birth && (
                 <p className="text-red-500 text-xs mt-1">
@@ -142,7 +142,7 @@ const ProfileIdentitySection = ({
                 <input
                   {...register("pan_number")}
                   readOnly={panVerified || isLocked}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 uppercase ${errors.pan_number ? "border-red-500" : "border-gray-200"} ${(panVerified || isLocked) ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 uppercase ${errors.pan_number ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
                 />
                 {errors.pan_number && !panVerified && (
                   <p className="text-red-500 text-xs mt-1">
@@ -177,12 +177,12 @@ const ProfileIdentitySection = ({
                 )}
                 {panFormatError && !panVerifying && !panVerified && (
                   <p className="text-red-500 text-xs mt-1 font-medium">
-                     {panFormatError}
+                    {panFormatError}
                   </p>
                 )}
                 {panVerified && !panVerifying && (
                   <p className="text-green-600 text-xs mt-1 font-medium">
-                     PAN Verified
+                    PAN Verified
                   </p>
                 )}
                 {panVerificationFailed && !panVerifying && (
@@ -214,7 +214,40 @@ const ProfileIdentitySection = ({
           </div>
         </div>
 
-        <div className="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Blood Group <span className="text-red-500">*</span>
+            </label>
+            {isEditing ? (
+              <>
+                <select
+                  {...register("blood_group")}
+                  disabled={isLocked}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.blood_group ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+                >
+                  <option value="">Select Blood Group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+                {errors.blood_group && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.blood_group.message}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="font-medium text-gray-800 py-2">
+                {formData.blood_group || "-"}
+              </p>
+            )}
+          </div>
           <div>
             <label className="block text-sm text-gray-500 mb-1">
               Aadhaar Number <span className="text-red-500">*</span>

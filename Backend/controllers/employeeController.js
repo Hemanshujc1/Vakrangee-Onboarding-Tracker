@@ -1,42 +1,44 @@
-const { EmployeeMaster, EmployeeRecord, User, FormSubmission, EmployeeDocument } = require("../models");
+const {
+  EmployeeMaster,
+  EmployeeRecord,
+  User,
+  FormSubmission,
+  EmployeeDocument,
+} = require("../models");
 const logger = require("../utils/logger");
 const formHandler = require("../utils/formHandler");
+
+// ─── JSON group helpers ────────────────────────────────────────────────────────
+const getEmpStatus = (emp) => emp?.employee_status || {};
+const getBasicInfo = (emp) => emp?.basic_info || {};
+const getPersonalInfo = (rec) => rec?.personal_info || {};
+const getContactInfo = (rec) => rec?.contact_info || {};
+const getJobInfo = (rec) => rec?.job_info || {};
+const getAcademicDetails = (rec) => rec?.academic_details || {};
+const getPermanentAddress = (rec) => (rec?.address_info || [])[0] || {};
+const getCommunicationAddress = (rec) => (rec?.address_info || [])[1] || {};
+
+// ─── Work location display helper ─────────────────────────────────────────────
+const formatWorkLocation = (wl) =>
+  wl ? [wl.city, wl.district, wl.state].filter(Boolean).join(", ") : null;
 
 // Get all employees
 exports.getAllEmployees = async (req, res) => {
   try {
     const employees = await EmployeeMaster.findAll({
       include: [
-        {
-          model: EmployeeRecord,
-          attributes: [
-            "firstname",
-            "lastname",
-            "department_name",
-            "department_id",
-            "job_title",
-            "designation_id",
-            "work_location",
-            "personal_email_id",
-            "date_of_joining",
-            "profile_photo",
-            "onboarding_hr_id",
-          ],
-        },
-        {
-          model: User,
-          attributes: ["username"],
-        },
+        { model: EmployeeRecord },
+        { model: User, attributes: ["username"] },
       ],
     });
 
-    // Fetch all records with their master status
+    // Fetch all records with their master status for HR stats
     const allRecords = await EmployeeRecord.findAll({
-      attributes: ["onboarding_hr_id"],
+      attributes: ["onboarding_hr_id", "employee_id"],
       include: [
         {
           model: EmployeeMaster,
-          attributes: ["onboarding_stage", "account_status"],
+          attributes: ["employee_status"],
         },
       ],
     });
@@ -46,7 +48,7 @@ exports.getAllEmployees = async (req, res) => {
 
     allRecords.forEach((record) => {
       if (record.onboarding_hr_id) {
-        hrIds.add(record.onboarding_hr_id); // Collect HR IDs
+        hrIds.add(record.onboarding_hr_id);
 
         if (!adminStats[record.onboarding_hr_id]) {
           adminStats[record.onboarding_hr_id] = {
@@ -58,53 +60,49 @@ exports.getAllEmployees = async (req, res) => {
 
         adminStats[record.onboarding_hr_id].assigned += 1;
 
-        const stage = record.EmployeeMaster?.onboarding_stage;
-        const status = record.EmployeeMaster?.account_status;
+        const empStatus = getEmpStatus(record.EmployeeMaster);
+        const stage = empStatus.onboarding_stage;
+        const status = empStatus.account_status;
 
         if (status === "Inactive") {
-             adminStats[record.onboarding_hr_id].notJoined += 1;
+          adminStats[record.onboarding_hr_id].notJoined += 1;
         } else if (stage === "ONBOARDED" || stage === "POST_JOINING") {
           adminStats[record.onboarding_hr_id].onboarded += 1;
         }
       }
     });
 
-    //  fetch HR Names
+    // Fetch HR names
     const hrMap = {};
     if (hrIds.size > 0) {
       const hrMasters = await EmployeeMaster.findAll({
         where: { employee_id: Array.from(hrIds) },
-        include: [
-          {
-            model: EmployeeRecord,
-            attributes: ["firstname", "lastname", "work_location"],
-          },
-        ],
+        include: [{ model: EmployeeRecord }],
       });
 
       hrMasters.forEach((hr) => {
-        const name = hr.EmployeeRecord
-          ? `${hr.EmployeeRecord.firstname} ${hr.EmployeeRecord.lastname}`
+        const pi = getPersonalInfo(hr.EmployeeRecord);
+        const name = pi.firstname
+          ? `${pi.firstname} ${pi.lastname || ""}`.trim()
           : "Unknown HR";
         const location = hr.EmployeeRecord
-          ? hr.EmployeeRecord.work_location
+          ? formatWorkLocation(hr.EmployeeRecord.work_location)
           : null;
         hrMap[hr.employee_id] = { name, location };
       });
 
-      // Fallback for HRs who might be just Users without EmployeeMaster
+      // Fallback for HRs without EmployeeMaster
       const foundHrIds = hrMasters.map((h) => h.employee_id);
       const missingHrIds = Array.from(hrIds).filter(
-        (id) => !foundHrIds.includes(id),
+        (id) => !foundHrIds.includes(id)
       );
-
       if (missingHrIds.length > 0) {
         const miscUsers = await User.findAll({
-          where: { id: missingHrIds },
-          attributes: ["id", "username"],
+          where: { employee_id: missingHrIds },
+          attributes: ["employee_id", "username"],
         });
         miscUsers.forEach((u) => {
-          hrMap[u.id] = { name: u.username, location: null }; 
+          hrMap[u.employee_id] = { name: u.username, location: null };
         });
       }
     }
@@ -113,6 +111,9 @@ exports.getAllEmployees = async (req, res) => {
     const formattedEmployees = employees.map((emp) => {
       const record = emp.EmployeeRecord || {};
       const user = emp.User || {};
+      const empStatus = getEmpStatus(emp);
+      const pi = getPersonalInfo(record);
+      const ji = getJobInfo(record);
 
       const stats = adminStats[emp.employee_id] || {
         assigned: 0,
@@ -132,105 +133,41 @@ exports.getAllEmployees = async (req, res) => {
       return {
         id: emp.id,
         userId: emp.employee_id,
+        employeeId: emp.employee_id || "", // The actual string ID (EMP1001)
         role: emp.role,
-        onboarding_stage: emp.onboarding_stage,
-        firstName: record.firstname || "",
-        lastName: record.lastname || "",
+        onboarding_stage: empStatus.onboarding_stage,
+        firstName: pi.firstname || "",
+        lastName: pi.lastname || "",
         email: emp.company_email_id || user.username || "",
-        department: record.department_name,
-        department_id: record.department_id,
-        location: record.work_location,
-        jobTitle: record.job_title,
-        designation_id: record.designation_id,
+        department: ji.department_name,
+        department_id: ji.department_id,
+        location: formatWorkLocation(record.work_location),
+        jobTitle: ji.job_title,
+        designation_id: ji.designation_id,
         profilePhoto: record.profile_photo
           ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${record.profile_photo}`
           : null,
-        dateOfJoining: record.date_of_joining,
-        firstLoginAt: emp.first_login_at,
-        lastLoginAt: emp.last_login_at,
+        dateOfJoining: ji.date_of_joining,
+        firstLoginAt: empStatus.first_login_at,
+        lastLoginAt: empStatus.last_login_at,
         assignedCount: stats.assigned,
         onboardedCount: stats.onboarded,
         notJoinedCount: stats.notJoined,
         onboardingHrId: record.onboarding_hr_id,
-        assignedHRName: assignedHRName,
-        assignedHRLocation: assignedHRLocation,
-        accountStatus: emp.account_status,
-        isDeleted: emp.is_deleted,
+        assignedHRName,
+        assignedHRLocation,
+        accountStatus: empStatus.account_status,
+        isDeleted: empStatus.is_deleted,
       };
     });
 
     res.json(formattedEmployees);
   } catch (error) {
     logger.error("Error fetching employees: %o", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error fetching employees",
-        error: error.message,
-      });
-  }
-};
-
-// Get My HR for the logged-in employee
-exports.getMyHR = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const empMaster = await EmployeeMaster.findOne({
-      where: { employee_id: userId },
+    res.status(500).json({
+      message: "Server error fetching employees",
+      error: error.message,
     });
-    if (!empMaster) {
-      return res.status(404).json({ message: "Employee profile not found" });
-    }
-
-    const empRecord = await EmployeeRecord.findOne({
-      where: { employee_id: empMaster.id },
-    });
-    if (!empRecord) {
-      return res.json(null);
-    }
-
-    if (!empRecord.onboarding_hr_id) {
-      return res.json(null);
-    }
-
-    const hrId = empRecord.onboarding_hr_id;
-
-    // Find Hr Master
-    const hrMaster = await EmployeeMaster.findOne({ where: { employee_id: hrId } });
-    if (!hrMaster) {
-      const hrUserDirect = await User.findByPk(hrId);
-      if (hrUserDirect) {
-        return res.json({
-          name: hrUserDirect.username.split("@")[0], // Fallback name
-          email: hrUserDirect.username,
-          phone: "N/A",
-          department: "HR (System)",
-          profilePhoto: null,
-          designation: "System Admin",
-        });
-      }
-      return res.status(404).json({ message: "Assigned HR profile not found" });
-    }
-
-    const hrRecord = await EmployeeRecord.findOne({
-      where: { employee_id: hrMaster.id },
-    });
-    const hrUser = await User.findByPk(hrId);
-
-    res.json({
-      name: (hrRecord?.firstname || "") + " " + (hrRecord?.lastname || ""),
-      email: hrMaster.company_email_id || hrUser.username,
-      phone: hrRecord?.phone || "N/A",
-      department: hrRecord?.department_name || "Human Resources",
-      profilePhoto: hrRecord?.profile_photo
-        ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${hrRecord.profile_photo}`
-        : null,
-      designation: hrRecord?.job_title || "HR Manager",
-    });
-  } catch (error) {
-    logger.error("Error fetching My HR: %o", error);
-    res.status(500).json({ message: "Server error fetching HR details" });
   }
 };
 
@@ -239,25 +176,26 @@ exports.getMe = async (req, res) => {
   try {
     const userId = req.user.id;
     const employee = await EmployeeMaster.findOne({
-      where: { employee_id: userId },
-      include: [
-        {
-           model: EmployeeRecord
-        }
-      ]
+      where: { employee_id: req.user.employee_id },
+      include: [{ model: EmployeeRecord }],
     });
 
     if (!employee) {
       return res.status(404).json({ message: "Employee profile not found" });
     }
 
+    const empStatus = getEmpStatus(employee);
+    const bi = getBasicInfo(employee);
+    const pi = getPersonalInfo(employee.EmployeeRecord);
+
     res.json({
-      id: employee.id, // EmployeeMaster ID
-      onboardingStage: employee.onboarding_stage,
+      id: employee.id,
+      employeeId: employee.employee_id || "",
+      onboardingStage: empStatus.onboarding_stage,
       disabledForms: employee.disabled_forms || [],
-      basicInfoStatus: employee.basic_info_status,
-      firstName: employee.EmployeeRecord?.firstname,
-      lastName: employee.EmployeeRecord?.lastname,
+      basicInfoStatus: bi.basic_info_status,
+      firstName: pi.firstname,
+      lastName: pi.lastname,
       signature: employee.EmployeeRecord?.signature,
     });
   } catch (error) {
@@ -269,103 +207,113 @@ exports.getMe = async (req, res) => {
 // Get Dashboard Stats for Employee
 exports.getDashboardStats = async (req, res) => {
   try {
-      const userId = req.user.id;
-      const employee = await EmployeeMaster.findOne({
-          where: { employee_id: userId },
-          include: [{ model: EmployeeRecord }]
-      });
+    const userId = req.user.id;
+    const employee = await EmployeeMaster.findOne({
+      where: { employee_id: req.user.employee_id },
+      include: [{ model: EmployeeRecord }],
+    });
 
-      if (!employee) {
-          return res.status(404).json({ message: "Employee not found" });
-      }
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
 
-      
-      // 1. Basic Details Data Verification status
-      const isBasicInfoVerified = employee.basic_info_status === 'VERIFIED';
+    const empStatus = getEmpStatus(employee);
+    const bi = getBasicInfo(employee);
 
-      // 2. Mandatory Documents Verification status
-      const mandatoryDocs = [
-          "PAN Card", "Aadhar Card", "10th Marksheet", "12th Marksheet", 
-          "Degree Certificate", "Cancelled Cheque", "Passport Size Photo", "Signature"
-      ];
-      const verifiedDocsCount = await EmployeeDocument.count({
-          where: {
-              employee_id: employee.id,
-              status: 'VERIFIED',
-              document_type: mandatoryDocs
-          }
-      });
-      const areDocsVerified = verifiedDocsCount >= mandatoryDocs.length;
+    // 1. Basic Details Verification status
+    const isBasicInfoVerified = bi.basic_info_status === "VERIFIED";
 
-      // Calculate Stage 1 Progress (33% total)
-      let stage1Progress = 0;
-      if (isBasicInfoVerified && areDocsVerified) {
-          stage1Progress = 33;
-      } else if (isBasicInfoVerified || areDocsVerified) {
-          stage1Progress = 17;
-      }
+    // 2. Mandatory Documents Verification status
+    const mandatoryDocs = [
+      "PAN Card",
+      "Aadhar Card",
+      "10th Marksheet",
+      "12th Marksheet",
+      "Degree Certificate",
+      "Cancelled Cheque",
+      "Passport Size Photo",
+      "Signature",
+    ];
+    const verifiedDocsCount = await EmployeeDocument.count({
+      where: {
+        employee_id: employee.employee_id,
+        status: "VERIFIED",
+        document_type: mandatoryDocs,
+      },
+    });
+    const areDocsVerified = verifiedDocsCount >= mandatoryDocs.length;
 
-      // Calculate Other Forms Progress (67% total)
-      // We count forms that are at least SUBMITTED (not just DRAFT)
-      const submittedForms = await FormSubmission.count({
-          where: { 
-              employee_id: employee.id,
-              status: ['SUBMITTED', 'VERIFIED'] 
-          }
-      });
-      
-      const totalOtherForms = 8;
-      const otherFormsProgress = totalOtherForms > 0 ? (submittedForms / totalOtherForms) * 67 : 0;
+    // Calculate Stage 1 Progress (33% total)
+    let stage1Progress = 0;
+    if (isBasicInfoVerified && areDocsVerified) {
+      stage1Progress = 33;
+    } else if (isBasicInfoVerified || areDocsVerified) {
+      stage1Progress = 17;
+    }
 
-      const progressPercentage = Math.round(stage1Progress + otherFormsProgress);
+    // Calculate Other Forms Progress (67% total)
+    const submittedForms = await FormSubmission.count({
+      where: {
+        employee_id: employee.employee_id,
+        status: ["SUBMITTED", "VERIFIED"],
+      },
+    });
 
-      // Determine next action
-      let nextAction = null;
-      if (employee.basic_info_status === 'PENDING' || employee.basic_info_status === 'REJECTED') {
-          nextAction = {
-              title: "Submit Basic Information",
-              description: employee.basic_info_status === 'REJECTED' 
-                  ? `Your profile was rejected: ${employee.basic_info_rejection_reason || 'Check details'}` 
-                  : "Complete your personal profile to proceed.",
-              link: "/employee/basic-info",
-              type: "urgent"
-          };
-      } else if (employee.basic_info_status === 'SUBMITTED') {
-             nextAction = {
-              title: "Wait for Verification",
-              description: "Your profile is under review by HR.",
-              link: null,
-              type: "info"
-          };
-      } else if (employee.onboarding_stage === 'PRE_JOINING') {
-           nextAction = {
-              title: "Complete Pre-Joining Forms",
-              description: "Fill out NDA, Mediclaim, and Declaration forms.",
-              link: "/employee/pre-joining",
-              type: "action"
-          };
-      } else if (employee.onboarding_stage === 'POST_JOINING' || employee.onboarding_stage === 'ONBOARDED') {
-           // check if all post joining forms are done
-           nextAction = {
-              title: "Complete Post-Joining Forms",
-              description: "Finish EPF, Gratuity and other joining documents.",
-              link: "/employee/post-joining",
-              type: "action"
-          };
-      }
+    const totalOtherForms = 8;
+    const otherFormsProgress =
+      totalOtherForms > 0 ? (submittedForms / totalOtherForms) * 67 : 0;
 
-      res.json({
-          progress: Math.min(progressPercentage, 100),
-          basicInfoStatus: employee.basic_info_status,
-          onboardingStage: employee.onboarding_stage,
-          completedFormsCount: submittedForms,
-          docsVerified: areDocsVerified,
-          nextAction
-      });
+    const progressPercentage = Math.round(stage1Progress + otherFormsProgress);
 
+    // Determine next action
+    let nextAction = null;
+    const biStatus = bi.basic_info_status;
+    const stage = empStatus.onboarding_stage;
+
+    if (biStatus === "PENDING" || biStatus === "REJECTED") {
+      nextAction = {
+        title: "Submit Basic Information",
+        description:
+          biStatus === "REJECTED"
+            ? `Your profile was rejected: ${bi.basic_info_rejection_reason || "Check details"}`
+            : "Complete your personal profile to proceed.",
+        link: "/employee/basic-info",
+        type: "urgent",
+      };
+    } else if (biStatus === "SUBMITTED") {
+      nextAction = {
+        title: "Wait for Verification",
+        description: "Your profile is under review by HR.",
+        link: null,
+        type: "info",
+      };
+    } else if (stage === "PRE_JOINING") {
+      nextAction = {
+        title: "Complete Pre-Joining Forms",
+        description: "Fill out NDA, Mediclaim, and Declaration forms.",
+        link: "/employee/pre-joining",
+        type: "action",
+      };
+    } else if (stage === "POST_JOINING" || stage === "ONBOARDED") {
+      nextAction = {
+        title: "Complete Post-Joining Forms",
+        description: "Finish EPF, Gratuity and other joining documents.",
+        link: "/employee/post-joining",
+        type: "action",
+      };
+    }
+
+    res.json({
+      progress: Math.min(progressPercentage, 100),
+      basicInfoStatus: biStatus,
+      onboardingStage: stage,
+      completedFormsCount: submittedForms,
+      docsVerified: areDocsVerified,
+      nextAction,
+    });
   } catch (error) {
-      logger.error("Error fetching dashboard stats: %o", error);
-      res.status(500).json({ message: "Server error fetching stats" });
+    logger.error("Error fetching dashboard stats: %o", error);
+    res.status(500).json({ message: "Server error fetching stats" });
   }
 };
 
@@ -375,50 +323,10 @@ exports.getEmployeeById = async (req, res) => {
     const { id } = req.params;
 
     const employee = await EmployeeMaster.findOne({
-      where: { id }, // This is the EmployeeMaster ID
+      where: { id },
       include: [
-        {
-          model: EmployeeRecord,
-          attributes: [
-            "firstname",
-            "lastname",
-            "department_name",
-            "department_id",
-            "job_title",
-            "designation_id",
-            "work_location",
-            "personal_email_id",
-            "date_of_joining",
-            "date_of_birth",
-            "profile_photo",
-            "onboarding_hr_id",
-            "onboarding_hr_assigned_at",
-            "phone",
-            "gender",
-            // Address fields
-            "address_line1",
-            "address_line2",
-            "landmark",
-            "city",
-            "district",
-            "state",
-            "country",
-            "pincode",
-            "post_office",
-            // Education & Identity
-            "tenth_percentage",
-            "twelfth_percentage",
-            "degree_name",
-            "degree_percentage",
-            "adhar_number",
-            "pan_number",
-            "signature"
-          ],
-        },
-        {
-          model: User,
-          attributes: ["username", "id"],
-        },
+        { model: EmployeeRecord },
+        { model: User, attributes: ["username", "id"] },
       ],
     });
 
@@ -429,169 +337,188 @@ exports.getEmployeeById = async (req, res) => {
     // Only allow if user is HR/SuperAdmin OR if the user owns this record
     if (
       !["HR_SUPER_ADMIN", "HR_ADMIN"].includes(req.user.role) &&
-      employee.employee_id !== req.user.id
+      employee.employee_id !== req.user.employee_id
     ) {
-      return res.status(403).json({ message: "Access denied. You are not authorized to view this profile." });
+      return res.status(403).json({
+        message: "Access denied. You are not authorized to view this profile.",
+      });
     }
 
     const record = employee.EmployeeRecord || {};
     const user = employee.User || {};
+    const empStatus = getEmpStatus(employee);
+    const bi = getBasicInfo(employee);
+    const pi = getPersonalInfo(record);
+    const ci = getContactInfo(record);
+    const ji = getJobInfo(record);
+    const acad = getAcademicDetails(record);
+    const permAddr = getPermanentAddress(record);
+    const commAddr = getCommunicationAddress(record);
 
-    // Count employees assigned to this person (using their User ID)
+    // Count employees assigned to this person (flat column, direct query)
     const assignedEmployees = await EmployeeRecord.count({
       where: { onboarding_hr_id: user.id },
     });
 
-    // Count fully onboarded employees assigned to this person
+    // Fetch assigned records with their master status
     const assignedRecords = await EmployeeRecord.findAll({
       where: { onboarding_hr_id: user.id },
       include: [
         {
           model: EmployeeMaster,
-          attributes: [
-            "id",
-            "onboarding_stage",
-            "first_login_at",
-            "last_login_at",
-            "account_status"
-          ],
+          attributes: ["id", "employee_status"],
         },
       ],
     });
 
     const activeCount = assignedRecords.filter((r) => {
       const master = r.EmployeeMaster;
-      if (!master || master.account_status === 'Inactive') return false; // Exclude Inactive
-
-      const stage = master.onboarding_stage;
-      // Check if employee has never logged in (login_pending) or is in active onboarding stages
-      const hasNotLoggedIn = !master.first_login_at;
+      if (!master) return false;
+      const ms = getEmpStatus(master);
+      if (ms.account_status === "Inactive") return false;
+      const hasNotLoggedIn = !ms.first_login_at;
       return (
         hasNotLoggedIn ||
-        ["BASIC_INFO", "PRE_JOINING", "PRE_JOINING_VERIFIED", "POST_JOINING"].includes(stage)
+        ["BASIC_INFO", "PRE_JOINING", "PRE_JOINING_VERIFIED", "POST_JOINING"].includes(
+          ms.onboarding_stage
+        )
       );
     }).length;
 
-    const completedCount = assignedRecords.filter(
-      (r) => r.EmployeeMaster?.onboarding_stage === "ONBOARDED" && r.EmployeeMaster?.account_status !== 'Inactive',
-    ).length;
+    const completedCount = assignedRecords.filter((r) => {
+      const ms = getEmpStatus(r.EmployeeMaster);
+      return ms.onboarding_stage === "ONBOARDED" && ms.account_status !== "Inactive";
+    }).length;
 
-    const notJoinedCount = assignedRecords.filter(
-      (r) => r.EmployeeMaster?.account_status === 'Inactive',
-    ).length;
+    const notJoinedCount = assignedRecords.filter((r) => {
+      const ms = getEmpStatus(r.EmployeeMaster);
+      return ms.account_status === "Inactive";
+    }).length;
 
-    // Fetch the list of assigned employees for the details view
-    const assignedList = assignedRecords.map((r) => ({
-      id: r.EmployeeMaster?.id,
-      firstName: r.firstname,
-      lastName: r.lastname,
-      name: `${r.firstname} ${r.lastname}`, 
-      department: r.department_name,
-      department_id: r.department_id,
-      jobTitle: r.job_title,
-      designation_id: r.designation_id,
-      location: r.work_location,
-      dateOfJoining: r.date_of_joining,
-      profilePhoto: r.profile_photo
-        ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${r.profile_photo}`
-        : null,
-      onboarding_stage: r.EmployeeMaster?.onboarding_stage,
-      stage: r.EmployeeMaster?.onboarding_stage,
-      firstLoginAt: r.EmployeeMaster?.first_login_at,
-      lastLoginAt: r.EmployeeMaster?.last_login_at,
-      accountStatus: r.EmployeeMaster?.account_status, // Add accountStatus
-      assignedDate: r.onboarding_hr_assigned_at,
-    }));
+    const assignedList = assignedRecords.map((r) => {
+      const rPi = getPersonalInfo(r);
+      const rJi = getJobInfo(r);
+      const rMs = getEmpStatus(r.EmployeeMaster);
+      return {
+        id: r.EmployeeMaster?.id,
+        firstName: rPi.firstname,
+        lastName: rPi.lastname,
+        name: `${rPi.firstname || ""} ${rPi.lastname || ""}`.trim(),
+        department: rJi.department_name,
+        department_id: rJi.department_id,
+        jobTitle: rJi.job_title,
+        designation_id: rJi.designation_id,
+        location: formatWorkLocation(r.work_location),
+        dateOfJoining: rJi.date_of_joining,
+        profilePhoto: r.profile_photo
+          ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${r.profile_photo}`
+          : null,
+        onboarding_stage: rMs.onboarding_stage,
+        stage: rMs.onboarding_stage,
+        firstLoginAt: rMs.first_login_at,
+        lastLoginAt: rMs.last_login_at,
+        accountStatus: rMs.account_status,
+        assignedDate: r.onboarding_hr_assigned_at,
+      };
+    });
 
-    // Fetch Assigned HR Details if exists
+    // Fetch Assigned HR Details
     let assignedHR = null;
     if (record.onboarding_hr_id) {
-      const hrUser = await User.findByPk(record.onboarding_hr_id); // HR's User Record
+      const hrUser = await User.findOne({ where: { employee_id: record.onboarding_hr_id } });
       if (hrUser) {
-        // Find Hr Employee record to get name
         const hrMaster = await EmployeeMaster.findOne({
-          where: { employee_id: hrUser.id },
+          where: { employee_id: hrUser.employee_id },
         });
         const hrRecord = hrMaster
-          ? await EmployeeRecord.findOne({
-              where: { employee_id: hrMaster.id },
-            })
+          ? await EmployeeRecord.findOne({ where: { employee_id: hrMaster.employee_id } })
           : null;
+        const hrPi = getPersonalInfo(hrRecord);
 
         assignedHR = {
           id: record.onboarding_hr_id,
-          name: (hrRecord && (hrRecord.firstname || hrRecord.lastname))
-            ? `${hrRecord.firstname || ""} ${hrRecord.lastname || ""}`.trim()
-            : hrUser.username,
+          name:
+            hrPi.firstname || hrPi.lastname
+              ? `${hrPi.firstname || ""} ${hrPi.lastname || ""}`.trim()
+              : hrUser.username,
           email: hrUser.username,
         };
       }
     }
 
-    // Fetch Basic Info Verifier Name if it exists
+    // Fetch Basic Info Verifier Name
     let basicInfoVerifiedByName = null;
-    if (employee.basic_info_verified_by) {
-        if (assignedHR && assignedHR.id == employee.basic_info_verified_by) { 
-             basicInfoVerifiedByName = assignedHR.name;
-        } else {
-            const verifierUser = await User.findByPk(employee.basic_info_verified_by);
-            if (verifierUser) {
-                const verifierMaster = await EmployeeMaster.findOne({ where: { employee_id: verifierUser.id }});
-                const verifierRecord = verifierMaster ? await EmployeeRecord.findOne({ where: { employee_id: verifierMaster.id } }) : null;
-                
-                if (verifierRecord && (verifierRecord.firstname || verifierRecord.lastname)) {
-                    basicInfoVerifiedByName = `${verifierRecord.firstname || ""} ${verifierRecord.lastname || ""}`.trim();
-                } else {
-                    basicInfoVerifiedByName = verifierUser.username;
-                }
-            }
+    if (bi.basic_info_verified_by) {
+      if (assignedHR && assignedHR.id == bi.basic_info_verified_by) {
+        basicInfoVerifiedByName = assignedHR.name;
+      } else {
+        const verifierUser = await User.findOne({ where: { employee_id: bi.basic_info_verified_by } });
+        if (verifierUser) {
+          const verifierMaster = await EmployeeMaster.findOne({
+            where: { employee_id: verifierUser.employee_id },
+          });
+          const verifierRecord = verifierMaster
+            ? await EmployeeRecord.findOne({
+                where: { employee_id: verifierMaster.employee_id },
+              })
+            : null;
+          const vPi = getPersonalInfo(verifierRecord);
+          basicInfoVerifiedByName =
+            vPi.firstname || vPi.lastname
+              ? `${vPi.firstname || ""} ${vPi.lastname || ""}`.trim()
+              : verifierUser.username;
         }
+      }
     }
 
     res.json({
       id: employee.id,
       userId: user.id,
-      firstName: record.firstname,
-      lastName: record.lastname,
+      employeeId: employee.employee_id || "",
+      firstName: pi.firstname,
+      lastName: pi.lastname,
       email: employee.company_email_id || user.username,
-      personalEmail: record.personal_email_id,
-      phone: record.phone,
-      department: record.department_name,
-      location: record.work_location,
-      jobTitle: record.job_title,
+      personalEmail: ci.personal_email_id,
+      phone: ci.phone,
+      department: ji.department_name,
+      department_id: ji.department_id,
+      location: formatWorkLocation(record.work_location),
+      work_location: record.work_location,
+      jobTitle: ji.job_title,
+      designation_id: ji.designation_id,
+      band: ji.band,
+      level: ji.level,
       profilePhoto: record.profile_photo
         ? `${req.protocol}://${req.get("host")}/uploads/profilepic/${record.profile_photo}`
         : null,
       profilePhotoFile: record.profile_photo,
-      firstLoginAt: employee.first_login_at,
-      dateOfJoining: record.date_of_joining,
-      dateOfBirth: record.date_of_birth,
-      gender: record.gender,
+      firstLoginAt: empStatus.first_login_at,
+      dateOfJoining: ji.date_of_joining,
+      dateOfBirth: pi.date_of_birth,
+      gender: pi.gender,
 
-      // Address
-      addressLine1: record.address_line1,
-      addressLine2: record.address_line2,
-      landmark: record.landmark,
-      city: record.city,
-      district: record.district,
-      state: record.state,
-      country: record.country,
-      pincode: record.pincode,
-      postOffice: record.post_office,
+      // Address - Permanent
+      permanent_address: permAddr,
+      // Address - Communication
+      communication_address: commAddr,
 
       // Education & Identity
-      tenthPercentage: record.tenth_percentage,
-      twelfthPercentage: record.twelfth_percentage,
-      degree_name: record.degree_name,
-      degree_percentage: record.degree_percentage,
-      adharNumber: record.adhar_number,
-      panNumber: record.pan_number,
+      tenthPercentage: acad.tenth_percentage,
+      twelfthPercentage: acad.twelfth_percentage,
+      degree_name: acad.degree_name,
+      degree_percentage: acad.degree_percentage,
+      adharNumber: pi.adhar_number,
+      panNumber: pi.pan_number,
       signature: record.signature,
+      bloodGroup: pi.blood_group,
+      emergencyContactNumber: ci.emergency_contact_number,
+      emergencyContactName: ci.emergency_contact_name,
+      emergencyContactRelationship: ci.emergency_contact_relationship,
 
       role: employee.role,
-      accountStatus: employee.account_status,
-      onboardingStage: employee.onboarding_stage,
-      assignedHR: assignedHR,
+      accountStatus: empStatus.account_status,
+      onboardingStage: empStatus.onboarding_stage,
+      assignedHR,
       assignedHRAssignedAt: record.onboarding_hr_assigned_at,
       stats: {
         totalAssigned: assignedEmployees,
@@ -600,12 +527,12 @@ exports.getEmployeeById = async (req, res) => {
         notJoined: notJoinedCount,
       },
       assignedEmployees: assignedList,
-      basicInfoStatus: employee.basic_info_status,
-      basicInfoVerifiedAt: employee.basic_info_verified_at,
-      basicInfoRejectionReason: employee.basic_info_rejection_reason,
-      basicInfoVerifiedByName: basicInfoVerifiedByName,
+      basicInfoStatus: bi.basic_info_status,
+      basicInfoVerifiedAt: bi.basic_info_verified_at,
+      basicInfoRejectionReason: bi.basic_info_rejection_reason,
+      basicInfoVerifiedByName,
       disabledForms: employee.disabled_forms || [],
-      finalVerificationEmailSent: employee.final_verification_email_sent || false,
+      finalVerificationEmailSent: bi.final_verification_email_sent || false,
     });
   } catch (error) {
     logger.error("Error fetching employee details: %o", error);
@@ -619,6 +546,7 @@ exports.updateEmployeeDetails = async (req, res) => {
     const { id } = req.params;
     const {
       location,
+      work_location,
       jobTitle,
       department,
       department_id,
@@ -630,7 +558,13 @@ exports.updateEmployeeDetails = async (req, res) => {
       accountStatus,
       onboarding_stage,
       firstLoginAt,
-      lastLoginAt
+      lastLoginAt,
+      bloodGroup,
+      emergencyContactNumber,
+      emergencyContactName,
+      emergencyContactRelationship,
+      band,
+      level,
     } = req.body;
 
     const employee = await EmployeeMaster.findOne({
@@ -644,22 +578,49 @@ exports.updateEmployeeDetails = async (req, res) => {
 
     const record = employee.EmployeeRecord;
     if (!record) {
-      // Should CREATE one if missing
-      return res
-        .status(404)
-        .json({ message: "Employee record not initialized" });
+      return res.status(404).json({ message: "Employee record not initialized" });
     }
 
-    // Update Fields
-    if (location !== undefined) record.work_location = location;
-    if (jobTitle !== undefined) record.job_title = jobTitle;
-    if (department !== undefined) record.department_name = department;
-    if (department_id !== undefined) record.department_id = department_id;
-    if (designation_id !== undefined) record.designation_id = designation_id;
+    // Update work_location JSON
+    const newWorkLocation = work_location || (location
+      ? { state: null, district: null, city: location }
+      : undefined);
+    if (newWorkLocation !== undefined) {
+      record.work_location = newWorkLocation;
+    }
 
-    // New fields
-    if (dateOfJoining !== undefined) record.date_of_joining = dateOfJoining;
-    if (personalEmail !== undefined) record.personal_email_id = personalEmail;
+    // Update job_info JSON (preserve existing fields, merge changes)
+    const ji = getJobInfo(record);
+    const jobInfoUpdates = {};
+    if (jobTitle !== undefined) jobInfoUpdates.job_title = jobTitle;
+    if (department !== undefined) jobInfoUpdates.department_name = department;
+    if (department_id !== undefined) jobInfoUpdates.department_id = department_id;
+    if (designation_id !== undefined) jobInfoUpdates.designation_id = designation_id;
+    if (dateOfJoining !== undefined) jobInfoUpdates.date_of_joining = dateOfJoining;
+    if (band !== undefined) jobInfoUpdates.band = band;
+    if (level !== undefined) jobInfoUpdates.level = level;
+    if (Object.keys(jobInfoUpdates).length > 0) {
+      record.job_info = { ...ji, ...jobInfoUpdates };
+    }
+
+    // Update contact_info JSON
+    const ci = getContactInfo(record);
+    const contactUpdates = {};
+    if (personalEmail !== undefined) contactUpdates.personal_email_id = personalEmail;
+    if (emergencyContactNumber !== undefined) contactUpdates.emergency_contact_number = emergencyContactNumber;
+    if (emergencyContactName !== undefined) contactUpdates.emergency_contact_name = emergencyContactName;
+    if (emergencyContactRelationship !== undefined) contactUpdates.emergency_contact_relationship = emergencyContactRelationship;
+    if (Object.keys(contactUpdates).length > 0) {
+      record.contact_info = { ...ci, ...contactUpdates };
+    }
+
+    // Update personal_info JSON for blood_group
+    if (bloodGroup !== undefined) {
+      const pi = getPersonalInfo(record);
+      record.personal_info = { ...pi, blood_group: bloodGroup };
+    }
+
+    // Update flat onboarding_hr columns
     if (onboardingHrId !== undefined) {
       record.onboarding_hr_id = onboardingHrId;
       record.onboarding_hr_assigned_at = new Date();
@@ -667,45 +628,50 @@ exports.updateEmployeeDetails = async (req, res) => {
 
     await record.save();
 
-    // Update Master Data
+    // Update EmployeeMaster JSON groups
     let masterChanged = false;
+    const empStatus = getEmpStatus(employee);
+    const bi = getBasicInfo(employee);
+    const statusUpdates = {};
+    const basicInfoUpdates = {};
 
     if (email !== undefined) {
       employee.company_email_id = email;
-      // Sync with User table (username is the email)
-      await User.update(
-        { username: email },
-        { where: { id: employee.employee_id } },
-      );
+      await User.update({ username: email }, { where: { employee_id: employee.employee_id } });
       masterChanged = true;
     }
 
     if (accountStatus !== undefined) {
-        employee.account_status = accountStatus;
-        
-             // If reactivating, clear deletion flags
-             if (['ACTIVE', 'INVITED'].includes(accountStatus)) {
-                  employee.is_deleted = false;
-                  employee.deleted_at = null;
-                  employee.deleted_by = null;
-             }
-        masterChanged = true;
+      statusUpdates.account_status = accountStatus;
+      if (["ACTIVE", "INVITED"].includes(accountStatus)) {
+        statusUpdates.is_deleted = false;
+        statusUpdates.deleted_at = null;
+        statusUpdates.deleted_by = null;
+      }
+      masterChanged = true;
     }
     if (onboarding_stage !== undefined) {
-        employee.onboarding_stage = onboarding_stage;
-        masterChanged = true;
+      statusUpdates.onboarding_stage = onboarding_stage;
+      masterChanged = true;
     }
     if (firstLoginAt !== undefined) {
-        employee.first_login_at = firstLoginAt; // Pass null to reset
-        masterChanged = true;
+      statusUpdates.first_login_at = firstLoginAt;
+      masterChanged = true;
     }
     if (lastLoginAt !== undefined) {
-        employee.last_login_at = lastLoginAt; // Pass null to reset
-        masterChanged = true;
+      statusUpdates.last_login_at = lastLoginAt;
+      masterChanged = true;
+    }
+
+    if (Object.keys(statusUpdates).length > 0) {
+      employee.employee_status = { ...empStatus, ...statusUpdates };
+    }
+    if (Object.keys(basicInfoUpdates).length > 0) {
+      employee.basic_info = { ...bi, ...basicInfoUpdates };
     }
 
     if (masterChanged) {
-        await employee.save();
+      await employee.save();
     }
 
     res.json({ message: "Details updated successfully", record });
@@ -720,8 +686,8 @@ exports.submitBasicInfo = async (req, res) => {
   try {
     const userId = req.user.id;
     const employee = await EmployeeMaster.findOne({
-      where: { employee_id: userId },
-      include: [{ model: EmployeeRecord }]
+      where: { employee_id: req.user.employee_id },
+      include: [{ model: EmployeeRecord }],
     });
 
     if (!employee) {
@@ -730,44 +696,60 @@ exports.submitBasicInfo = async (req, res) => {
 
     const record = employee.EmployeeRecord;
     if (!record) {
-      return res.status(400).json({ message: "Personal details not found. Please save your profile first." });
-    }
-
-    // 1. Check Mandatory Fields in EmployeeRecord
-    const mandatoryFields = [
-      "firstname",
-      "lastname",
-      "personal_email_id",
-      "phone",
-      "gender",
-      "date_of_birth",
-      "adhar_number",
-      "pan_number",
-      "address_line1",
-      "city",
-      "district",
-      "state",
-      "pincode",
-      "post_office",
-      "signature",
-      "degree_name",
-      "degree_percentage"
-    ];
-
-    const missingFields = mandatoryFields.filter(field => {
-      const val = record[field];
-      return val === null || val === undefined || String(val).trim() === "";
-    });
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ 
-        message: "Please complete all mandatory fields before submitting.",
-        missingFields 
+      return res.status(400).json({
+        message: "Personal details not found. Please save your profile first.",
       });
     }
 
-    // 2. Check Mandatory Documents in EmployeeDocument
-    const documents = await EmployeeDocument.findAll({ where: { employee_id: employee.id } });
+    const bi = getBasicInfo(employee);
+    const pi = getPersonalInfo(record);
+    const ci = getContactInfo(record);
+    const perm = getPermanentAddress(record);
+    const acad = getAcademicDetails(record);
+
+    // 1. Check Mandatory Fields across JSON groups
+    const fieldChecks = [
+      { group: "Personal Info", field: "firstname", value: pi.firstname },
+      { group: "Personal Info", field: "lastname", value: pi.lastname },
+      { group: "Personal Info", field: "gender", value: pi.gender },
+      { group: "Personal Info", field: "date_of_birth", value: pi.date_of_birth },
+      { group: "Personal Info", field: "adhar_number", value: pi.adhar_number },
+      { group: "Personal Info", field: "pan_number", value: pi.pan_number },
+      { group: "Personal Info", field: "blood_group", value: pi.blood_group },
+      { group: "Contact Info", field: "personal_email_id", value: ci.personal_email_id },
+      { group: "Contact Info", field: "phone", value: ci.phone },
+      { group: "Contact Info", field: "emergency_contact_name", value: ci.emergency_contact_name },
+      { group: "Contact Info", field: "emergency_contact_relationship", value: ci.emergency_contact_relationship },
+      { group: "Contact Info", field: "emergency_contact_number", value: ci.emergency_contact_number },
+      { group: "Permanent Address", field: "address_line1", value: perm.address_line1 },
+      { group: "Permanent Address", field: "city", value: perm.city },
+      { group: "Permanent Address", field: "district", value: perm.district },
+      { group: "Permanent Address", field: "state", value: perm.state },
+      { group: "Permanent Address", field: "pincode", value: perm.pincode },
+      { group: "Permanent Address", field: "post_office", value: perm.post_office },
+      { group: "Academic Details", field: "degree_name", value: acad.degree_name },
+      { group: "Academic Details", field: "degree_percentage", value: acad.degree_percentage },
+      { group: "Signature", field: "signature", value: record.signature },
+    ];
+
+    const missingFields = fieldChecks
+      .filter((f) => {
+        const val = f.value;
+        return val === null || val === undefined || String(val).trim() === "";
+      })
+      .map((f) => `${f.group}.${f.field}`);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: "Please complete all mandatory fields before submitting.",
+        missingFields,
+      });
+    }
+
+    // 2. Check Mandatory Documents
+    const documents = await EmployeeDocument.findAll({
+      where: { employee_id: employee.employee_id },
+    });
     const mandatoryDocs = [
       "PAN Card",
       "Aadhar Card",
@@ -776,57 +758,60 @@ exports.submitBasicInfo = async (req, res) => {
       "Degree Certificate",
       "Cancelled Cheque",
       "Passport Size Photo",
-      "Signature"
+      "Signature",
     ];
 
-    const missingDocs = mandatoryDocs.filter(docType => {
-      const doc = documents.find(d => d.document_type === docType);
-      return !doc || doc.status === 'REJECTED';
+    const missingDocs = mandatoryDocs.filter((docType) => {
+      const doc = documents.find((d) => d.document_type === docType);
+      return !doc || doc.status === "REJECTED";
     });
 
     if (missingDocs.length > 0) {
-      return res.status(400).json({ 
-        message: "Please upload all mandatory documents (and replace rejected ones) before submitting.",
-        missingDocs 
+      return res.status(400).json({
+        message:
+          "Please upload all mandatory documents (and replace rejected ones) before submitting.",
+        missingDocs,
       });
     }
 
-    // 3. Check PAN Verification Status (Optional but recommended if frontend enforces it)
-    if (!record.pan_verified && !employee.pan_verified) { // Checking both as pan_verified might be in Master too depending on sync
-        // If we want to strictly enforce NSDL verification:
-        // return res.status(400).json({ message: "Please verify your PAN number before submitting." });
-    }
-
-    // 4. Validate Submission State
-    const hasRejectedDocs = documents.some(doc => doc.status === 'REJECTED');
-    const hasUploadedDocs = documents.some(doc => doc.status === 'UPLOADED');
-    const canSubmit = ["PENDING", "REJECTED"].includes(employee.basic_info_status) || hasRejectedDocs || hasUploadedDocs;
+    // 3. Validate Submission State
+    const hasRejectedDocs = documents.some((doc) => doc.status === "REJECTED");
+    const hasUploadedDocs = documents.some((doc) => doc.status === "UPLOADED");
+    const biStatus = bi.basic_info_status;
+    const canSubmit =
+      ["PENDING", "REJECTED"].includes(biStatus) ||
+      hasRejectedDocs ||
+      hasUploadedDocs;
 
     if (!canSubmit) {
-      return res
-        .status(400)
-        .json({ message: "Profile is already submitted or verified, and no items are pending resubmission." });
+      return res.status(400).json({
+        message:
+          "Profile is already submitted or verified, and no items are pending resubmission.",
+      });
     }
 
-    if (employee.basic_info_status !== "VERIFIED") {
-      employee.basic_info_status = "SUBMITTED";
-      // Clear verification data on resubmission to ensure fresh review
-      employee.basic_info_verified_by = null;
-      employee.basic_info_verified_at = null;
+    // 4. Update basic_info JSON
+    if (biStatus !== "VERIFIED") {
+      employee.basic_info = {
+        ...bi,
+        basic_info_status: "SUBMITTED",
+        basic_info_verified_by: null,
+        basic_info_verified_at: null,
+        final_verification_email_sent: false,
+      };
     }
-    
-    // Transition documents to SUBMITTED state so they are considered "waiting for review"
+
+    // Transition documents to SUBMITTED
     await EmployeeDocument.update(
-        { status: 'SUBMITTED' },
-        { 
-            where: { 
-                employee_id: employee.id,
-                status: ['UPLOADED', 'REJECTED']
-            }
-        }
+      { status: "SUBMITTED" },
+      {
+        where: {
+          employee_id: employee.employee_id,
+          status: ["UPLOADED", "REJECTED"],
+        },
+      }
     );
 
-    employee.final_verification_email_sent = false;
     await employee.save();
 
     // Notify HR
@@ -845,9 +830,9 @@ exports.submitBasicInfo = async (req, res) => {
 // Verify/Reject Basic Info (HR)
 exports.verifyBasicInfo = async (req, res) => {
   try {
-    const { id } = req.params; // Employee ID (Master ID)
-    const { status, rejectionReason } = req.body; // status: 'VERIFIED' | 'REJECTED'
-    const hrUserId = req.user.id; // The HR doing the action
+    const { id } = req.params;
+    const { status, rejectionReason } = req.body;
+    const hrUserId = req.user.id;
 
     if (!["VERIFIED", "REJECTED"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
@@ -858,34 +843,40 @@ exports.verifyBasicInfo = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    employee.basic_info_status = status;
-    
+    const bi = getBasicInfo(employee);
+
     if (status === "VERIFIED") {
-      employee.basic_info_verified_by = hrUserId;
-      employee.basic_info_verified_at = new Date();
-      employee.basic_info_rejection_reason = null; // Clear reason
+      employee.basic_info = {
+        ...bi,
+        basic_info_status: "VERIFIED",
+        basic_info_verified_by: hrUserId,
+        basic_info_verified_at: new Date(),
+        basic_info_rejection_reason: null,
+      };
     } else {
-      employee.basic_info_verified_by = null;
-      employee.basic_info_verified_at = null;
-      employee.basic_info_rejection_reason =
-        rejectionReason || "Details mismatch or incomplete";
-      // Stage "BASIC_INFO" allows edits
+      employee.basic_info = {
+        ...bi,
+        basic_info_status: "REJECTED",
+        basic_info_verified_by: null,
+        basic_info_verified_at: null,
+        basic_info_rejection_reason: rejectionReason || "Details mismatch or incomplete",
+      };
     }
 
     await employee.save();
-
-    // Send Notification - SILENCED for individual basic info review (Summary sent later)
-    // await formHandler.sendVerificationNotification(employee.id, "Basic Information", status, rejectionReason);
 
     // Auto-update stage logic
     if (status === "VERIFIED") {
       await formHandler.checkAndUpdateBasicInfoStage(employee.id);
     }
 
+    const updatedBi = getBasicInfo(employee);
+    const empStatus = getEmpStatus(employee);
+
     res.json({
       message: `Profile ${status}`,
-      status: employee.basic_info_status,
-      stage: employee.onboarding_stage,
+      status: updatedBi.basic_info_status,
+      stage: empStatus.onboarding_stage,
     });
   } catch (error) {
     logger.error("Error verifying profile: %o", error);
@@ -897,7 +888,7 @@ exports.verifyBasicInfo = async (req, res) => {
 exports.updateFormAccess = async (req, res) => {
   try {
     const { id } = req.params;
-    const { formKey, disabled } = req.body; // e.g. "GRATUITY", true/false
+    const { formKey, disabled } = req.body;
 
     const employee = await EmployeeMaster.findByPk(id);
     if (!employee) {
@@ -905,23 +896,22 @@ exports.updateFormAccess = async (req, res) => {
     }
 
     let currentDisabled = employee.disabled_forms || [];
-    
+
     if (disabled) {
       if (!currentDisabled.includes(formKey)) {
         currentDisabled.push(formKey);
       }
     } else {
-      currentDisabled = currentDisabled.filter(k => k !== formKey);
+      currentDisabled = currentDisabled.filter((k) => k !== formKey);
     }
 
     employee.disabled_forms = currentDisabled;
     await employee.save();
 
-    res.json({ 
-      message: `Form access updated`, 
-      disabledForms: employee.disabled_forms 
+    res.json({
+      message: "Form access updated",
+      disabledForms: employee.disabled_forms,
     });
-
   } catch (error) {
     logger.error("Error updating form access: %o", error);
     res.status(500).json({ message: "Server error updating form access" });
@@ -932,12 +922,10 @@ exports.updateFormAccess = async (req, res) => {
 exports.advanceOnboardingStage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { stage } = req.body; 
-    // Allowed transitions usually handled by specific actions, but this is a manual override/progression
-    // e.g. PRE_JOINING -> POST_JOINING
-    
-    if (!['PRE_JOINING', 'POST_JOINING', 'ONBOARDED'].includes(stage)) {
-       return res.status(400).json({ message: "Invalid stage transition requested." });
+    const { stage } = req.body;
+
+    if (!["PRE_JOINING", "POST_JOINING", "ONBOARDED"].includes(stage)) {
+      return res.status(400).json({ message: "Invalid stage transition requested." });
     }
 
     const employee = await EmployeeMaster.findByPk(id);
@@ -945,18 +933,23 @@ exports.advanceOnboardingStage = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    employee.onboarding_stage = stage;
-    if (stage === 'PRE_JOINING') {
+    const empStatus = getEmpStatus(employee);
+    const bi = getBasicInfo(employee);
+
+    employee.employee_status = { ...empStatus, onboarding_stage: stage };
+
+    if (stage === "PRE_JOINING") {
       employee.disabled_forms = [];
-      employee.basic_info_rejection_reason = null; 
+      employee.basic_info = { ...bi, basic_info_rejection_reason: null };
     }
+
     await employee.save();
 
+    const updatedStatus = getEmpStatus(employee);
     res.json({
       message: `Stage updated to ${stage}`,
-      stage: employee.onboarding_stage
+      stage: updatedStatus.onboarding_stage,
     });
-
   } catch (error) {
     logger.error("Error advancing stage: %o", error);
     res.status(500).json({ message: "Server error advancing stage" });
@@ -970,41 +963,51 @@ exports.finalVerifyEmployee = async (req, res) => {
     const hrUserId = req.user.id;
 
     const employee = await EmployeeMaster.findByPk(id, {
-      include: [{ model: EmployeeRecord }, { model: User }]
+      include: [{ model: EmployeeRecord }, { model: User }],
     });
 
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // 1. Fetch all documents for this employee
+    const bi = getBasicInfo(employee);
+
+    // 1. Fetch all documents
     const documents = await EmployeeDocument.findAll({
-      where: { employee_id: id }
+      where: { employee_id: employee.employee_id },
     });
 
-    // 2. Check if any item is still PENDING or UPLOADED (not reviewed)
-    const pendingDocuments = documents.filter(doc => doc.status === 'PENDING' || doc.status === 'UPLOADED');
-    
-    if (employee.basic_info_status === 'PENDING' || employee.basic_info_status === 'SUBMITTED') {
-      // Basic info review is a prerequisite for final verify, but if it's SUBMITTED it means HR hasn't clicked Approve/Reject yet on the UI
-      // However, the UI should only enable the final button if HR has clicked Approve/Reject.
-      // We check if it's still in a "to-be-reviewed" state.
-      return res.status(400).json({ message: "Basic Information must be reviewed (Approved or Rejected) first." });
+    // 2. Check pending documents
+    const pendingDocuments = documents.filter(
+      (doc) => doc.status === "PENDING" || doc.status === "UPLOADED"
+    );
+
+    if (
+      bi.basic_info_status === "PENDING" ||
+      bi.basic_info_status === "SUBMITTED"
+    ) {
+      return res.status(400).json({
+        message: "Basic Information must be reviewed (Approved or Rejected) first.",
+      });
     }
 
     if (pendingDocuments.length > 0) {
-      return res.status(400).json({ message: "All documents must be reviewed (Approved or Rejected) first." });
+      return res.status(400).json({
+        message: "All documents must be reviewed (Approved or Rejected) first.",
+      });
     }
 
     // 3. Evaluate results
-    const rejectedDocs = documents.filter(doc => doc.status === 'REJECTED');
-    const isBasicInfoRejected = employee.basic_info_status === 'REJECTED';
+    const rejectedDocs = documents.filter((doc) => doc.status === "REJECTED");
+    const isBasicInfoRejected = bi.basic_info_status === "REJECTED";
     const isSuccess = !isBasicInfoRejected && rejectedDocs.length === 0;
 
     // 4. Prepare and Send Summary Email
-    const emailTo = employee.EmployeeRecord?.personal_email_id || employee.User?.username;
-    const employeeName = employee.EmployeeRecord 
-      ? `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim()
+    const pi = getPersonalInfo(employee.EmployeeRecord);
+    const ci = getContactInfo(employee.EmployeeRecord);
+    const emailTo = ci.personal_email_id || employee.User?.username;
+    const employeeName = pi.firstname
+      ? `${pi.firstname} ${pi.lastname || ""}`.trim()
       : "Employee";
 
     let subject, html;
@@ -1026,37 +1029,28 @@ exports.finalVerifyEmployee = async (req, res) => {
       `;
     } else {
       subject = "Onboarding Verification Summary - Action Required";
-      
-      let itemsListHtml = "";
-      
-      // Basic Details Info
-      itemsListHtml += `
+      let itemsListHtml = `
         <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
-          <strong style="color: ${isBasicInfoRejected ? '#d32f2f' : '#2e7d32'};">Basic Details: ${isBasicInfoRejected ? 'Rejected' : 'Verified'}</strong><br/>
-          ${isBasicInfoRejected ? `<span style="color: #d32f2f;">Reason: ${employee.basic_info_rejection_reason || "Details mismatch"}</span>` : 'Successfully verified.'}
+          <strong style="color: ${isBasicInfoRejected ? "#d32f2f" : "#2e7d32"};">Basic Details: ${isBasicInfoRejected ? "Rejected" : "Verified"}</strong><br/>
+          ${isBasicInfoRejected ? `<span style="color: #d32f2f;">Reason: ${bi.basic_info_rejection_reason || "Details mismatch"}</span>` : "Successfully verified."}
         </div>
       `;
-
-      // Documents Info
-      documents.forEach(doc => {
-        const isRejected = doc.status === 'REJECTED';
+      documents.forEach((doc) => {
+        const isRejected = doc.status === "REJECTED";
         itemsListHtml += `
           <div style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee;">
-            <strong style="color: ${isRejected ? '#d32f2f' : '#2e7d32'};">${doc.document_type}: ${isRejected ? 'Rejected' : 'Verified'}</strong><br/>
-            ${isRejected ? `<span style="color: #d32f2f;">Reason: ${doc.rejection_reason || "Document mismatch or unclear"}</span>` : 'Successfully verified.'}
+            <strong style="color: ${isRejected ? "#d32f2f" : "#2e7d32"};">${doc.document_type}: ${isRejected ? "Rejected" : "Verified"}</strong><br/>
+            ${isRejected ? `<span style="color: #d32f2f;">Reason: ${doc.rejection_reason || "Document mismatch or unclear"}</span>` : "Successfully verified."}
           </div>
         `;
       });
-
       html = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: left;">
           <h2 style="color: #d32f2f;">Verification Update</h2>
           <p>Dear <strong>${employeeName}</strong>,</p>
           <p>Your profile verification has been processed. Some items require your attention.</p>
-          
           <h4 style="margin-bottom: 10px; border-bottom: 2px solid #f44336; padding-bottom: 5px;">Review Summary:</h4>
           ${itemsListHtml}
-          
           <p style="margin-top: 20px; font-weight: bold;">Please log in to the portal to correct the rejected items and resubmit for verification.</p>
           <br/>
           <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
@@ -1066,12 +1060,12 @@ exports.finalVerifyEmployee = async (req, res) => {
 
     // Trigger Email
     if (emailTo) {
-      const sendEmail = require('../utils/emailService');
+      const sendEmail = require("../utils/emailService");
       await sendEmail({ to: emailTo, subject, html, text: subject });
       logger.info(`Final verification email sent to ${emailTo} (Success: ${isSuccess})`);
 
-      // Persist the email-sent flag to the database
-      employee.final_verification_email_sent = true;
+      // Persist email-sent flag
+      employee.basic_info = { ...bi, final_verification_email_sent: true };
       await employee.save();
     }
 
@@ -1080,11 +1074,10 @@ exports.finalVerifyEmployee = async (req, res) => {
       await formHandler.checkAndUpdateBasicInfoStage(employee.id);
     }
 
-    res.json({ 
-      message: `Final verification processed: ${isSuccess ? 'Verified' : 'Rejected'}`,
-      isSuccess 
+    res.json({
+      message: `Final verification processed: ${isSuccess ? "Verified" : "Rejected"}`,
+      isSuccess,
     });
-
   } catch (error) {
     logger.error("Error in final verification: %o", error);
     res.status(500).json({ message: "Server error during final verification" });
@@ -1102,11 +1095,14 @@ exports.deleteEmployee = async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    // Perform Soft Delete
-    employee.account_status = "Inactive";
-    employee.is_deleted = true;
-    employee.deleted_at = new Date();
-    employee.deleted_by = requestingAdminId;
+    const empStatus = getEmpStatus(employee);
+    employee.employee_status = {
+      ...empStatus,
+      account_status: "Inactive",
+      is_deleted: true,
+      deleted_at: new Date(),
+      deleted_by: requestingAdminId,
+    };
 
     await employee.save();
 

@@ -5,17 +5,19 @@ const User = require("./User");
 const EmployeeMaster = sequelize.define(
   "EmployeeMaster",
   {
+    // ─── Top-level columns ────────────────────────────────────────────────────
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     employee_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: true,
+      unique: true,
       references: {
         model: User,
-        key: "id",
+        key: "employee_id",
       },
     },
     role: {
@@ -23,65 +25,50 @@ const EmployeeMaster = sequelize.define(
       allowNull: false,
       defaultValue: "EMPLOYEE",
     },
-    onboarding_stage: {
-      type: DataTypes.ENUM(
-        "BASIC_INFO",
-        "PRE_JOINING",
-        "PRE_JOINING_VERIFIED",
-        "POST_JOINING",
-        "ONBOARDED"
-      ),
-      defaultValue: "BASIC_INFO",
-    },
-    account_status: {
-      type: DataTypes.ENUM("INVITED", "ACTIVE", "Inactive"),
-      defaultValue: "INVITED",
-    },
     company_email_id: {
       type: DataTypes.STRING,
-      // unique: true, // Commented out to prevent "Too many keys" error on sync
       allowNull: true,
     },
-    first_login_at: {
-      type: DataTypes.DATE,
+
+    // ─── employee_status ──────────────────────────────────────────────────────
+    // {
+    //   onboarding_stage, account_status,
+    //   first_login_at, last_login_at, is_first_login,
+    //   is_deleted, deleted_at, deleted_by
+    // }
+    employee_status: {
+      type: DataTypes.JSON,
       allowNull: true,
-    },
-    last_login_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    // Basic Info Verification Workflow
-    basic_info_status: {
-      type: DataTypes.ENUM("PENDING", "SUBMITTED", "VERIFIED", "REJECTED"),
-      defaultValue: "PENDING",
-    },
-    basic_info_verified_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    basic_info_verified_by: {
-      type: DataTypes.INTEGER,
-      validate: {
-        min: 1,
+      defaultValue: {
+        onboarding_stage: "BASIC_INFO",
+        account_status: "INVITED",
+        first_login_at: null,
+        last_login_at: null,
+        is_first_login: true,
+        is_deleted: false,
+        deleted_at: null,
+        deleted_by: null,
       },
+    },
+
+    // ─── basic_info ───────────────────────────────────────────────────────────
+    // {
+    //   basic_info_status, basic_info_verified_at, basic_info_verified_by,
+    //   basic_info_rejection_reason, final_verification_email_sent
+    // }
+    basic_info: {
+      type: DataTypes.JSON,
       allowNull: true,
+      defaultValue: {
+        basic_info_status: "PENDING",
+        basic_info_verified_at: null,
+        basic_info_verified_by: null,
+        basic_info_rejection_reason: null,
+        final_verification_email_sent: false,
+      },
     },
-    basic_info_rejection_reason: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    is_deleted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    deleted_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    deleted_by: {
-      type: DataTypes.INTEGER, // References User.id which is INTEGER
-      allowNull: true,
-    },
+
+    // ─── disabled_forms ───────────────────────────────────────────────────────
     disabled_forms: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -93,16 +80,6 @@ const EmployeeMaster = sequelize.define(
       set(value) {
         this.setDataValue("disabled_forms", JSON.stringify(value));
       },
-    },
-    final_verification_email_sent: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: false,
-    },
-    is_first_login: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
     },
   },
   {

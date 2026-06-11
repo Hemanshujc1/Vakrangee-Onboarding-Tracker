@@ -74,7 +74,7 @@ To access the system, you need at least one Super Admin account.
 
 3.  **Default Credentials**:
     - **Email**: `superhr@example.com`
-    - **Password**: `admin@123`
+    - **Password**: `Admin@123`
 
 > **Security Note**: Immediately log in and change this password or delete this user after creating your own personal admin account.
 

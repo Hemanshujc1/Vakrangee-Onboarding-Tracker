@@ -193,9 +193,8 @@ const EmployeeDetail = () => {
           isBasicInfoComplete={isBasicInfoComplete}
           actionLoading={actionLoading}
         />
-
         {/* Documents Section */}
-        <DocumentList
+        <DocumentList 
           documents={documents}
           handleDocumentVerification={handleDocumentVerification}
         />

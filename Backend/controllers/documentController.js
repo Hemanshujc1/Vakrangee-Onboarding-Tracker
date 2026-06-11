@@ -9,14 +9,14 @@ const formHandler = require('../utils/formHandler');
 exports.getDocuments = async (req, res) => {
   try {
     const userId = req.user.id;
-    const employee = await EmployeeMaster.findOne({ where: { employee_id: userId } });
+    const employee = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
     const documents = await EmployeeDocument.findAll({
-      where: { employee_id: employee.id }
+      where: { employee_id: employee.employee_id }
     });
 
     const enhancedDocuments = await Promise.all(documents.map(async (doc) => {
@@ -36,7 +36,7 @@ exports.getDocuments = async (req, res) => {
 exports.uploadDocument = async (req, res) => {
   try {
     const userId = req.user.id;
-    const employee = await EmployeeMaster.findOne({ where: { employee_id: userId } });
+    const employee = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
 
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
@@ -62,7 +62,7 @@ exports.uploadDocument = async (req, res) => {
             const targetFolder = isPhoto ? 'profilepic' : 'signatures';
             const prefix = isPhoto ? 'user' : 'sig';
             const ext = isPhoto ? 'jpeg' : 'png';
-            const newFilename = `${prefix}-${userId}-${Date.now()}.${ext}`;
+            const newFilename = `${prefix}-${req.user.employee_id}-${Date.now()}.${ext}`;
             const targetDir = path.join(__dirname, '..', 'uploads', targetFolder);
             
             if (!fs.existsSync(targetDir)) {
@@ -93,7 +93,7 @@ exports.uploadDocument = async (req, res) => {
             finalPath = newFilename;
 
             // Update EmployeeRecord
-            const employeeRecord = await EmployeeRecord.findOne({ where: { employee_id: employee.id } });
+            const employeeRecord = await EmployeeRecord.findOne({ where: { employee_id: employee.employee_id } });
             if (employeeRecord) {
                 // Delete OLD file from its specific folder
                 const oldVal = isPhoto ? employeeRecord.profile_photo : employeeRecord.signature;
@@ -121,10 +121,9 @@ exports.uploadDocument = async (req, res) => {
         }
     }
 
-    // Check if document of this type already exists, if so maybe update it or delete old? 
     let document = await EmployeeDocument.findOne({
         where: { 
-            employee_id: employee.id,
+            employee_id: employee.employee_id,
             document_type: documentType
         }
     });
@@ -146,7 +145,7 @@ exports.uploadDocument = async (req, res) => {
         });
     } else {
         document = await EmployeeDocument.create({
-            employee_id: employee.id,
+            employee_id: employee.employee_id,
             document_type: documentType,
             file_path: finalPath,
             original_name: req.file.originalname,
@@ -176,15 +175,14 @@ exports.uploadDocument = async (req, res) => {
 exports.deleteDocument = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
-    const employee = await EmployeeMaster.findOne({ where: { employee_id: userId } });
+    const employee = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
 
     if (!employee) {
         return res.status(404).json({ message: 'Employee not found' });
     }
 
     const document = await EmployeeDocument.findOne({
-        where: { id, employee_id: employee.id }
+        where: { id, employee_id: employee.employee_id }
     });
 
     if (!document) {
@@ -213,13 +211,13 @@ exports.deleteDocument = async (req, res) => {
 // Helper to resolve verified_by ID to Name
 const resolveVerifierName = async (verifierId) => {
     if (!verifierId) return null;
-    const user = await User.findByPk(verifierId);
+    const user = await User.findOne({ where: { employee_id: verifierId } });
     if (!user) return "Unknown";
     
-    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.id } });
+    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.employee_id } });
     if (!empMaster) return user.username;
     
-    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.id }});
+    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.employee_id }});
     return empRecord ? `${empRecord.firstname} ${empRecord.lastname}` : user.username;
 };
 
@@ -272,7 +270,7 @@ exports.verifyDocument = async (req, res) => {
            status: status,
            rejection_reason: status === 'REJECTED' ? rejectionReason : null,
            verified_at: new Date(),
-           verified_by: req.user.id
+           verified_by: req.user.employee_id
        });
 
        res.json({ message: `Document ${status.toLowerCase()} successfully`, document });

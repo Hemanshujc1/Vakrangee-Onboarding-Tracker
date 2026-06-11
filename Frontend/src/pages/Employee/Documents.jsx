@@ -12,6 +12,10 @@ const REQUIRED_DOCUMENTS = [
     { name: 'Cancelled Cheque', key: 'Cancelled Cheque', optional: false },
     { name: 'Passport Size Photo', key: 'Passport Size Photo', optional: false },
     { name: 'Signature', key: 'Signature', optional: false },
+    { name: '6 Months Bank Statement', key: '6 Months Bank Statement', optional: false },
+    { name: 'Previous Offer Letter 1', key: 'Previous Offer Letter 1', optional: false },
+    { name: 'Previous Offer Letter 2', key: 'Previous Offer Letter 2', optional: true },
+    { name: 'Resume', key: 'Resume', optional: false },
     { name: 'Degree Certificate', key: 'Degree Certificate', optional: true },
     { name: 'Service Certificates', key: 'Service Certificates', optional: true },
     { name: 'Relieving Letter', key: 'Relieving Letter', optional: true },
@@ -100,6 +104,16 @@ const Documents = () => {
   };
 
   const handleSubmitForVerification = async () => {
+    // Check for missing mandatory docs
+    const missingMandatoryDocs = REQUIRED_DOCUMENTS.filter(
+      (doc) => !doc.optional && !documents.some((d) => d.document_type === doc.key)
+    );
+
+    if (missingMandatoryDocs.length > 0) {
+      await showAlert("Please upload all mandatory documents before submitting.", { type: "error" });
+      return;
+    }
+
     const isConfirmed = await showConfirm(
       "Are you sure you want to resubmit your documents for verification?"
     );
@@ -155,7 +169,7 @@ const Documents = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-(--color-text-dark) flex flex-wrap items-center gap-2">
-                                        {reqDoc.name}
+                                        {reqDoc.name} {!reqDoc.optional && <span className="text-red-500">*</span>}
                                         {reqDoc.optional ? <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span> : <span className="text-xs font-bold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">Mandatory</span> }
                                         {status === 'VERIFIED' && (
                                             <span className="px-3 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium flex items-center gap-1">

@@ -33,12 +33,12 @@ const PersonalDetailsSection = ({
         {isEditing ? (
           <input
             disabled
-            value={formData.id || "-"}
+            value={formData.employeeId || formData.id || "-"}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
           />
         ) : (
           <p className="font-medium text-gray-800 bg-gray-50 px-2 py-2 rounded-md">
-            {formData.id || "Not Assigned"}
+            {formData.employeeId || formData.id || "Not Assigned"}
           </p>
         )}
       </div>

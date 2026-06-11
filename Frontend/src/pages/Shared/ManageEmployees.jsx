@@ -32,7 +32,7 @@ const ManageEmployees = () => {
 
       const payload = {
         username: formData.email,
-        password: formData.password || "user@123",
+        password: formData.password || "User@123",
         role: formData.role || "EMPLOYEE",
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -40,10 +40,14 @@ const ManageEmployees = () => {
         department_id: formData.department_id, // Sending external ID
         jobTitle: formData.job_title, // Sending string name
         designation_id: formData.designation_id, // Sending external ID
-        location: formData.location,
+        work_location: formData.work_location, // Sending hierarchical object
+        location: formData.location, // Legacy fallback
         phone: formData.phone,
         startDate: formData.startDate,
         onboarding_hr_id: formData.onboarding_hr_id,
+        employee_id: formData.employee_id,
+        band: formData.band,
+        level: formData.level,
       };
 
       await axios.post("/api/auth/register", payload, config);
@@ -57,6 +61,7 @@ const ManageEmployees = () => {
         error.response?.data?.message || "Failed to add employee.",
         { type: "error" },
       );
+      throw error;
     }
   };
 

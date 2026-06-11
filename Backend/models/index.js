@@ -12,21 +12,21 @@ const EmployeeRecord = require("./EmployeeRecord");
 
 // --- Associations ---
 // User <-> EmployeeMaster
-User.hasOne(EmployeeMaster, { foreignKey: "employee_id" });
-EmployeeMaster.belongsTo(User, { foreignKey: "employee_id" });
+User.hasOne(EmployeeMaster, { foreignKey: "employee_id", sourceKey: "employee_id" });
+EmployeeMaster.belongsTo(User, { foreignKey: "employee_id", targetKey: "employee_id" });
 
 // EmployeeMaster <-> EmployeeRecord
-EmployeeMaster.hasOne(EmployeeRecord, { foreignKey: "employee_id" });
-EmployeeRecord.belongsTo(EmployeeMaster, { foreignKey: "employee_id" });
+EmployeeMaster.hasOne(EmployeeRecord, { foreignKey: "employee_id", sourceKey: "employee_id" });
+EmployeeRecord.belongsTo(EmployeeMaster, { foreignKey: "employee_id", targetKey: "employee_id" });
 
-EmployeeMaster.hasMany(FormSubmission, { foreignKey: "employee_id" });
-FormSubmission.belongsTo(EmployeeMaster, { foreignKey: "employee_id" });
+EmployeeMaster.hasMany(FormSubmission, { foreignKey: "employee_id", sourceKey: "employee_id" });
+FormSubmission.belongsTo(EmployeeMaster, { foreignKey: "employee_id", targetKey: "employee_id" });
 
-FormSubmission.belongsTo(User, { as: 'Verifier', foreignKey: 'verified_by' });
+FormSubmission.belongsTo(EmployeeMaster, { as: 'Verifier', foreignKey: 'verified_by', targetKey: 'employee_id' });
 
 // EmployeeDocument
-EmployeeMaster.hasMany(EmployeeDocument, { foreignKey: "employee_id" });
-EmployeeDocument.belongsTo(EmployeeMaster, { foreignKey: "employee_id" });
+EmployeeMaster.hasMany(EmployeeDocument, { foreignKey: "employee_id", sourceKey: "employee_id" });
+EmployeeDocument.belongsTo(EmployeeMaster, { foreignKey: "employee_id", targetKey: "employee_id" });
 
 module.exports = {
   User,

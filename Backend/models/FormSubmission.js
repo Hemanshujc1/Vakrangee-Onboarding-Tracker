@@ -10,11 +10,11 @@ const FormSubmission = sequelize.define(
       autoIncrement: true,
     },
     employee_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       references: {
         model: "employee_master", // Using string to avoid circular dependency issues during define
-        key: "id",
+        key: "employee_id",
       },
     },
     form_type: {
@@ -56,7 +56,7 @@ const FormSubmission = sequelize.define(
       allowNull: true,
     },
     verified_by: {
-      type: DataTypes.INTEGER, // User ID
+      type: DataTypes.STRING, // Employee ID
       allowNull: true,
     },
     rejection_reason: {

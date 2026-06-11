@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from "react";
 import SearchableSelect from "../../UI/SearchableSelect";
 
-const AddressInformationSection = ({
+const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
+
+// Helper component for one address block (Permanent or Communication)
+const AddressBlock = ({
+  prefix,
   register,
   errors,
-  isEditing,
-  fullAddress,
-  setValue,
-  watch,
-  trigger,
   isLocked,
+  watch,
+  setValue,
+  trigger,
+  title,
+  disabledInputs = false, // True when comm address is "Same as Permanent"
 }) => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
   const [loadingRegions, setLoadingRegions] = useState(false);
 
-  const watchState = watch("state");
-  const watchDistrict = watch("district");
+  const watchState = watch(`${prefix}state`);
+  const watchDistrict = watch(`${prefix}district`);
 
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
-
-  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   // Fetch States on mount
   useEffect(() => {
@@ -32,11 +34,8 @@ const AddressInformationSection = ({
         const data = await response.json();
         if (data?.status) {
           setStates(data.data);
-
           if (watchState) {
-            const foundState = data.data.find(
-              (s) => s.state_name === watchState,
-            );
+            const foundState = data.data.find((s) => s.state_name === watchState);
             if (foundState) setSelectedStateId(foundState.lg_state_id);
           }
         }
@@ -45,7 +44,7 @@ const AddressInformationSection = ({
       }
     };
     fetchStates();
-  }, []);
+  }, [watchState]); // WatchState dependency helps when form resets with data
 
   // Fetch Districts when selectedStateId changes
   useEffect(() => {
@@ -53,20 +52,18 @@ const AddressInformationSection = ({
       setDistricts([]);
       return;
     }
-
     const fetchDistricts = async () => {
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
+          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`
         );
         const data = await response.json();
         if (data?.status) {
           setDistricts(data.data);
-
           if (watchDistrict) {
             const foundDist = data.data.find(
-              (d) => d.district_name === watchDistrict,
+              (d) => d.district_name === watchDistrict
             );
             if (foundDist) setSelectedDistrictId(foundDist.district_id);
           }
@@ -78,7 +75,7 @@ const AddressInformationSection = ({
       }
     };
     fetchDistricts();
-  }, [selectedStateId]);
+  }, [selectedStateId, watchDistrict]);
 
   // Fetch Cities when selectedDistrictId changes
   useEffect(() => {
@@ -86,12 +83,11 @@ const AddressInformationSection = ({
       setCities([]);
       return;
     }
-
     const fetchCities = async () => {
       setLoadingRegions(true);
       try {
         const response = await fetch(
-          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
+          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`
         );
         const data = await response.json();
         if (data?.status) {
@@ -112,24 +108,251 @@ const AddressInformationSection = ({
     setDistricts([]);
     setCities([]);
 
-    setValue("state", name);
-    setValue("district", "");
-    setValue("city", "");
-    trigger(["state", "district", "city"]);
+    setValue(`${prefix}state`, name);
+    setValue(`${prefix}district`, "");
+    setValue(`${prefix}city`, "");
+    trigger([`${prefix}state`, `${prefix}district`, `${prefix}city`]);
   };
 
   const onDistrictChange = (id, name) => {
     setSelectedDistrictId(id);
     setCities([]);
 
-    setValue("district", name);
-    setValue("city", "");
-    trigger(["district", "city"]);
+    setValue(`${prefix}district`, name);
+    setValue(`${prefix}city`, "");
+    trigger([`${prefix}district`, `${prefix}city`]);
   };
 
   const onCityChange = (name) => {
-    setValue("city", name);
-    trigger("city");
+    setValue(`${prefix}city`, name);
+    trigger(`${prefix}city`);
+  };
+
+  const effectiveLock = isLocked || disabledInputs;
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-5 mb-6 bg-white relative">
+      {/* Semi-transparent overlay if disabled inputs (for same as permanent visual cue) */}
+      {disabledInputs && !isLocked && (
+        <div className="absolute inset-0 bg-gray-50 bg-opacity-50 z-10 rounded-lg pointer-events-none"></div>
+      )}
+
+      <h5 className="font-semibold text-gray-700 mb-4">{title}</h5>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        {/* Address Line 1 */}
+        <div className="relative z-20">
+          <label className="block text-sm text-gray-500 mb-1">
+            Address Line 1 <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register(`${prefix}address_line1`)}
+            readOnly={effectiveLock}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+              errors[`${prefix}address_line1`]
+                ? "border-red-500"
+                : "border-gray-200"
+            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+          />
+          {errors[`${prefix}address_line1`] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors[`${prefix}address_line1`].message}
+            </p>
+          )}
+        </div>
+
+        {/* Address Line 2 */}
+        <div className="relative z-20">
+          <label className="block text-sm text-gray-500 mb-1">
+            Address Line 2
+          </label>
+          <input
+            {...register(`${prefix}address_line2`)}
+            readOnly={effectiveLock}
+            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${
+              effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"
+            }`}
+          />
+        </div>
+
+        {/* Landmark */}
+        <div className="relative z-20">
+          <label className="block text-sm text-gray-500 mb-1">Landmark</label>
+          <input
+            {...register(`${prefix}landmark`)}
+            readOnly={effectiveLock}
+            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${
+              effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"
+            }`}
+          />
+        </div>
+
+        {/* State */}
+        <div className="relative z-20">
+          <SearchableSelect
+            label="State"
+            name={`${prefix}state`}
+            options={states.map((s) => ({
+              id: s.lg_state_id,
+              name: s.state_name,
+            }))}
+            value={watchState}
+            onChange={(e) => {
+              onStateChange(e.target.value, e.target.option?.name || "");
+            }}
+            placeholder="Select State"
+            required={prefix === "perm_" || !disabledInputs}
+            error={errors[`${prefix}state`]?.message}
+            disabled={effectiveLock}
+          />
+        </div>
+
+        {/* District */}
+        <div className="relative z-20">
+          <SearchableSelect
+            label="District"
+            name={`${prefix}district`}
+            options={districts.map((d) => ({
+              id: d.district_id,
+              name: d.district_name,
+            }))}
+            value={watchDistrict}
+            onChange={(e) => {
+              onDistrictChange(e.target.value, e.target.option?.name || "");
+            }}
+            placeholder="Select District"
+            disabled={!selectedStateId || loadingRegions || effectiveLock}
+            required={prefix === "perm_" || !disabledInputs}
+            error={errors[`${prefix}district`]?.message}
+          />
+        </div>
+
+        {/* City */}
+        <div className="relative z-20">
+          <SearchableSelect
+            label="City"
+            name={`${prefix}city`}
+            options={cities.map((v) => ({
+              id: v.lg_village_id,
+              name: v.village_name,
+            }))}
+            value={watch(`${prefix}city`)}
+            onChange={(e) => onCityChange(e.target.option?.name || "")}
+            placeholder="Select City"
+            disabled={!selectedDistrictId || loadingRegions || effectiveLock}
+            required={prefix === "perm_" || !disabledInputs}
+            error={errors[`${prefix}city`]?.message}
+          />
+        </div>
+
+        {/* Post Office */}
+        <div className="relative z-20">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Post Office <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register(`${prefix}post_office`)}
+            readOnly={effectiveLock}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+              errors[`${prefix}post_office`]
+                ? "border-red-500"
+                : "border-gray-200"
+            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+          />
+          {errors[`${prefix}post_office`] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors[`${prefix}post_office`].message}
+            </p>
+          )}
+        </div>
+
+        {/* Pincode */}
+        <div className="relative z-20">
+          <label className="block text-sm text-gray-500 mb-1">
+            Pincode <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register(`${prefix}pincode`)}
+            readOnly={effectiveLock}
+            maxLength={6}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
+              errors[`${prefix}pincode`] ? "border-red-500" : "border-gray-200"
+            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
+          />
+          {errors[`${prefix}pincode`] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors[`${prefix}pincode`].message}
+            </p>
+          )}
+        </div>
+
+        {/* Country */}
+        <div className="relative z-20">
+          <label className="block text-sm text-gray-500 mb-1">
+            Country <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register(`${prefix}country`)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
+            readOnly
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AddressInformationSection = ({
+  register,
+  errors,
+  isEditing,
+  fullAddress,
+  setValue,
+  watch,
+  trigger,
+  isLocked,
+}) => {
+  const watchSameAsPermanent = watch("comm_same_as_permanent");
+
+  // Synchronize permanent address values to communication address when checkbox is checked
+  useEffect(() => {
+    if (watchSameAsPermanent) {
+      const subscription = watch((value, { name, type }) => {
+        // If the changed field is part of permanent address, copy it to comm
+        if (name && name.startsWith("perm_")) {
+          const fieldKey = name.replace("perm_", "");
+          setValue(`comm_${fieldKey}`, value[name] || "");
+        }
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [watchSameAsPermanent, watch, setValue]);
+
+  const handleCheckboxChange = (e) => {
+    const isChecked = e.target.checked;
+    setValue("comm_same_as_permanent", isChecked);
+
+    if (isChecked) {
+      // Copy all existing permanent fields to comm fields immediately
+      const currentValues = watch();
+      [
+        "address_line1",
+        "address_line2",
+        "landmark",
+        "state",
+        "district",
+        "city",
+        "post_office",
+        "pincode",
+        "country",
+      ].forEach((field) => {
+        setValue(`comm_${field}`, currentValues[`perm_${field}`] || "");
+      });
+      trigger(); // Re-validate
+    }
   };
 
   return (
@@ -141,146 +364,83 @@ const AddressInformationSection = ({
       </div>
 
       {isEditing ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 md:col-span-2">
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Address Line 1 <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("address_line1")}
-              readOnly={isLocked}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.address_line1 ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-            />
-            {errors.address_line1 && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.address_line1.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Address Line 2
-            </label>
-            <input
-              {...register("address_line2")}
-              readOnly={isLocked}
-              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">Landmark</label>
-            <input
-              {...register("landmark")}
-              readOnly={isLocked}
-              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-            />
-          </div>
-
-          <SearchableSelect
-            label="State"
-            name="state"
-            options={states.map((s) => ({
-              id: s.lg_state_id,
-              name: s.state_name,
-            }))}
-            value={watchState}
-            onChange={(e) => {
-              onStateChange(e.target.value, e.target.option?.name || "");
-            }}
-            placeholder="Select State"
-            required
-            error={errors.state?.message}
-            disabled={isLocked}
+        <div>
+          {/* Permanent Address Block */}
+          <AddressBlock
+            title="Permanent Address"
+            prefix="perm_"
+            register={register}
+            errors={errors}
+            isLocked={isLocked}
+            watch={watch}
+            setValue={setValue}
+            trigger={trigger}
           />
 
-          <SearchableSelect
-            label="District"
-            name="district"
-            options={districts.map((d) => ({
-              id: d.district_id,
-              name: d.district_name,
-            }))}
-            value={watchDistrict}
-            onChange={(e) => {
-              onDistrictChange(e.target.value, e.target.option?.name || "");
-            }}
-            placeholder="Select District"
-            disabled={!selectedStateId || loadingRegions || isLocked}
-            required
-            error={errors.district?.message}
+          {/* Same as Permanent Checkbox */}
+          <div className="mb-4 ml-1 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="sameAsPermanent"
+              {...register("comm_same_as_permanent")}
+              onChange={handleCheckboxChange}
+              disabled={isLocked}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="sameAsPermanent" className="text-sm font-medium text-gray-700">
+              Communication address is same as permanent address
+            </label>
+          </div>
+
+          {/* Communication Address Block */}
+          <AddressBlock
+            title="Communication Address"
+            prefix="comm_"
+            register={register}
+            errors={errors}
+            isLocked={isLocked}
+            watch={watch}
+            setValue={setValue}
+            trigger={trigger}
+            disabledInputs={watchSameAsPermanent}
           />
-
-          <SearchableSelect
-            label="City"
-            name="city"
-            options={cities.map((v) => ({
-              id: v.lg_village_id,
-              name: v.village_name,
-            }))}
-            value={watch("city")}
-            onChange={(e) => onCityChange(e.target.option?.name || "")}
-            placeholder="Select City"
-            disabled={!selectedDistrictId || loadingRegions || isLocked}
-            required
-            error={errors.city?.message}
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Post Office <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("post_office")}
-              readOnly={isLocked}
-              className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Pincode <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("pincode")}
-              readOnly={isLocked}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.pincode ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              maxLength={6}
-                minLength={6}
-              onInput={(e) => {
-                e.target.value = e.target.value.replace(/[^0-9]/g, "");
-              }}
-            />
-            {errors.pincode && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.pincode.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Country <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register("country")}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
-              disabled
-            />
-            {errors.country && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.country.message}
-              </p>
-            )}
-          </div>
         </div>
       ) : (
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Full Address
-          </label>
-          <p className="font-medium text-gray-800 py-2">{fullAddress || "-"}</p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Permanent Address
+            </label>
+            <p className="font-medium text-gray-800 py-1">
+              {fullAddress || "-"}
+            </p>
+          </div>
+          
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Communication Address
+            </label>
+            <p className="font-medium text-gray-800 py-1">
+              {watchSameAsPermanent ? "Same as Permanent" : (
+                [
+                  watch("comm_address_line1"),
+                  watch("comm_address_line2"),
+                  watch("comm_landmark"),
+                  watch("comm_post_office") && watch("comm_district")
+                    ? `${watch("comm_post_office")}, ${watch("comm_district")}`
+                    : watch("comm_post_office") || watch("comm_district"),
+                  watch("comm_city") && watch("comm_pincode")
+                    ? `${watch("comm_city")} - ${watch("comm_pincode")}`
+                    : watch("comm_city") || watch("comm_pincode"),
+                  watch("comm_state") && watch("comm_country")
+                    ? `${watch("comm_state")}, ${watch("comm_country")}`
+                    : watch("comm_state") || watch("comm_country"),
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "-"
+              )}
+            </p>
+          </div>
         </div>
       )}
     </>

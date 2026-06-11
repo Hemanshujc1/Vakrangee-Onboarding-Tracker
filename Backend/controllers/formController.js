@@ -5,13 +5,13 @@ const logger = require('../utils/logger');
 // Helper to resolve verified_by ID to Name
 const resolveVerifierName = async (verifierId) => {
     if (!verifierId) return null;
-    const user = await User.findByPk(verifierId);
+    const user = await User.findOne({ where: { employee_id: verifierId } });
     if (!user) return "Unknown";
     
-    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.id } });
+    const empMaster = await EmployeeMaster.findOne({ where: { employee_id: user.employee_id } });
     if (!empMaster) return user.username;
     
-    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.id }});
+    const empRecord = await EmployeeRecord.findOne({ where: { employee_id: empMaster.employee_id }});
     
     if (empRecord && (empRecord.firstname || empRecord.lastname)) {
         return `${empRecord.firstname || ""} ${empRecord.lastname || ""}`.trim();
@@ -28,7 +28,7 @@ exports.getAutoFillData = async (req, res) => {
 
     // Validate if the requesting user is allowed to see this data
     if (req.user.role === 'EMPLOYEE') {
-        const myEmployee = await EmployeeMaster.findOne({ where: { employee_id: req.user.id } });
+        const myEmployee = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
         if (!myEmployee) {
             return res.status(404).json({ message: 'Employee profile not found for this user.' });
         }
@@ -356,7 +356,7 @@ exports.toggleFormAccess = async (req, res) => {
             return res.status(403).json({ message: 'Access denied. HR only.' });
         }
 
-        const employee = await EmployeeMaster.findOne({ where: { employee_id: employeeId } });
+        const employee = await EmployeeMaster.findByPk(employeeId);
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found.' });
         }

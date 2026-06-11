@@ -8,7 +8,7 @@ const NotFound = () => {
         <div className="flex justify-center mb-6">
           <div className="p-4">
             <img
-              src={`${import.meta.env.BASE_URL}vakrangee-logo.svg`}
+              src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
               alt="Vakrangee Logo"
               className="h-24 w-auto mb-1"
             />

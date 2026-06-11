@@ -64,7 +64,7 @@ const ManageAdmins = () => {
 
       const payload = {
         username: formData.email,
-        password: formData.password || "admin@123",
+        password: formData.password || "Admin@123",
         role: formData.role,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -72,9 +72,11 @@ const ManageAdmins = () => {
         department_id: formData.department_id, // Sending external ID
         jobTitle: formData.job_title, // Sending string name
         designation_id: formData.designation_id, // Sending external ID
-        location: formData.location,
+        work_location: formData.work_location, // Sending hierarchical object
+        location: formData.location, // Legacy fallback
         phone: formData.phone,
         startDate: formData.startDate,
+        employee_id: formData.employee_id,
       };
 
       await axios.post("/api/auth/register", payload, config);
@@ -86,6 +88,7 @@ const ManageAdmins = () => {
       await showAlert(error.response?.data?.message || "Failed to add admin", {
         type: "error",
       });
+      throw error;
     }
   };
   const handleActivateAdmin = async (id) => {

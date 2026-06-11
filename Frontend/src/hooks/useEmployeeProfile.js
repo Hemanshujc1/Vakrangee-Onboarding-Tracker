@@ -10,6 +10,7 @@ export const useEmployeeProfile = ({
   panVerified,
   setMessage,
   showConfirm,
+  setWorkLocation,
 }) => {
   const [autoSaving, setAutoSaving] = useState(false);
   const [lastSavedData, setLastSavedData] = useState(null);
@@ -45,6 +46,15 @@ export const useEmployeeProfile = ({
       setVerifiedByName(vName);
 
       if (record) {
+        // ── Unpack JSON groups from the record ─────────────────────────────────
+        const pi = record.personal_info || {};
+        const ci = record.contact_info || {};
+        const ji = record.job_info || {};
+        const acad = record.academic_details || {};
+        const addressInfo = record.address_info || [];
+        const perm = addressInfo[0] || {};   // Permanent Address
+        const comm = addressInfo[1] || {};   // Communication Address
+
         const formatForDateInput = (dateString) => {
           if (!dateString) return "";
           const date = new Date(dateString);
@@ -55,53 +65,87 @@ export const useEmployeeProfile = ({
           return `${year}-${month}-${day}`;
         };
 
-        const dob = formatForDateInput(record.date_of_birth);
-        const doj = formatForDateInput(record.date_of_joining);
+        const dob = formatForDateInput(pi.date_of_birth);
+        const doj = formatForDateInput(ji.date_of_joining);
 
         reset({
-          firstname: record.firstname || "",
-          middlename: record.middlename || "",
-          lastname: record.lastname || "",
-          email: response.data.email || "",
-          personal_email_id: record.personal_email_id || "",
-          phone: record.phone || "",
+          employeeId: response.data.employeeId || ji.employee_id || "",
+          // ── Personal Info ────────────────────────────────────────────────
+          firstname: pi.firstname || "",
+          middlename: pi.middlename || "",
+          lastname: pi.lastname || "",
           date_of_birth: dob,
-          gender: record.gender || "",
-          job_title: record.job_title || "",
-          department_name: record.department_name || "",
-          work_location: record.work_location || "",
+          gender: pi.gender || "",
+          adhar_number: pi.adhar_number || "",
+          pan_number: pi.pan_number || "",
+          blood_group: pi.blood_group || "",
+
+          // ── Contact Info ─────────────────────────────────────────────────
+          email: response.data.email || "",
+          personal_email_id: ci.personal_email_id || "",
+          phone: ci.phone || "",
+          emergency_contact_name: ci.emergency_contact_name || "",
+          emergency_contact_relationship: ci.emergency_contact_relationship || "",
+          emergency_contact_number: ci.emergency_contact_number || "",
+
+          // ── Job Info (read-only) ─────────────────────────────────────────
+          job_title: ji.job_title || "",
+          department_name: ji.department_name || "",
           date_of_joining: doj,
-          address_line1: record.address_line1 || "",
-          address_line2: record.address_line2 || "",
-          landmark: record.landmark || "",
-          post_office: record.post_office || "",
-          pincode: record.pincode || "",
-          city: record.city || "",
-          district: record.district || "",
-          state: record.state || "",
-          country: record.country || "India",
-          tenth_percentage: record.tenth_percentage || "",
-          twelfth_percentage: record.twelfth_percentage || "",
-          degree_name: record.degree_name || "",
-          degree_percentage: record.degree_percentage || "",
-          adhar_number: record.adhar_number || "",
-          pan_number: record.pan_number || "",
+
+          // ── Permanent Address (perm_ prefix) ──────────────────────────────
+          perm_address_line1: perm.address_line1 || "",
+          perm_address_line2: perm.address_line2 || "",
+          perm_landmark: perm.landmark || "",
+          perm_post_office: perm.post_office || "",
+          perm_pincode: perm.pincode || "",
+          perm_city: perm.city || "",
+          perm_district: perm.district || "",
+          perm_state: perm.state || "",
+          perm_country: perm.country || "India",
+
+          // ── Communication Address (comm_ prefix) ──────────────────────────
+          comm_same_as_permanent: comm.is_same_as_permanent || false,
+          comm_address_line1: comm.address_line1 || "",
+          comm_address_line2: comm.address_line2 || "",
+          comm_landmark: comm.landmark || "",
+          comm_post_office: comm.post_office || "",
+          comm_pincode: comm.pincode || "",
+          comm_city: comm.city || "",
+          comm_district: comm.district || "",
+          comm_state: comm.state || "",
+          comm_country: comm.country || "India",
+
+          // ── Academic Details ─────────────────────────────────────────────
+          tenth_percentage: acad.tenth_percentage ?? "",
+          twelfth_percentage: acad.twelfth_percentage ?? "",
+          degree_name: acad.degree_name || "",
+          degree_percentage: acad.degree_percentage ?? "",
         });
 
+        // Work location (passed outside form to parent for display)
+        if (setWorkLocation) {
+          setWorkLocation(record.work_location || null);
+        }
+
+        // Profile Photo
         if (record.profile_photo) {
           setPreviewImage(`/uploads/profilepic/${record.profile_photo}`);
         }
+        // Signature (also at top level of response)
         if (response.data.signature) {
           setPreviewSignature(`/uploads/signatures/${response.data.signature}`);
         }
 
-        if (record.pan_verified) {
+        // PAN verification state
+        if (pi.pan_verified) {
           setPanVerified(true);
-          const currentDataString = `${record.pan_number}-${record.firstname}-${record.lastname}-${dob}`;
+          const currentDataString = `${pi.pan_number}-${pi.firstname}-${pi.lastname}-${dob}`;
           setLastVerifiedPanData(currentDataString);
         }
 
-        if (!record.firstname) {
+        // Auto-open edit mode if profile is empty
+        if (!pi.firstname) {
           setIsEditing(true);
         }
       }
@@ -133,25 +177,31 @@ export const useEmployeeProfile = ({
 
   const onSubmit = async (data, isAutoSaveIndicator = false) => {
     const isAutoSave = isAutoSaveIndicator === true;
-    
+
     if (isAutoSave) setAutoSaving(true);
     else setSaving(true);
-    
+
     setMessage({ type: "", text: "" });
 
     try {
       const token = localStorage.getItem("token");
       const formPayload = new FormData();
 
+      // Append all form fields (perm_* and comm_* prefixed address fields)
       Object.keys(data).forEach((key) => {
         let val = data[key];
+        // Format Date objects to YYYY-MM-DD
         if (val instanceof Date && !isNaN(val.getTime())) {
           const year = val.getFullYear();
           const month = String(val.getMonth() + 1).padStart(2, "0");
           const day = String(val.getDate()).padStart(2, "0");
           val = `${year}-${month}-${day}`;
         }
-        formPayload.append(key, val || "");
+        // Convert booleans to string for FormData
+        if (typeof val === "boolean") {
+          val = val.toString();
+        }
+        formPayload.append(key, val ?? "");
       });
 
       formPayload.append("pan_verified", panVerified.toString());

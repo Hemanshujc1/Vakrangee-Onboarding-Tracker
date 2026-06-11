@@ -8,7 +8,7 @@ exports.saveForm = async (req, res, formType) => {
     // req.body contains the form fields.
     
     // 1. Find Employee
-    const employee = await EmployeeMaster.findOne({ where: { employee_id: userId } });
+    const employee = await EmployeeMaster.findOne({ where: { employee_id: req.user.employee_id } });
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
@@ -45,7 +45,7 @@ exports.saveForm = async (req, res, formType) => {
     // 3. Find Draft or Create New
     let form = await FormSubmission.findOne({
       where: {
-        employee_id: employee.id,
+        employee_id: employee.employee_id,
         form_type: formType,
         status: ["DRAFT", "REJECTED"], 
       },
@@ -70,13 +70,13 @@ exports.saveForm = async (req, res, formType) => {
       // Create New
       // Check for existing approved/submitted to increment version?
       const latest = await FormSubmission.findOne({
-         where: { employee_id: employee.id, form_type: formType },
+         where: { employee_id: employee.employee_id, form_type: formType },
          order: [['version', 'DESC']]
       });
       const nextVersion = latest ? latest.version + 1 : 1;
 
       form = await FormSubmission.create({
-        employee_id: employee.id,
+        employee_id: employee.employee_id,
         form_type: formType,
         version: nextVersion,
         status: status,
@@ -100,12 +100,15 @@ exports.saveForm = async (req, res, formType) => {
 exports.checkAndUpdateBasicInfoStage = async (employeeId) => {
     try {
         const employee = await EmployeeMaster.findByPk(employeeId);
-        if (!employee || employee.onboarding_stage !== 'BASIC_INFO') return;
+        if (!employee) return;
+        const empStatus = employee.employee_status || {};
+        const bi = employee.basic_info || {};
 
-        if (employee.basic_info_status !== 'VERIFIED') return;
+        if (empStatus.onboarding_stage !== 'BASIC_INFO') return;
+        if (bi.basic_info_status !== 'VERIFIED') return;
 
         const documents = await EmployeeDocument.findAll({
-            where: { employee_id: employee.id }
+            where: { employee_id: employee.employee_id }
         });
 
         const docMap = {};
@@ -131,7 +134,7 @@ exports.checkAndUpdateBasicInfoStage = async (employeeId) => {
         }
         
         // Also check signature in EmployeeRecord
-        const record = await EmployeeRecord.findOne({ where: { employee_id: employee.id } });
+        const record = await EmployeeRecord.findOne({ where: { employee_id: employee.employee_id } });
         if (!record || !record.signature) {
             allVerified = false;
         }
@@ -155,8 +158,11 @@ exports.checkAndUpdateOnboardingStage = async (employeeId) => {
         const employee = await EmployeeMaster.findByPk(employeeId);
         if (!employee) return;
 
+        const empStatus = employee.employee_status || {};
+        const currentStage = empStatus.onboarding_stage;
+
         // PRE-JOINING Logic
-        if (employee.onboarding_stage === 'PRE_JOINING') {
+        if (currentStage === 'PRE_JOINING') {
             const disabledParams = employee.disabled_forms || [];
             const preJoiningForms = ['GRATUITY', 'EMPLOYEE_INFO', 'MEDICLAIM', 'EMPLOYMENT_APP']; 
             
@@ -166,7 +172,7 @@ exports.checkAndUpdateOnboardingStage = async (employeeId) => {
                 if (disabledParams.includes(type)) continue;
 
                 const f = await FormSubmission.findOne({
-                    where: { employee_id: employeeId, form_type: type },
+                    where: { employee_id: employee.employee_id, form_type: type },
                     order: [['version', 'DESC']]
                 });
                 
@@ -177,14 +183,14 @@ exports.checkAndUpdateOnboardingStage = async (employeeId) => {
             }
 
             if (allVerified) {
-                employee.onboarding_stage = 'PRE_JOINING_VERIFIED';
+                employee.employee_status = { ...empStatus, onboarding_stage: 'PRE_JOINING_VERIFIED' };
                 await employee.save();
                 logger.info(`Auto-updated employee ${employeeId} to PRE_JOINING_VERIFIED`);
             }
         }
-        
+
         // POST-JOINING Logic
-        else if (employee.onboarding_stage === 'POST_JOINING') {
+        else if (currentStage === 'POST_JOINING') {
             const disabledParams = employee.disabled_forms || [];
             const postJoiningForms = ['NDA', 'DECLARATION', 'TDS', 'EPF'];
             
@@ -205,7 +211,7 @@ exports.checkAndUpdateOnboardingStage = async (employeeId) => {
             }
 
             if (allVerified) {
-                employee.onboarding_stage = 'ONBOARDED';
+                employee.employee_status = { ...empStatus, onboarding_stage: 'ONBOARDED' };
                 await employee.save();
                 logger.info(`Auto-updated employee ${employeeId} to ONBOARDED`);
             }
@@ -224,12 +230,17 @@ exports.verifyForm = async (req, res, formType) => {
         const { status, rejectionReason, remarks } = req.body;
         // Check both rejectionReason and remarks (frontend often sends remarks)
         const finalRejectionReason = rejectionReason || remarks;
-        const hrId = req.user.id;
+        const hrId = req.user.employee_id;
+
+        const employee = await EmployeeMaster.findByPk(employeeId);
+        if (!employee) {
+            return res.status(404).json({ message: "Employee master not found" });
+        }
 
         // Find the latest SUBMITTED form for this employee
         const form = await FormSubmission.findOne({
             where: {
-                employee_id: employeeId,
+                employee_id: employee.employee_id,
                 form_type: formType,
                 status: 'SUBMITTED'
             },
@@ -277,15 +288,18 @@ exports.sendVerificationNotification = async (employeeId, itemTitle, status, rej
             return;
         }
 
-        const emailTo = employee.EmployeeRecord?.personal_email_id || employee.User?.username;
+        // Read from JSON groups
+        const ci = employee.EmployeeRecord?.contact_info || {};
+        const pi = employee.EmployeeRecord?.personal_info || {};
+        const emailTo = ci.personal_email_id || employee.User?.username;
         if (!emailTo) {
             logger.warn(`Could not send notification: No email found for employee ${employeeId}.`);
             return;
         }
 
-        const employeeName = employee.EmployeeRecord 
-            ? `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim()
-            : "Employee";
+        const employeeName = pi.firstname
+            ? `${pi.firstname} ${pi.lastname || ''}`.trim()
+            : 'Employee';
 
         const subject = `Update on your Onboarding: ${itemTitle} is ${status}`;
         
@@ -321,6 +335,7 @@ exports.sendHRSubmissionNotification = async (employeeId, itemTitle) => {
             include: [{ model: EmployeeRecord }]
         });
 
+        // onboarding_hr_id is a flat top-level column (not inside JSON)
         if (!employee || !employee.EmployeeRecord || !employee.EmployeeRecord.onboarding_hr_id) {
             logger.warn(`Could not send HR notification: No HR assigned to employee ${employeeId}.`);
             return;
@@ -332,7 +347,11 @@ exports.sendHRSubmissionNotification = async (employeeId, itemTitle) => {
             return;
         }
 
-        const employeeName = `${employee.EmployeeRecord.firstname} ${employee.EmployeeRecord.lastname}`.trim();
+        // Read employee name from personal_info JSON group
+        const pi = employee.EmployeeRecord?.personal_info || {};
+        const employeeName = pi.firstname
+            ? `${pi.firstname} ${pi.lastname || ''}`.trim()
+            : 'Employee';
         const subject = `New Submission for Review: ${employeeName} - ${itemTitle}`;
         
         const text = `Dear HR Admin,\n\nEmployee ${employeeName} has submitted ${itemTitle} for your review.\n\nPlease log in to the portal to verify the submission.\n\nBest regards,\nVakrangee Onboarding System`;

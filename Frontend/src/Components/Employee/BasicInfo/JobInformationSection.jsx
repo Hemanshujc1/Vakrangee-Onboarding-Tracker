@@ -1,4 +1,5 @@
 import React from "react";
+import { formatWorkLocation } from "../../../utils/employeeUtils";
 
 const JobInformationSection = ({ register, formData, formatDate }) => {
   return (
@@ -33,7 +34,8 @@ const JobInformationSection = ({ register, formData, formatDate }) => {
             Work Location
           </label>
           <input
-            {...register("work_location")}
+            value={formatWorkLocation(formData.work_location) || ""}
+            readOnly
             disabled
             className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
             placeholder="Not Assigned"

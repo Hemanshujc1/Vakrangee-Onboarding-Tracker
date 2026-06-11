@@ -24,6 +24,8 @@ const BasicInformation = () => {
   const [expandedSection, setExpandedSection] = useState("identity");
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  // work_location is a JSON object {state,district,city} — not a form field
+  const [workLocation, setWorkLocation] = useState(null);
   const { showConfirm, showAlert } = useAlert();
 
   const {
@@ -90,6 +92,7 @@ const BasicInformation = () => {
     panVerified,
     setMessage,
     showConfirm,
+    setWorkLocation,
   });
 
   useEffect(() => {
@@ -157,18 +160,18 @@ const BasicInformation = () => {
   };
 
   const fullAddress = [
-    formData.address_line1,
-    formData.address_line2,
-    formData.landmark,
-    formData.post_office && formData.district
-      ? `${formData.post_office}, ${formData.district}`
-      : formData.post_office || formData.district,
-    formData.city && formData.pincode
-      ? `${formData.city} - ${formData.pincode}`
-      : formData.city || formData.pincode,
-    formData.state && formData.country
-      ? `${formData.state}, ${formData.country}`
-      : formData.state || formData.country,
+    formData.perm_address_line1,
+    formData.perm_address_line2,
+    formData.perm_landmark,
+    formData.perm_post_office && formData.perm_district
+      ? `${formData.perm_post_office}, ${formData.perm_district}`
+      : formData.perm_post_office || formData.perm_district,
+    formData.perm_city && formData.perm_pincode
+      ? `${formData.perm_city} - ${formData.perm_pincode}`
+      : formData.perm_city || formData.perm_pincode,
+    formData.perm_state && formData.perm_country
+      ? `${formData.perm_state}, ${formData.perm_country}`
+      : formData.perm_state || formData.perm_country,
   ]
     .filter(Boolean)
     .join(", ");
@@ -284,9 +287,9 @@ const BasicInformation = () => {
               onToggle={handleToggleSection}
               isCompleted={_getSectionStatus("job")}
             >
-              <JobInformationSection
+            <JobInformationSection
                 register={register}
-                formData={formData}
+                formData={{ ...formData, work_location: workLocation }}
                 formatDate={formatDate}
                 verificationStatus={verificationStatus}
               />
@@ -306,6 +309,7 @@ const BasicInformation = () => {
                 formData={formData}
                 verificationStatus={verificationStatus}
                 isLocked={effectiveBasicInfoLocked}
+                setValue={setValue}
               />
             </AccordionSection>
 
@@ -347,6 +351,7 @@ const BasicInformation = () => {
                 handleDelete={handleDelete}
                 verificationStatus={verificationStatus}
                 isLocked={effectiveBasicInfoLocked}
+                setValue={setValue}
               />
             </AccordionSection>
 
