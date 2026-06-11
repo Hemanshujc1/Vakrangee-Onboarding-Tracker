@@ -109,6 +109,43 @@ const DocumentPreview = () => {
       : "documents";
   const fileUrl = `/uploads/${folder}/${document.file_path}`;
 
+  const handlePrint = () => {
+    if (isPDF) {
+      const iframe = document.getElementById("pdf-preview-iframe");
+      if (iframe) {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (e) {
+          console.error("Iframe print failed, opening PDF in a new tab:", e);
+          window.open(fileUrl, "_blank");
+        }
+      } else {
+        window.open(fileUrl, "_blank");
+      }
+    } else if (isImage) {
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Document</title>
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
+              img { max-width: 100%; max-height: 100%; object-fit: contain; }
+              @page { size: auto; margin: 10mm; }
+            </style>
+          </head>
+          <body>
+            <img src="${fileUrl}" onload="setTimeout(function(){ window.print(); window.close(); }, 500);" />
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } else {
+      window.open(fileUrl, "_blank");
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -117,6 +154,7 @@ const DocumentPreview = () => {
           isHR={isHR}
           onBack={() => navigate(-1)}
           onVerify={handleVerification}
+          onPrint={handlePrint}
           isSubmitting={actionLoading}
           isSubmitHidden={true}
         />
@@ -152,7 +190,7 @@ const DocumentPreview = () => {
             {isImage ? (
               <img src={fileUrl} alt={document.document_type} className="max-w-full h-auto shadow-2xl rounded-lg" />
             ) : isPDF ? (
-              <iframe src={fileUrl} className="w-full h-200 border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
+              <iframe id="pdf-preview-iframe" src={fileUrl} className="w-full h-200 border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-400 gap-4">
                 <FileText size={64} />

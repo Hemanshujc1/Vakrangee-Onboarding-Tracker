@@ -32,6 +32,19 @@ const JobDetailsCard = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+        {/* Employee ID */}
+        <div className="flex items-center gap-3 text-gray-600">
+          <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
+            <UserCheck size={18} />
+          </div>
+          <div className="w-full min-w-0">
+            <p className="text-xs text-gray-400">Employee ID</p>
+            <p className="font-medium text-sm truncate">
+              {employee.employeeId || "N/A"}
+            </p>
+          </div>
+        </div>
+
         {/* Department */}
         <div className="flex items-center gap-3 text-gray-600">
           <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
@@ -87,7 +100,7 @@ const JobDetailsCard = ({
         </div>
 
         {/* Work Location */}
-        <div className="flex items-center gap-3 text-gray-600">
+        <div className="flex items-center gap-3 text-gray-600 col-span-1 sm:col-span-2">
           <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
             <MapPin size={18} />
           </div>
@@ -104,7 +117,7 @@ const JobDetailsCard = ({
                 placeholder="Work Location"
               />
             ) : (
-              <p className="font-medium text-sm truncate">
+              <p className="font-medium text-sm break-words whitespace-normal">
                 {employee.location || "N/A"}
               </p>
             )}
@@ -134,6 +147,56 @@ const JobDetailsCard = ({
                 {employee.dateOfJoining
                   ? new Date(employee.dateOfJoining).toLocaleDateString("en-GB")
                   : "N/A"}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Band */}
+        <div className="flex items-center gap-3 text-gray-600">
+          <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
+            <Briefcase size={18} />
+          </div>
+          <div className="w-full min-w-0">
+            <p className="text-xs text-gray-400">Band</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editForm.band}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, band: e.target.value })
+                }
+                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all"
+                placeholder="Band"
+              />
+            ) : (
+              <p className="font-medium text-sm truncate">
+                {employee.band || "N/A"}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Level */}
+        <div className="flex items-center gap-3 text-gray-600">
+          <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
+            <Briefcase size={18} />
+          </div>
+          <div className="w-full min-w-0">
+            <p className="text-xs text-gray-400">Level</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editForm.level}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, level: e.target.value })
+                }
+                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all"
+                placeholder="Level"
+              />
+            ) : (
+              <p className="font-medium text-sm truncate">
+                {employee.level || "N/A"}
               </p>
             )}
           </div>

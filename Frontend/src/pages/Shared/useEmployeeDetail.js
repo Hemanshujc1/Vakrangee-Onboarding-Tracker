@@ -24,6 +24,8 @@ const useEmployeeDetail = () => {
     dateOfJoining: "",
     personalEmail: "",
     onboardingHrId: "",
+    band: "",
+    level: "",
   });
 
   const [departmentsList, setDepartmentsList] = useState([]);
@@ -107,8 +109,22 @@ const useEmployeeDetail = () => {
         setEmailSent(true);
       }
 
+      // Map permanent address fields to root level for AddressCard and isBasicInfoComplete checks
+      const permAddr = empData.permanent_address || {};
+      const mappedAddressFields = {
+        addressLine1: permAddr.address_line1 || "",
+        addressLine2: permAddr.address_line2 || "",
+        landmark: permAddr.landmark || "",
+        postOffice: permAddr.post_office || "",
+        city: permAddr.city || "",
+        district: permAddr.district || "",
+        state: permAddr.state || "",
+        pincode: permAddr.pincode || "",
+        country: permAddr.country || "India",
+      };
+
       // Merge Data
-      setEmployee({ ...empData, ...formData });
+      setEmployee({ ...empData, ...formData, ...mappedAddressFields });
 
       setEditForm({
         department: empData.department || "",
@@ -119,6 +135,8 @@ const useEmployeeDetail = () => {
         dateOfJoining: empData.dateOfJoining || "",
         personalEmail: empData.personalEmail || "",
         onboardingHrId: empData.onboardingHrId || "",
+        band: empData.band || "",
+        level: empData.level || "",
       });
     } catch (error) {
       console.error("Error fetching employee details:", error);
@@ -435,6 +453,8 @@ const useEmployeeDetail = () => {
         dateOfJoining: employee.dateOfJoining || "",
         personalEmail: employee.personalEmail || "",
         onboardingHrId: employee.onboardingHrId || "",
+        band: employee.band || "",
+        level: employee.level || "",
       });
     }
   };

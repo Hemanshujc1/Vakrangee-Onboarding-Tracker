@@ -20,6 +20,13 @@ const resolveVerifierName = async (verifierId) => {
     return user.username;
 };
 
+// Work location display helper
+const formatWorkLocation = (wl) => {
+  if (!wl) return null;
+  if (typeof wl === "string") return wl;
+  return [wl.city, wl.district, wl.state].filter(Boolean).join(", ") || null;
+};
+
 // Fetch data for auto-filling forms
 exports.getAutoFillData = async (req, res) => {
   try {
@@ -52,7 +59,7 @@ exports.getAutoFillData = async (req, res) => {
 
     const getFormStatus = (type) => {
         const f = forms.find(x => x.form_type === type);
-        return f ? { status: f.status, reason: f.rejection_reason, verifiedBy: f.verified_by, data: f.data } : { status: 'PENDING', reason: null, verifiedBy: null, data: null };
+        return f ? { id: f.id, status: f.status, reason: f.rejection_reason, verifiedBy: f.verified_by, data: f.data } : { id: null, status: 'PENDING', reason: null, verifiedBy: null, data: null };
     };
 
     const formsMap = {
@@ -67,10 +74,16 @@ exports.getAutoFillData = async (req, res) => {
     };
 
     const record = employee.EmployeeRecord;
+    const pi = record.personal_info || {};
+    const ci = record.contact_info || {};
+    const ji = record.job_info || {};
+    const acad = record.academic_details || {};
+    const permAddr = (record.address_info || [])[0] || {};
+    const commAddr = (record.address_info || [])[1] || {};
     
     let age = "";
-    if (record.date_of_birth) {
-        const dob = new Date(record.date_of_birth);
+    if (pi.date_of_birth) {
+        const dob = new Date(pi.date_of_birth);
         const diff_ms = Date.now() - dob.getTime();
         const age_dt = new Date(diff_ms); 
         age = Math.abs(age_dt.getUTCFullYear() - 1970).toString();
@@ -84,100 +97,100 @@ exports.getAutoFillData = async (req, res) => {
       onboardingStage: onboardingStage,
       
       // Identity
-      fullName: `${record.firstname} ${record.lastname}`.trim(),
-      firstname: record.firstname,
-      middlename: record.middlename,
-      lastname: record.lastname,
-      dateOfBirth: record.date_of_birth,
-      gender: record.gender,
+      fullName: `${pi.firstname || ""} ${pi.lastname || ""}`.trim(),
+      firstname: pi.firstname || "",
+      middlename: pi.middlename || "",
+      lastname: pi.lastname || "",
+      dateOfBirth: pi.date_of_birth || null,
+      gender: pi.gender || "",
       age: age,
       
       // Contact
-      email: record.personal_email_id,
-      phone: record.phone,
-      mobileNo: record.phone, // mapping for FormApplication
+      email: ci.personal_email_id || "",
+      phone: ci.phone || "",
+      mobileNo: ci.phone || "", // mapping for FormApplication
       
       address: {
-        line1: record.address_line1,
-        line2: record.address_line2,
-        landmark: record.landmark,
-        post_office: record.post_office,
-        district: record.district,
-        city: record.city,
-        state: record.state,
-        pincode: record.pincode,
-        country: record.country
+        line1: permAddr.address_line1 || "",
+        line2: permAddr.address_line2 || "",
+        landmark: permAddr.landmark || "",
+        post_office: permAddr.post_office || "",
+        district: permAddr.district || "",
+        city: permAddr.city || "",
+        state: permAddr.state || "",
+        pincode: permAddr.pincode || "",
+        country: permAddr.country || "India"
       },
       
       // Address string for FormApplication
       currentAddress: [
-        record.address_line1,
-        record.address_line2,
-        record.landmark,
-        record.post_office,
-        record.district,
-        record.city && record.pincode
-          ? `${record.city} - ${record.pincode}`
-          : record.city || record.pincode,
-        record.state,
-        record.country,
+        permAddr.address_line1,
+        permAddr.address_line2,
+        permAddr.landmark,
+        permAddr.post_office,
+        permAddr.district,
+        permAddr.city && permAddr.pincode
+          ? `${permAddr.city} - ${permAddr.pincode}`
+          : permAddr.city || permAddr.pincode,
+        permAddr.state,
+        permAddr.country,
       ]
         .filter(Boolean)
         .join(", "),
       
       permanentAddress: [
-        record.address_line1,
-        record.address_line2,
-        record.landmark,
-        record.post_office,
-        record.district,
-        record.city && record.pincode
-          ? `${record.city} - ${record.pincode}`
-          : record.city || record.pincode,
-        record.state,
-        record.country,
+        permAddr.address_line1,
+        permAddr.address_line2,
+        permAddr.landmark,
+        permAddr.post_office,
+        permAddr.district,
+        permAddr.city && permAddr.pincode
+          ? `${permAddr.city} - ${permAddr.pincode}`
+          : permAddr.city || permAddr.pincode,
+        permAddr.state,
+        permAddr.country,
       ]
         .filter(Boolean)
         .join(", "),
       
       // Employment
-      designation: record.job_title,
-      department: record.department_name,
-      dateOfJoining: record.date_of_joining,
-      location: record.work_location,
-      employeeCode: employee.id, // Or add a specific code field if 'ticket_no' is used
-      panNo: record.pan_number,
+      designation: ji.job_title || "",
+      department: ji.department_name || "",
+      dateOfJoining: ji.date_of_joining || "",
+      location: formatWorkLocation(record.work_location),
+      employeeCode: employee.employee_id || "", // Use actual custom string employee_id
+      panNo: pi.pan_number || "",
       hasPan: "Yes", // Default as per request
-      aadhaar: record.adhar_number, // Add aadhaar mapping
+      aadhaar: pi.adhar_number || "", // Add aadhaar mapping
       
       // FormApplication specific
-      positionApplied: record.job_title,
+      positionApplied: ji.job_title || "",
       education: [
         {
           qualification: "10th",
-          percentage: record.tenth_percentage?.toString() || "",
+          percentage: acad.tenth_percentage?.toString() || "",
         },
         {
           qualification: "12th",
-          percentage: record.twelfth_percentage?.toString() || "",
+          percentage: acad.twelfth_percentage?.toString() || "",
         },
-        ...(record.degree_name
+        ...(acad.degree_name
           ? [
               {
-                qualification: record.degree_name,
-                percentage: record.degree_percentage?.toString() || "",
+                qualification: acad.degree_name,
+                percentage: acad.degree_percentage?.toString() || "",
               },
             ]
           : []),
       ],
 
       // Assets
-      profilePhoto: record.profile_photo,
-      signature: record.signature, 
+      profilePhoto: record.profile_photo || null,
+      signature: record.signature || null, 
 
       // Degree (top-level for PersonalInfoGrid)
-      degree_name: record.degree_name,
-      degree_percentage: record.degree_percentage,
+      degree_name: acad.degree_name || "",
+      degree_percentage: acad.degree_percentage || "",
 
       mediclaimData: null,
       applicationData: null
@@ -193,6 +206,7 @@ exports.getAutoFillData = async (req, res) => {
         return rejectedForm ? rejectedForm.rejection_reason : null;
     };
 
+    autoFillData.applicationId = subApp.id;
     autoFillData.applicationData = subApp.data;
     autoFillData.applicationStatus = subApp.status;
     autoFillData.applicationRejectionReason = subApp.reason || (subApp.status === "DRAFT" ? getLatestRejectionReason('EMPLOYMENT_APP') : null);
@@ -202,6 +216,7 @@ exports.getAutoFillData = async (req, res) => {
     // 2. Mediclaim ('MEDICLAIM')
     const subMed = getFormStatus('MEDICLAIM');
 
+    autoFillData.mediclaimId = subMed.id;
     autoFillData.mediclaimData = subMed.data;
     autoFillData.mediclaimStatus = subMed.status; 
     autoFillData.mediclaimRejectionReason = subMed.reason;
@@ -211,6 +226,7 @@ exports.getAutoFillData = async (req, res) => {
     // 3. NDA ('NDA' - POST)
     const subNDA = getFormStatus('NDA');
 
+    autoFillData.ndaId = subNDA.id;
     autoFillData.ndaData = subNDA.data;
     autoFillData.ndaStatus = subNDA.status;
     autoFillData.ndaRejectionReason = subNDA.reason;
@@ -220,6 +236,7 @@ exports.getAutoFillData = async (req, res) => {
     // 4. Declaration ('DECLARATION' - POST)
     const subDec = getFormStatus('DECLARATION');
 
+    autoFillData.declarationId = subDec.id;
     autoFillData.declarationData = subDec.data;
     autoFillData.declarationStatus = subDec.status;
     autoFillData.declarationRejectionReason = subDec.reason;
@@ -229,6 +246,7 @@ exports.getAutoFillData = async (req, res) => {
     // 5. TDS ('TDS' - POST)
     const subTDS = getFormStatus('TDS');
 
+    autoFillData.tdsId = subTDS.id;
     autoFillData.tdsData = subTDS.data;
     autoFillData.tdsStatus = subTDS.status;
     autoFillData.tdsRejectionReason = subTDS.reason;
@@ -238,6 +256,7 @@ exports.getAutoFillData = async (req, res) => {
     // 6. EPF ('EPF' - POST)
     const subEPF = getFormStatus('EPF');
 
+    autoFillData.epfId = subEPF.id;
     autoFillData.epfData = subEPF.data;
     autoFillData.epfStatus = subEPF.status;
     autoFillData.epfRejectionReason = subEPF.reason;
@@ -249,20 +268,21 @@ exports.getAutoFillData = async (req, res) => {
 
     // Populate autoFillData with Gratuity specific pre-fills or existing data
     autoFillData.gratuityData = subGrat.data || {
-        firstname: record.firstname,
-        middlename: record.middlename,
-        lastname: record.lastname,
-        gender: record.gender, 
-        department: record.department_name,
-        date_of_appointment: record.date_of_joining,
-        permanent_address: [record.address_line1, record.address_line2, record.city, record.district, record.pincode].filter(Boolean).join(", "),
-        district: record.district,
-        state: record.state,
-        place: record.city,
+        firstname: pi.firstname || "",
+        middlename: pi.middlename || "",
+        lastname: pi.lastname || "",
+        gender: pi.gender || "", 
+        department: ji.department_name || "",
+        date_of_appointment: ji.date_of_joining || "",
+        permanent_address: [permAddr.address_line1, permAddr.address_line2, permAddr.city, permAddr.district, permAddr.pincode].filter(Boolean).join(", "),
+        district: permAddr.district || "",
+        state: permAddr.state || "",
+        place: permAddr.city || "",
         signature_path: null,
-        employee_full_name: `${record.firstname} ${record.lastname}`.trim()
+        employee_full_name: `${pi.firstname || ""} ${pi.lastname || ""}`.trim()
     };
     
+    autoFillData.gratuityId = subGrat.id;
     autoFillData.gratuityStatus = subGrat.status;
     autoFillData.gratuityRejectionReason = subGrat.reason;
     autoFillData.gratuityVerifiedByName = await resolveVerifierName(subGrat.verifiedBy);
@@ -283,13 +303,13 @@ exports.getAutoFillData = async (req, res) => {
                 last_name: app.lastname,
                 date_of_birth: app.dob,
                 gender: app.gender,
-                blood_group:  record.blood_group, 
-                designation: record.job_title, // Map from employee_records as requested
+                blood_group:  pi.blood_group || "", 
+                designation: ji.job_title || "", // Map from employee_records as requested
                 
                 // Birth Details (Mapped from EmployeeRecord as requested)
-                birth_city: record.city,
-                birth_state: record.state,
-                country: record.country,
+                birth_city: permAddr.city || "",
+                birth_state: permAddr.state || "",
+                country: permAddr.country || "",
 
                 // Contact
                 mobile_no: app.mobileNo,
@@ -302,13 +322,13 @@ exports.getAutoFillData = async (req, res) => {
                 passport_date_of_issue: app.passportIssueDate,
                 passport_expiry_date: app.passportExpiryDate,
                 pan_number: app.panNo,
-                aadhar_number: record.adhar_number,
+                aadhar_number: pi.adhar_number || "",
 
                 // Addresses
                 current_building_name: "", 
-                current_city: record.city,
-                current_district: record.district,
-                current_state: record.state,
+                current_city: permAddr.city || "",
+                current_district: permAddr.district || "",
+                current_state: permAddr.state || "",
                 
                 permanent_building_name: "", 
                 
@@ -332,6 +352,7 @@ exports.getAutoFillData = async (req, res) => {
             };
         }
     
+    autoFillData.employeeInfoId = subInfo.id;
     autoFillData.employeeInfoData = employeeInfoData;
     autoFillData.employeeInfoStatus = subInfo.status;
     autoFillData.employeeInfoRejectionReason = subInfo.reason;

@@ -476,6 +476,7 @@ exports.getEmployeeById = async (req, res) => {
       userId: user.id,
       employeeId: employee.employee_id || "",
       firstName: pi.firstname,
+      middleName: pi.middlename || "",
       lastName: pi.lastname,
       email: employee.company_email_id || user.username,
       personalEmail: ci.personal_email_id,
@@ -1116,3 +1117,188 @@ exports.deleteEmployee = async (req, res) => {
     res.status(500).json({ message: "Server error deleting employee" });
   }
 };
+
+// Download selected candidate documents and forms as a structured ZIP file
+exports.downloadDocuments = async (req, res) => {
+  try {
+    const { id } = req.params; // integer id of EmployeeMaster
+    const { selectedFiles } = req.body; // array of { id, category }
+
+    const employee = await EmployeeMaster.findOne({
+      where: { id },
+      include: [{ model: EmployeeRecord }]
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee profile not found" });
+    }
+
+    const pi = employee.EmployeeRecord?.personal_info || {};
+    const firstName = pi.firstname || "";
+    const lastName = pi.lastname || "";
+    const rawEmployeeName = `${firstName} ${lastName}`.trim() || employee.employee_id;
+    const employeeName = rawEmployeeName.toLowerCase().replace(/\s+/g, "_");
+
+    const fs = require('fs');
+    const path = require('path');
+    const { ZipArchive } = require('archiver');
+    const pdfGenerator = require('../utils/pdfGenerator');
+
+    // Make sure temp directory exists
+    const tempDir = path.join(__dirname, '..', 'uploads', 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const zipFilename = `onboarding_docs_${employee.employee_id}_${Date.now()}.zip`;
+    const zipPath = path.join(tempDir, zipFilename);
+    const output = fs.createWriteStream(zipPath);
+    const archive = new ZipArchive({ zlib: { level: 9 } });
+
+    // Handle archive errors
+    archive.on('error', (err) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+
+    const reportLines = [
+      "==================================================",
+      "ONBOARDING DOCUMENTS & FORMS DOWNLOAD REPORT",
+      "==================================================",
+      `Date/Time: ${new Date().toLocaleString()}`,
+      `Employee Name: ${rawEmployeeName}`,
+      `Employee Code: ${employee.employee_id}`,
+      `Requested Files Count: ${selectedFiles ? selectedFiles.length : 0}`,
+      "--------------------------------------------------",
+      "STATUS OF DOWNLOADED FILES:",
+      "--------------------------------------------------"
+    ];
+
+    let successCount = 0;
+    let failCount = 0;
+
+    if (selectedFiles && Array.isArray(selectedFiles)) {
+      // Process selected files sequentially
+      for (const file of selectedFiles) {
+        try {
+          if (file.category === 'documents') {
+            const doc = await EmployeeDocument.findOne({
+              where: { id: file.id, employee_id: employee.employee_id }
+            });
+            if (!doc) {
+              reportLines.push(`[FAILED] Category: Documents | File ID: ${file.id} | Reason: Record not found in database`);
+              failCount++;
+              continue;
+            }
+
+            let targetFolder = 'documents';
+            if (doc.document_type === "Passport Size Photo") targetFolder = 'profilepic';
+            else if (doc.document_type === "Signature") targetFolder = 'signatures';
+
+            const docFilePath = path.join(__dirname, '..', 'uploads', targetFolder, doc.file_path);
+            
+            if (fs.existsSync(docFilePath)) {
+              const ext = path.extname(doc.original_name || doc.file_path) || '.pdf';
+              const docTypeFormatted = doc.document_type.replace(/\s+/g, '_');
+              const archiveName = `${employeeName}_${docTypeFormatted}${ext}`;
+              
+              // Map Background Verification Form or Joining Form to their specific folder inside zip
+              let zipFolder = 'Documents';
+              if (doc.document_type === 'Background Verification Form') {
+                zipFolder = 'Pre Joining Forms';
+              } else if (doc.document_type === 'Joining Form') {
+                zipFolder = 'Post Joining Forms';
+              }
+
+              archive.file(docFilePath, { name: `${employeeName}/${zipFolder}/${archiveName}` });
+              reportLines.push(`[SUCCESS] Category: Documents | Type: ${doc.document_type} -> ${zipFolder}/${archiveName}`);
+              successCount++;
+            } else {
+              reportLines.push(`[FAILED] Category: Documents | Type: ${doc.document_type} | Reason: File missing on server disk at ${doc.file_path}`);
+              failCount++;
+            }
+          } 
+          else if (file.category === 'preJoiningForms' || file.category === 'postJoiningForms') {
+            const formRecord = await FormSubmission.findOne({
+              where: { id: file.id, employee_id: employee.employee_id }
+            });
+            
+            if (!formRecord) {
+              reportLines.push(`[FAILED] Category: Forms | Form ID: ${file.id} | Reason: Submission not found in database`);
+              failCount++;
+              continue;
+            }
+
+            const formType = formRecord.form_type;
+            const folderName = file.category === 'preJoiningForms' ? 'Pre Joining Forms' : 'Post Joining Forms';
+            
+            // Generate PDF to a temp location
+            const tempPdfName = `temp_${formType}_${Date.now()}.pdf`;
+            const tempPdfPath = path.join(tempDir, tempPdfName);
+            
+            await pdfGenerator.generateFormPDF(employee, formRecord, tempPdfPath);
+            
+            if (fs.existsSync(tempPdfPath)) {
+              // Mapping file name formatting for forms
+              let formNameFormatted = formType.replace(/_/g, '_');
+              if (formType === 'EMPLOYMENT_APP') formNameFormatted = 'Application_Form';
+              else if (formType === 'DECLARATION') formNameFormatted = 'Declaration_Form';
+              else if (formType === 'EMPLOYEE_INFO') formNameFormatted = 'Employee_Information_Form';
+              
+              const archiveName = `${employeeName}_${formNameFormatted}.pdf`;
+              
+              // Put it into the ZIP, then cleanup
+              const pdfBuffer = fs.readFileSync(tempPdfPath);
+              archive.append(pdfBuffer, { name: `${employeeName}/${folderName}/${archiveName}` });
+              
+              fs.unlinkSync(tempPdfPath);
+              
+              reportLines.push(`[SUCCESS] Category: Forms | Type: ${formType} -> ${folderName}/${archiveName}`);
+              successCount++;
+            } else {
+              reportLines.push(`[FAILED] Category: Forms | Type: ${formType} | Reason: Failed to generate PDF`);
+              failCount++;
+            }
+          }
+        } catch (err) {
+          logger.error(`Error packaging item in download ZIP: %o`, err);
+          reportLines.push(`[ERROR] Category: ${file.category} | ID: ${file.id} | Error: ${err.message}`);
+          failCount++;
+        }
+      }
+    }
+
+    reportLines.push("--------------------------------------------------");
+    reportLines.push(`SUMMARY: Successfully packed ${successCount} files, failed to pack ${failCount} files.`);
+    reportLines.push("==================================================");
+
+    // Append report to the root of ZIP file
+    archive.append(reportLines.join("\n"), { name: `${employeeName}/download_report.txt` });
+
+    // Finalize
+    await archive.finalize();
+
+    // Once finished, stream back and cleanup
+    output.on('close', () => {
+      res.download(zipPath, `${employeeName}_documents.zip`, (downloadErr) => {
+        if (downloadErr) {
+          logger.error('Error sending ZIP to client: %o', downloadErr);
+        }
+        // Cleanup ZIP file
+        try {
+          if (fs.existsSync(zipPath)) {
+            fs.unlinkSync(zipPath);
+          }
+        } catch (unlinkErr) {
+          logger.error('Error deleting temp ZIP file: %o', unlinkErr);
+        }
+      });
+    });
+
+  } catch (error) {
+    logger.error("Error in downloadDocuments API: %o", error);
+    res.status(500).json({ message: "Server error generating zip file" });
+  }
+};
+

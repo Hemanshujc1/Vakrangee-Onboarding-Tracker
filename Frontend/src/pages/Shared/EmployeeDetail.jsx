@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import { ArrowLeft, Pencil, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Save,
+  X,
+  ChevronDown,
+  UserCheck,
+  Building,
+  ShieldCheck,
+  FileText,
+  CheckSquare,
+  FileCheck,
+  Download,
+} from "lucide-react";
 import ProfileHeader from "../../Components/EmployeeDetail/ProfileHeader";
 import PersonalInfoGrid from "../../Components/EmployeeDetail/PersonalInfoGrid";
 import AddressCard from "../../Components/EmployeeDetail/AddressCard";
@@ -9,6 +22,7 @@ import BasicInfoVerifyCard from "../../Components/EmployeeDetail/BasicInfoVerify
 import FinalVerifyCard from "../../Components/EmployeeDetail/FinalVerifyCard";
 import DocumentList from "../../Components/EmployeeDetail/DocumentList";
 import EmployeeForms from "../../Components/EmployeeDetail/EmployeeForms";
+import DownloadSelectionModal from "../../Components/Admin/DownloadSelectionModal";
 import useEmployeeDetail from "./useEmployeeDetail";
 
 const EmployeeDetail = () => {
@@ -40,6 +54,19 @@ const EmployeeDetail = () => {
     isBasicInfoComplete,
     emailSent,
   } = useEmployeeDetail();
+
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({
+    documents: false,
+    employeeForms: false,
+  });
+
+  const toggleSection = (section) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   if (loading)
     return (
@@ -80,13 +107,22 @@ const EmployeeDetail = () => {
           </div>
           <div className="flex items-center gap-3">
             {!isEditing ? (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md text-sm whitespace-nowrap"
-              >
-                <Pencil size={18} />
-                <span>Edit Profile</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setIsDownloadModalOpen(true)}
+                  className="flex items-center gap-2 border border-blue-600 text-blue-600 bg-white hover:bg-blue-500 hover:text-white px-5 py-2 rounded-lg transition-all font-semibold shadow-sm text-sm whitespace-nowrap cursor-pointer"
+                >
+                  <Download size={18} />
+                  <span>Download Documents</span>
+                </button>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md text-sm whitespace-nowrap cursor-pointer"
+                >
+                  <Pencil size={18} />
+                  <span>Edit Profile</span>
+                </button>
+              </>
             ) : (
               <div className="flex gap-2">
                 <button
@@ -193,11 +229,36 @@ const EmployeeDetail = () => {
           isBasicInfoComplete={isBasicInfoComplete}
           actionLoading={actionLoading}
         />
-        {/* Documents Section */}
-        <DocumentList 
-          documents={documents}
-          handleDocumentVerification={handleDocumentVerification}
-        />
+
+        {/* Accordion for Onboarding Documents */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <button
+            onClick={() => toggleSection("documents")}
+            className="w-full flex items-center justify-between p-6 hover:bg-gray-50/50 transition-all font-semibold text-gray-700 focus:outline-none"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                <FileText size={18} />
+              </span>
+              <span className="text-base font-bold">Onboarding Documents</span>
+            </div>
+            <ChevronDown
+              size={20}
+              className={`text-gray-400 transition-transform duration-200 ${
+                openSections.documents ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+          {openSections.documents && (
+            <div className="border-t border-gray-100 p-2">
+              <DocumentList 
+                documents={documents}
+                employeeId={employee.id}
+                handleDocumentVerification={handleDocumentVerification}
+              />
+            </div>
+          )}
+        </div>
 
         <FinalVerifyCard
           employee={employee}
@@ -208,10 +269,39 @@ const EmployeeDetail = () => {
           actionLoading={actionLoading}
         />
 
-        {/* Employee Forms Section */}
-        <EmployeeForms
+        {/* Accordion for Employee Forms */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <button
+            onClick={() => toggleSection("employeeForms")}
+            className="w-full flex items-center justify-between p-6 hover:bg-gray-50/50 transition-all font-semibold text-gray-700 focus:outline-none"
+          >
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                <FileCheck size={18} />
+              </span>
+              <span className="text-base font-bold">Employee Forms & Form Access</span>
+            </div>
+            <ChevronDown
+              size={20}
+              className={`text-gray-400 transition-transform duration-200 ${
+                openSections.employeeForms ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+          {openSections.employeeForms && (
+            <div className="border-t border-gray-100 p-2">
+              <EmployeeForms
+                employee={employee}
+                handleToggleFormAccess={handleToggleFormAccess}
+              />
+            </div>
+          )}
+        </div>
+        <DownloadSelectionModal
+          isOpen={isDownloadModalOpen}
+          onClose={() => setIsDownloadModalOpen(false)}
           employee={employee}
-          handleToggleFormAccess={handleToggleFormAccess}
+          documents={documents}
         />
       </div>
     </DashboardLayout>

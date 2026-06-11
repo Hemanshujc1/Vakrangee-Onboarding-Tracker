@@ -31,7 +31,43 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-6 gap-x-6">
+          {/* First Name */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <User size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">First Name</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.firstName || employee.firstname || "N/A"}
+              </p>
+            </div>
+          </div>
+          {/* Middle Name */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <User size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Middle Name</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.middleName || employee.middlename || "N/A"}
+              </p>
+            </div>
+          </div>
+          {/* Last Name */}
+          <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
+              <User size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400">Last Name</p>
+              <p className="font-medium text-sm wrap-break-word">
+                {employee.lastName || employee.lastname || "N/A"}
+              </p>
+            </div>
+          </div>
           {/* Email */}
           <div className="flex items-start gap-3 text-gray-600 min-w-0">
             <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">

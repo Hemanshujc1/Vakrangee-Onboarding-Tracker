@@ -1,4 +1,5 @@
 import React from "react";
+import { formatWorkLocation } from "../../utils/employeeUtils";
 
 const ProfileView = ({ formData, companyEmail, fullAddress, onEdit }) => {
   return (
@@ -44,7 +45,7 @@ const ProfileView = ({ formData, companyEmail, fullAddress, onEdit }) => {
             Work Location
           </label>
           <p className="font-medium text-gray-800">
-            {formData.work_location || "-"}
+            {formatWorkLocation(formData.work_location) || "-"}
           </p>
         </div>
         <div>

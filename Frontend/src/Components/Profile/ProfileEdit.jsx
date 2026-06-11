@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SearchableSelect from "../UI/SearchableSelect";
+import { formatWorkLocation } from "../../utils/employeeUtils";
 
 const ProfileEdit = ({
   formData,
@@ -245,7 +246,11 @@ const ProfileEdit = ({
           </label>
           <input
             name="work_location"
-            value={formData.work_location}
+            value={
+              typeof formData.work_location === "object"
+                ? formatWorkLocation(formData.work_location) || ""
+                : formData.work_location || ""
+            }
             onChange={handleInputChange}
             onBlur={(e) => validateField("work_location", e.target.value)}
             disabled={role === "HR_ADMIN" && !!initialRecord.work_location}

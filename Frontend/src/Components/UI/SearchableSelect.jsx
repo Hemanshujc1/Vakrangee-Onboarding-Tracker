@@ -47,6 +47,23 @@ const SearchableSelect = ({
     };
   }, []);
 
+  // Adjust parent z-index dynamically when open to prevent overlap/stacking context issues from sibling relative/z-20 containers
+  useEffect(() => {
+    const parent = dropdownRef.current?.parentElement;
+    if (parent) {
+      if (isOpen) {
+        parent.style.zIndex = "50";
+      } else {
+        parent.style.removeProperty("z-index");
+      }
+    }
+    return () => {
+      if (parent) {
+        parent.style.removeProperty("z-index");
+      }
+    };
+  }, [isOpen]);
+
   // Filter options based on search term
   const filteredOptions = options.filter((option) =>
     (option.name || "").toLowerCase().includes(searchTerm.toLowerCase()),

@@ -27,5 +27,6 @@ router.post(
   employeeController.finalVerifyEmployee,
 );
 router.delete("/:id", protect, employeeController.deleteEmployee);
+router.post("/:id/download-documents", protect, employeeController.downloadDocuments);
 
 module.exports = router;

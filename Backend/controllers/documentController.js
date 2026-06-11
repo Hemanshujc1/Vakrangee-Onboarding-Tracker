@@ -231,8 +231,13 @@ exports.getEmployeeDocuments = async (req, res) => {
              return res.status(403).json({ message: 'Access denied' });
         }
 
+        const employee = await EmployeeMaster.findByPk(employeeId);
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
         const documents = await EmployeeDocument.findAll({
-            where: { employee_id: employeeId }
+            where: { employee_id: employee.employee_id }
         });
 
         // Resolve verifier names
