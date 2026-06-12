@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, UserPlus, Mail } from "lucide-react";
+import { X, Plus, UserPlus } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import SearchableSelect from "../UI/SearchableSelect";

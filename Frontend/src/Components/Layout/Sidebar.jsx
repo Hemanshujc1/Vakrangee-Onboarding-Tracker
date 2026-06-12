@@ -9,9 +9,7 @@ import {
   LogOut,
   FileText,
   CheckCircle,
-  User,
   Building2,
-  ListCheck,
   X,
 } from "lucide-react";
 import axios from "axios";

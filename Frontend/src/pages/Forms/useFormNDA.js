@@ -143,16 +143,8 @@ const useFormNDA = () => {
   const onFormSubmit = async (values) => {
     // Disabled fields are excluded from 'values', so fetch them manually
     const allValues = {
+      ...getValues(),
       ...values,
-      employee_full_name: getValues("employee_full_name"),
-      address_line1: getValues("address_line1"),
-      address_line2: getValues("address_line2"),
-      landmark: getValues("landmark"),
-      post_office: getValues("post_office"),
-      city: getValues("city"),
-      district: getValues("district"),
-      state: getValues("state"),
-      pincode: getValues("pincode"),
     };
 
     try {

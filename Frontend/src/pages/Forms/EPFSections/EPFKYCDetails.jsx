@@ -24,6 +24,7 @@ const EPFKYCDetails = ({ register, errors }) => {
           register={register}
           name="aadhaar_no"
           error={errors.aadhaar_no}
+          disabled
         />
         <FormInput
           label="PAN Number"
@@ -31,6 +32,7 @@ const EPFKYCDetails = ({ register, errors }) => {
           name="pan_no"
           className="uppercase"
           error={errors.pan_no}
+          disabled
         />
       </div>
     </FormSection>

@@ -28,5 +28,7 @@ router.post(
 );
 router.delete("/:id", protect, employeeController.deleteEmployee);
 router.post("/:id/download-documents", protect, employeeController.downloadDocuments);
+router.post("/:id/send-reminder",       protect, employeeController.sendReminder);
+
 
 module.exports = router;

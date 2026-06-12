@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
+import { MANDATORY_DOC_KEYS } from "../../config/documentConfig";
 
 const useEmployeeDetail = () => {
   const { id } = useParams();
@@ -406,19 +407,8 @@ const useEmployeeDetail = () => {
 
     const isBasicInfoVerified = employee.basicInfoStatus === "VERIFIED";
 
-    const mandatoryDocs = [
-      "PAN Card",
-      "Aadhar Card",
-      "10th Marksheet",
-      "12th Marksheet",
-      "Degree Certificate",
-      "Cancelled Cheque",
-      "Passport Size Photo",
-      "Signature",
-    ];
-
     const verifiedDocs = documents.filter((doc) => doc.status === "VERIFIED");
-    const areAllMandatoryDocsVerified = mandatoryDocs.every((docType) =>
+    const areAllMandatoryDocsVerified = MANDATORY_DOC_KEYS.every((docType) =>
       verifiedDocs.some((d) => d.document_type === docType)
     );
 

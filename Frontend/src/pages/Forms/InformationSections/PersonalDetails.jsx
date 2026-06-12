@@ -78,13 +78,16 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           error={errors.birth_state}
           required
         />
-        <FormInput
-          label="Country"
-          name="country"
-          register={register}
-          error={errors.country}
-          required
-        />
+        <div className="hidden">
+          <FormInput
+            label="Country"
+            name="country"
+            register={register}
+            error={errors.country}
+            required
+            disabled
+          />
+        </div>
 
         <FormSelect
           label="Blood Group"
@@ -93,6 +96,7 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           register={register}
           error={errors.blood_group}
           required
+          disabled
         />
         <FormSelect
           label="Gender"
@@ -182,6 +186,7 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           register={register}
           error={errors.mobile_no}
           required
+          disabled
         />
         <FormInput
           label="Emergency No"

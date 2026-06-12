@@ -1,5 +1,6 @@
 import React from "react";
 import DocumentUploadItem from "./DocumentUploadItem";
+import { DOC_CONFIG_MAP } from "../../../config/documentConfig";
 
 const ProfileIdentitySection = ({
   register,
@@ -210,6 +211,7 @@ const ProfileIdentitySection = ({
               handleDelete={handleDelete}
               isEditing={isEditing}
               verificationStatus={verificationStatus}
+              docConfig={DOC_CONFIG_MAP["PAN Card"]}
             />
           </div>
         </div>
@@ -287,6 +289,7 @@ const ProfileIdentitySection = ({
               handleDelete={handleDelete}
               isEditing={isEditing}
               verificationStatus={verificationStatus}
+              docConfig={DOC_CONFIG_MAP["Aadhar Card"]}
             />
           </div>
         </div>

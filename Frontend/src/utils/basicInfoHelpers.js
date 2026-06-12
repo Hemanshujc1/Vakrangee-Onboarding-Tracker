@@ -1,3 +1,5 @@
+import { MANDATORY_DOC_KEYS, isDocMandatory } from "../config/documentConfig";
+
 export const formatDate = (dateString) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
@@ -116,18 +118,8 @@ export const isProfileComplete = ({ formData, documents, previewImage, previewSi
     }
   }
 
-  // Required documents
-  const requiredDocs = [
-    "PAN Card",
-    "Aadhar Card",
-    "10th Marksheet",
-    "12th Marksheet",
-    "Degree Certificate",
-    "Cancelled Cheque",
-    "Passport Size Photo",
-    "Signature",
-  ];
-  for (const docKey of requiredDocs) {
+  // Required documents — driven by MANDATORY_DOC_KEYS from documentConfig
+  for (const docKey of MANDATORY_DOC_KEYS) {
     const doc = documents.find((d) => d.document_type === docKey);
     if (!doc || doc.status === "REJECTED") return false;
   }

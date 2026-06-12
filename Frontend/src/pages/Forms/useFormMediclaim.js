@@ -174,14 +174,15 @@ const useFormMediclaim = () => {
   }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
+    const allValues = { ...getValues(), ...values };
     // If it's a draft, save via API immediately
-    if (values.isDraft) {
+    if (allValues.isDraft) {
       try {
         const formData = new FormData();
-        Object.keys(values).forEach((key) => {
+        Object.keys(allValues).forEach((key) => {
           if (key === "dependents") {
             const dependents =
-              values.marital_status === "Married" ? values.dependents : null;
+              allValues.marital_status === "Married" ? allValues.dependents : null;
             let formattedDependents = null;
             if (dependents && Array.isArray(dependents)) {
               formattedDependents = dependents.map((d) => ({
@@ -194,13 +195,13 @@ const useFormMediclaim = () => {
               JSON.stringify(formattedDependents || [])
             );
           } else if (key === "signature") {
-            if (values.signature instanceof File) {
-              formData.append("signature", values.signature);
+            if (allValues.signature instanceof File) {
+              formData.append("signature", allValues.signature);
             }
           } else if (key === "date_of_birth") {
-            formData.append(key, formatDateForAPI(values[key]));
+            formData.append(key, formatDateForAPI(allValues[key]));
           } else {
-            formData.append(key, values[key] || "");
+            formData.append(key, allValues[key] || "");
           }
         });
 
@@ -229,7 +230,7 @@ const useFormMediclaim = () => {
       navigate(`/forms/mediclaim/preview/${employeeId}`, {
         state: {
           formData: {
-            ...values,
+            ...allValues,
             signature_path: savedData.signature_path || autoFillData?.signature,
           },
           signaturePreview: signaturePreview,

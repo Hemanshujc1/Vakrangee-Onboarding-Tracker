@@ -200,7 +200,7 @@ exports.checkAndUpdateOnboardingStage = async (employeeId) => {
                 if (disabledParams.includes(type)) continue; 
 
                 const f = await FormSubmission.findOne({
-                    where: { employee_id: employeeId, form_type: type },
+                    where: { employee_id: employee.employee_id, form_type: type },
                     order: [['version', 'DESC']]
                 });
                 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/HRSuperAdmin/Dashboard";
 import ManageEmployees from "./pages/Shared/ManageEmployees";
@@ -28,10 +28,8 @@ import FormDeclaration from "./pages/Forms/FormDeclaration";
 import PreviewMediclaim from "./pages/Forms/PreviewMediclaim";
 import PreviewNDA from "./pages/Forms/PreviewNDA";
 import PreviewDeclaration from "./pages/Forms/PreviewDeclaration";
-import CompanyOverview from "./pages/Employee/CompanyOverview";
 import FormGratuity from "./pages/Forms/FormGratuity";
 import PreviewGratuity from "./pages/Forms/PreviewGratuity";
-import CheckList from "./pages/Employee/CheckList";
 import FormEPF from "./pages/Forms/FormEPF";
 import FormTDS from "./pages/Forms/FormTDS";
 import PreviewTDS from "./pages/Forms/PreviewTDS";
@@ -107,11 +105,6 @@ const App = () => {
           <Route path="/employee/documents" element={<Documents />} />
           <Route path="/employee/pre-joining" element={<PreJoiningForms />} />
           <Route path="/employee/post-joining" element={<PostJoiningForms />} />
-          <Route
-            path="/employee/company-overview"
-            element={<CompanyOverview />}
-          />
-          <Route path="/employee/check-list" element={<CheckList />} />
 
           {/* Forms accessible by Employee - Some might be shared but generally edited by employee */}
           <Route path="/forms/employment-info" element={<FormInformation />} />
@@ -178,6 +171,3 @@ const App = () => {
 };
 
 export default App;
-
-
-// in the basic details add the blood Group in the [ProfileIdentitySection.jsx](file;file:///Users/hemanshu/Desktop/Hemanshu/coding/webdev/intern/Vakrangee/Onboarding%20Portal/Frontend/src/Components/Employee/BasicInfo/ProfileIdentitySection.jsx) section and also add the emergency contact number, realtionship, name in the [ContactInfoSection.jsx](file;file:///Users/hemanshu/Desktop/Hemanshu/coding/webdev/intern/Vakrangee/Onboarding%20Portal/Frontend/src/Components/Employee/BasicInfo/ContactInfoSection.jsx) section and add the required coloumns in the table employee_records, 

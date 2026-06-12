@@ -1,6 +1,8 @@
 import React from "react";
 import DocumentUploadItem from "./DocumentUploadItem";
 import SearchableSelect from "../../UI/SearchableSelect";
+import { DOC_CONFIG_MAP } from "../../../config/documentConfig";
+
 
 const AcademicDetailsSection = ({
   register,
@@ -88,6 +90,7 @@ const AcademicDetailsSection = ({
               handleDelete={handleDelete}
               isEditing={isEditing}
               verificationStatus={verificationStatus}
+              docConfig={DOC_CONFIG_MAP["10th Marksheet"]}
             />
           </div>
         </div>
@@ -150,6 +153,7 @@ const AcademicDetailsSection = ({
               handleDelete={handleDelete}
               isEditing={isEditing}
               verificationStatus={verificationStatus}
+              docConfig={DOC_CONFIG_MAP["12th Marksheet"]}
             />
           </div>
         </div>
@@ -306,6 +310,7 @@ const AcademicDetailsSection = ({
               handleDelete={handleDelete}
               isEditing={isEditing}
               verificationStatus={verificationStatus}
+              docConfig={DOC_CONFIG_MAP["Degree Certificate"]}
             />
           </div>
         </div>

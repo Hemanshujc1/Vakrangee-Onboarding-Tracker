@@ -79,6 +79,7 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
                   onInput={(e) => {
                     e.target.value = e.target.value.replace(/[^0-9]/g, "");
                   }}
+          disabled={true}
         />
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
           <FormSelect

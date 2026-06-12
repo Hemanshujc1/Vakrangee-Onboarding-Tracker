@@ -12,7 +12,10 @@ const DocumentUploadItem = ({
   isEditing,
   optional = false,
   verificationStatus,
+  docConfig,   // from DOC_CONFIG_MAP[docKey] — provides accept & maxSizeMB
 }) => {
+  const acceptStr = docConfig?.accept || ".pdf,.jpg,.jpeg,.png";
+  const maxSizeMB = docConfig?.maxSizeMB;
   return (
     <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100 w-full">
       <div className="flex items-center justify-between gap-2">
@@ -82,7 +85,7 @@ const DocumentUploadItem = ({
                     type="file"
                     id={`file-${docKey}`}
                     className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept={acceptStr}
                     onChange={(e) => handleUpload(e.target.files[0], docKey)}
                     disabled={
                       isUploading ||
@@ -101,13 +104,16 @@ const DocumentUploadItem = ({
                     }`}
                   >
                     <Upload size={14} />
-                    <span>
-                      {isUploading
-                        ? "..."
-                        : data
-                        ? "Re-upload"
-                        : "Upload"}
-                    </span>
+                     <span>
+                        {isUploading
+                          ? "..."
+                          : data
+                          ? "Re-upload"
+                          : "Upload"}
+                      </span>
+                      {maxSizeMB && !isUploading && (
+                        <span className="text-[9px] text-gray-400 ml-1">max {maxSizeMB}MB</span>
+                      )}
                   </label>
                 </div>
               )}

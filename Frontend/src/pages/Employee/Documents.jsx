@@ -3,25 +3,8 @@ import DashboardLayout from '../../Components/Layout/DashboardLayout';
 import { Upload, Trash2, Eye, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
 import axios from 'axios';
+import { DOCUMENT_CONFIG, validateDocumentFile } from '../../config/documentConfig';
 
-const REQUIRED_DOCUMENTS = [
-    { name: '10th Marksheet', key: '10th Marksheet', optional: false },
-    { name: '12th Marksheet', key: '12th Marksheet', optional: false },
-    { name: 'Aadhar Card', key: 'Aadhar Card', optional: false },
-    { name: 'PAN Card', key: 'PAN Card', optional: false },
-    { name: 'Cancelled Cheque', key: 'Cancelled Cheque', optional: false },
-    { name: 'Passport Size Photo', key: 'Passport Size Photo', optional: false },
-    { name: 'Signature', key: 'Signature', optional: false },
-    { name: '6 Months Bank Statement', key: '6 Months Bank Statement', optional: false },
-    { name: 'Previous Offer Letter 1', key: 'Previous Offer Letter 1', optional: false },
-    { name: 'Previous Offer Letter 2', key: 'Previous Offer Letter 2', optional: true },
-    { name: 'Resume', key: 'Resume', optional: false },
-    { name: 'Degree Certificate', key: 'Degree Certificate', optional: true },
-    { name: 'Service Certificates', key: 'Service Certificates', optional: true },
-    { name: 'Relieving Letter', key: 'Relieving Letter', optional: true },
-    { name: 'Experience Certificate', key: 'Experience Certificate', optional: true },
-    { name: 'Last Drawn Salary Slip', key: 'Last Drawn Salary Slip', optional: true },
-];
 
 const Documents = () => {
   const [documents, setDocuments] = useState([]);
@@ -53,6 +36,13 @@ const Documents = () => {
 
   const handleUpload = async (file, docType) => {
     if (!file) return;
+
+    // ── Validate file type & size from config ──────────────────────────
+    const validationError = validateDocumentFile(file, docType);
+    if (validationError) {
+      await showAlert(validationError, { type: 'error' });
+      return;
+    }
 
     setUploadingState(prev => ({ ...prev, [docType]: true }));
 
@@ -105,7 +95,7 @@ const Documents = () => {
 
   const handleSubmitForVerification = async () => {
     // Check for missing mandatory docs
-    const missingMandatoryDocs = REQUIRED_DOCUMENTS.filter(
+    const missingMandatoryDocs = DOCUMENT_CONFIG.filter(
       (doc) => !doc.optional && !documents.some((d) => d.document_type === doc.key)
     );
 
@@ -157,7 +147,7 @@ const Documents = () => {
             <div className="p-8 text-center text-gray-500">Loading documents...</div>
         ) : (
             <div className="grid grid-cols-1 divide-y divide-gray-100">
-                {REQUIRED_DOCUMENTS.map((reqDoc) => {
+                {DOCUMENT_CONFIG.map((reqDoc) => {
                     const { status, data } = getDocStatus(reqDoc.key);
                     const isUploading = uploadingState[reqDoc.key];
 
@@ -169,7 +159,7 @@ const Documents = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-(--color-text-dark) flex flex-wrap items-center gap-2">
-                                        {reqDoc.name} {!reqDoc.optional && <span className="text-red-500">*</span>}
+                                        {reqDoc.label} {!reqDoc.optional && <span className="text-red-500">*</span>}
                                         {reqDoc.optional ? <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span> : <span className="text-xs font-bold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">Mandatory</span> }
                                         {status === 'VERIFIED' && (
                                             <span className="px-3 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium flex items-center gap-1">
@@ -224,7 +214,7 @@ const Documents = () => {
                                             type="file" 
                                             id={`file-${reqDoc.key}`}
                                             className="hidden" 
-                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            accept={reqDoc.accept || ".pdf,.jpg,.jpeg,.png"}
                                             onChange={(e) => handleUpload(e.target.files[0], reqDoc.key)}
                                             disabled={isUploading || status === "VERIFIED"}
                                         />

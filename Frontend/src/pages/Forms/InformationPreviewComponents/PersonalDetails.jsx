@@ -44,11 +44,7 @@ const PersonalDetails = ({ data }) => {
 
           <span className="font-semibold">Birth State</span>
           <div className="flex gap-4">
-            <PrintText value={data.birth_state} className="w-1/2" />
-            <div className="flex items-center gap-2 flex-1">
-              <span className="font-semibold">Country</span>
-              <PrintText value={data.country} className="flex-1" />
-            </div>
+            <PrintText value={data.birth_state} className="w-full" />
           </div>
 
           <span className="font-semibold">Blood Group</span>

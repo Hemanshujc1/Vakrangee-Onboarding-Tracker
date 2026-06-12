@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
+import { validateDocumentFile } from "../config/documentConfig";
 
 export const useDocumentManager = (showAlert, showConfirm) => {
   const [documents, setDocuments] = useState([]);
@@ -19,6 +20,14 @@ export const useDocumentManager = (showAlert, showConfirm) => {
 
   const handleUpload = async (file, docType) => {
     if (!file) return;
+
+    // ── Validate file type & size from config ──────────────────────────
+    const validationError = validateDocumentFile(file, docType);
+    if (validationError) {
+      showAlert(validationError, { type: "error" });
+      return;
+    }
+
     const token = localStorage.getItem("token");
     setUploadingState((prev) => ({ ...prev, [docType]: true }));
 

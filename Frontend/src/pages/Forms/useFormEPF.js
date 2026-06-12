@@ -225,14 +225,8 @@ const useFormEPF = () => {
   // --- Submit Handler ---
   const onFormSubmit = async (values) => {
     const allValues = {
+      ...getValues(),
       ...values,
-      member_name_aadhar: getValues("member_name_aadhar"),
-      dob: getValues("dob"),
-      present_joining_date: getValues("present_joining_date"),
-      date_of_exit_prev: getValues("date_of_exit_prev"),
-      passport_valid_from: getValues("passport_valid_from"),
-      passport_valid_to: getValues("passport_valid_to"),
-      first_epf_enrolled_date: getValues("first_epf_enrolled_date"),
     };
 
     const isDraft = allValues.isDraft;

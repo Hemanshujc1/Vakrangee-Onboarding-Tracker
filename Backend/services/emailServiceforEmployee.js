@@ -127,11 +127,6 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
         cc,
         subject,
         html,
-        // attachments: [{
-        //     filename: 'Vakrangee_email_logo.jpg',
-        //     path: path.join(__dirname, '../assets/Vakrangee_email_logo.jpg'),
-        //     cid: 'vakrangeelogo' 
-        // }]
     };
 
     try {
@@ -145,7 +140,126 @@ const sendWelcomeEmail = async (to, firstName, email, password, jobTitle, startD
     }
 };
 
-module.exports = { sendWelcomeEmail };
+// ── Reminder Email ────────────────────────────────────────────────────────────
+
+/**
+ * Sends a reminder email to an employee listing all pending items.
+ *
+ * @param {string} to              - Employee email address
+ * @param {string} firstName       - Employee first name
+ * @param {Array}  pendingDocs     - Array of { label } for pending documents
+ * @param {Array}  pendingForms    - Array of { label } for pending forms
+ * @param {string} hrName          - HR sender name
+ * @param {string} hrDesignation   - HR sender designation
+ */
+const sendReminderEmail = async (to, firstName, pendingDocs, pendingForms, hrName, hrDesignation) => {
+    const subject = 'Action Required: Complete Your Onboarding — Vakrangee Ltd.';
+
+    const HR_Name        = hrName        || 'HR Team';
+    const HR_Designation = hrDesignation || 'Human Resources';
+    const portalUrl      = process.env.FRONTEND_URL || '#';
+
+    // Build document list HTML
+    const docListHtml = pendingDocs.length > 0
+        ? `
+        <p style="margin: 12px 0 6px; font-weight: bold; color: #1e3a5f;">📄 Documents to Upload:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #374151;">
+          ${pendingDocs.map(d => `<li style="margin: 4px 0;">${d.label}</li>`).join('')}
+        </ul>`
+        : '';
+
+    // Build form list HTML
+    const formListHtml = pendingForms.length > 0
+        ? `
+        <p style="margin: 16px 0 6px; font-weight: bold; color: #1e3a5f;">📋 Forms to Complete:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #374151;">
+          ${pendingForms.map(f => `<li style="margin: 4px 0;">${f.label}</li>`).join('')}
+        </ul>`
+        : '';
+
+    const html = `
+<div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 30px 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
+
+    <!-- Header -->
+    <div style="background-color: #1e3a5f; padding: 28px 32px;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 20px; letter-spacing: 0.3px;">Vakrangee Onboarding Portal</h1>
+      <p style="color: #93c5fd; margin: 6px 0 0; font-size: 13px;">Action Required — Onboarding Reminder</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 28px 32px; color: #333333; font-size: 14px; line-height: 1.7;">
+      <p>Dear <strong>${firstName}</strong>,</p>
+
+      <p>
+        We hope you are doing well. This is a friendly reminder that there are some
+        pending items on your Vakrangee Onboarding Portal that require your attention.
+      </p>
+
+      <div style="background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 6px; padding: 16px 20px; margin: 20px 0;">
+        <p style="margin: 0 0 4px; font-weight: bold; color: #c2410c; font-size: 13px;">⚠️ PENDING ITEMS</p>
+        ${docListHtml}
+        ${formListHtml}
+      </div>
+
+      <p>
+        Please log in to the portal at your earliest convenience to complete these items:
+      </p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a
+          href="${portalUrl}"
+          style="display: inline-block; background-color: #1e3a5f; color: #ffffff; text-decoration: none;
+                 padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: bold; letter-spacing: 0.4px;"
+        >
+          Go to Onboarding Portal →
+        </a>
+      </div>
+
+      <p style="color: #6b7280; font-size: 13px;">
+        If you have already completed these items, please ignore this email. It may take
+        a few minutes for the status to update on our end.
+      </p>
+
+      <p style="margin-top: 28px;">
+        Thanks &amp; regards,<br />
+        <strong>${HR_Name}</strong><br />
+        <span style="color: #6b7280;">${HR_Designation}</span><br />
+        <span style="color: #6b7280;">Vakrangee Ltd.</span>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f3f4f6; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+        This is an automated reminder from the Vakrangee Onboarding System.
+        Please do not reply to this email. For assistance, contact your HR representative.
+      </p>
+    </div>
+
+  </div>
+</div>`;
+
+    const mailOptions = {
+        from: `"Vakrangee HR" <${process.env.SMTP_USER}>`,
+        to,
+        subject,
+        html,
+    };
+
+    try {
+        logger.info(`Sending reminder email to: ${to}`);
+        await transporter.sendMail(mailOptions);
+        logger.info(`Reminder email sent successfully to ${to}`);
+        return { success: true };
+    } catch (error) {
+        logger.error('Error sending reminder email to %s: %o', to, error);
+        return { success: false, error: error.message };
+    }
+};
+
+module.exports = { sendWelcomeEmail, sendReminderEmail };
+
 
 /*
  <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />

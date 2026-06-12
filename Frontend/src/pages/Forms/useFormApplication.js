@@ -46,6 +46,7 @@ const useFormApplication = () => {
     reset,
     setValue,
     watch,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "all",
@@ -101,7 +102,8 @@ const useFormApplication = () => {
 
         currentAddress:
           saved.currentAddress || autoFillData.currentAddress || "",
-        permanentAddress: saved.permanentAddress || "",
+        permanentAddress:
+          saved.permanentAddress || autoFillData.permanentAddress || "",
         mobileNo:
           saved.mobileNo || autoFillData.mobileNo || autoFillData.phone || "",
         email: saved.email || autoFillData.email || "",
@@ -114,6 +116,8 @@ const useFormApplication = () => {
         hasPan: saved.hasPan || autoFillData.hasPan || "No",
         passportNo: saved.passportNo || autoFillData.passportNo || "",
         hasPassport: saved.hasPassport || autoFillData.hasPassport || "No",
+        emergencyNo:
+          saved.emergencyNo || autoFillData.emergencyNo || "",
         ...saved,
 
         // Ensure arrays have at least one row if empty and required
@@ -137,6 +141,7 @@ const useFormApplication = () => {
   }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
+    const allValues = { ...getValues(), ...values };
     const dateFields = [
       "dob",
       "licenseIssueDate",
@@ -145,18 +150,18 @@ const useFormApplication = () => {
       "passportExpiryDate",
     ];
     dateFields.forEach((field) => {
-      if (values[field]) values[field] = formatDateForAPI(values[field]);
+      if (allValues[field]) allValues[field] = formatDateForAPI(allValues[field]);
     });
-    if (values.employmentHistory && Array.isArray(values.employmentHistory)) {
-      values.employmentHistory = values.employmentHistory.map((item) => ({
+    if (allValues.employmentHistory && Array.isArray(allValues.employmentHistory)) {
+      allValues.employmentHistory = allValues.employmentHistory.map((item) => ({
         ...item,
         fromDate: formatDateForAPI(item.fromDate),
         toDate: formatDateForAPI(item.toDate),
       }));
     }
 
-    if (values.workExperience && Array.isArray(values.workExperience)) {
-      values.workExperience = values.workExperience.map((item) => ({
+    if (allValues.workExperience && Array.isArray(allValues.workExperience)) {
+      allValues.workExperience = allValues.workExperience.map((item) => ({
         ...item,
         joiningDate: formatDateForAPI(item.joiningDate),
       }));
@@ -168,17 +173,17 @@ const useFormApplication = () => {
       const formData = new FormData();
 
       // Append basic fields
-      Object.keys(values).forEach((key) => {
-        if (Array.isArray(values[key])) {
-          formData.append(key, JSON.stringify(values[key]));
+      Object.keys(allValues).forEach((key) => {
+        if (Array.isArray(allValues[key])) {
+          formData.append(key, JSON.stringify(allValues[key]));
         } else if (key === "signature") {
-          if (values.signature instanceof File) {
-            formData.append("signature", values.signature);
+          if (allValues.signature instanceof File) {
+            formData.append("signature", allValues.signature);
           }
         } else {
           formData.append(
             key,
-            values[key] === null || values[key] === undefined ? "" : values[key]
+            allValues[key] === null || allValues[key] === undefined ? "" : allValues[key]
           );
         }
       });
@@ -190,7 +195,7 @@ const useFormApplication = () => {
       });
 
       if (response.ok) {
-        if (values.isDraft) {
+        if (allValues.isDraft) {
           const resData = await response.json();
           // If in Preview Mode, don't alert, just navigate
           if (isPreviewMode) {
@@ -198,7 +203,7 @@ const useFormApplication = () => {
             navigate(`/forms/application/preview/${employeeId}`, {
               state: {
                 formData: {
-                  ...values,
+                  ...allValues,
                   signature_path:
                     savedData.signature_path || autoFillData?.signature,
                 },
@@ -220,7 +225,7 @@ const useFormApplication = () => {
           navigate(`/forms/application/preview/${employeeId}`, {
             state: {
               formData: {
-                ...values,
+                ...allValues,
                 signature_path:
                   savedData.signature_path || autoFillData?.signature,
               },

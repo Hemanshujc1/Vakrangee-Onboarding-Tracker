@@ -1,7 +1,6 @@
 import {
   React,
   FormLayout,
-  Loader2,
   onValidationFail,
 } from "../../utils/formDependencies";
 import EPFFormHeader from "./EPFSections/EPFFormHeader";

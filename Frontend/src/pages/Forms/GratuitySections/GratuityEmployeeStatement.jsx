@@ -84,6 +84,7 @@ const GratuityEmployeeStatement = ({
         register={register}
         name="date_of_appointment"
         error={errors.date_of_appointment}
+        disabled={!!autoFillData?.dateOfJoining}
       />
     </div>
 
@@ -97,6 +98,7 @@ const GratuityEmployeeStatement = ({
           name="city"
           error={errors.city}
           required
+          disabled
         />
         <FormInput
           label="Thana"
@@ -116,6 +118,7 @@ const GratuityEmployeeStatement = ({
           name="post_office"
           error={errors.post_office}
           required
+          disabled
         />
         <FormInput
           label="District"
@@ -123,6 +126,8 @@ const GratuityEmployeeStatement = ({
           name="district"
           error={errors.district}
           required
+                    disabled
+
         />
         <FormInput
           label="State"
@@ -130,6 +135,8 @@ const GratuityEmployeeStatement = ({
           name="state"
           error={errors.state}
           required
+                    disabled
+
         />
       </div>
     </div>
@@ -142,6 +149,7 @@ const GratuityEmployeeStatement = ({
             {...register("place")}
             className="border-b border-black outline-none px-2 bg-transparent"
             placeholder="e.g. Mumbai"
+            disabled
           />
           {errors.place && (
             <span className="text-red-500 text-xs block">Required</span>

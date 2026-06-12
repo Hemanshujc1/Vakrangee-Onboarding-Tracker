@@ -7,6 +7,7 @@ const {
 } = require("../models");
 const logger = require("../utils/logger");
 const formHandler = require("../utils/formHandler");
+const { sendReminderEmail } = require("../services/emailServiceforEmployee");
 
 // ─── JSON group helpers ────────────────────────────────────────────────────────
 const getEmpStatus = (emp) => emp?.employee_status || {};
@@ -1301,4 +1302,142 @@ exports.downloadDocuments = async (req, res) => {
     res.status(500).json({ message: "Server error generating zip file" });
   }
 };
+// ─────────────────────────────────────────────────────────────────────────────
+// Send Reminder Email
+// POST /api/employees/:id/send-reminder
+// Body: { items: [{ type: "doc"|"preForm"|"postForm", key: string }] }
+// ─────────────────────────────────────────────────────────────────────────────
+exports.sendReminder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { items } = req.body;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "No items selected for reminder." });
+    }
+
+    // ── 1. Fetch employee ─────────────────────────────────────────────────────
+    const employee = await EmployeeMaster.findOne({
+      where: { id },
+      include: [
+        { model: EmployeeRecord },
+        { model: User, attributes: ["username"] },
+      ],
+    });
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const pi   = getPersonalInfo(employee.EmployeeRecord);
+    const ci   = getContactInfo(employee.EmployeeRecord);
+    const firstName = pi.firstname || "there";
+
+    // Prefer personal email; fall back to company email
+    const toEmail =
+      ci.personal_email_id ||
+      employee.company_email_id ||
+      employee.User?.username;
+
+    if (!toEmail) {
+      return res.status(400).json({ message: "No email address found for this employee." });
+    }
+
+    // ── 2. Resolve HR sender info ─────────────────────────────────────────────
+    const record = employee.EmployeeRecord;
+    let hrName = "HR Team";
+    let hrDesignation = "Human Resources";
+
+    if (record?.onboarding_hr_id) {
+      const hrMaster = await EmployeeMaster.findOne({
+        where: { employee_id: record.onboarding_hr_id },
+        include: [{ model: EmployeeRecord }],
+      });
+      if (hrMaster?.EmployeeRecord) {
+        const hrPi = getPersonalInfo(hrMaster.EmployeeRecord);
+        const hrJi = getJobInfo(hrMaster.EmployeeRecord);
+        if (hrPi.firstname) {
+          hrName = `${hrPi.firstname} ${hrPi.lastname || ""}`.trim();
+        }
+        if (hrJi.job_title) hrDesignation = hrJi.job_title;
+      }
+    }
+
+    // ── 3. Document label lookup ──────────────────────────────────────────────
+    // Map from doc key → display label (mirrors frontend DOCUMENT_CONFIG)
+    const DOC_LABELS = {
+      "Passport Size Photo":     "Passport Size Photo",
+      "Signature":               "Signature",
+      "PAN Card":                "PAN Card",
+      "Aadhar Card":             "Aadhar Card",
+      "10th Marksheet":          "10th Marksheet",
+      "12th Marksheet":          "12th Marksheet",
+      "Degree Certificate":      "Degree Certificate",
+      "Cancelled Cheque":        "Cancelled Cheque",
+      "6 Months Bank Statement": "6 Months Bank Statement",
+      "Previous Offer Letter 1": "Previous Offer Letter 1",
+      "Previous Offer Letter 2": "Previous Offer Letter 2",
+      "Resume":                  "Resume",
+      "Relieving Letter":        "Relieving Letter",
+      "Experience Certificate":  "Experience Certificate",
+      "Service Certificates":    "Service Certificates",
+      "Last Drawn Salary Slip":  "Last Drawn Salary Slips (last 3 months)",
+    };
+
+    // ── 4. Form label lookup ──────────────────────────────────────────────────
+    const FORM_LABELS = {
+      EMPLOYMENT_APP: "Application Form",
+      DECLARATION:    "Declaration Form",
+      MEDICLAIM:      "Mediclaim Form",
+      GRATUITY:       "Gratuity Form (Form F)",
+      EMPLOYEE_INFO:  "Employee Information Form",
+      NDA:            "Non-Disclosure Agreement (NDA)",
+      TDS:            "TDS Declaration Form",
+      EPF:            "EPF Form",
+    };
+
+    // ── 5. Build pending docs / forms lists ───────────────────────────────────
+    const pendingDocs  = [];
+    const pendingForms = [];
+
+    for (const item of items) {
+      if (item.type === "doc") {
+        const label = DOC_LABELS[item.key] || item.key;
+        pendingDocs.push({ label });
+      } else if (item.type === "preForm" || item.type === "postForm") {
+        const label = FORM_LABELS[item.key] || item.key;
+        pendingForms.push({ label });
+      }
+    }
+
+    // ── 6. Send email ─────────────────────────────────────────────────────────
+    const result = await sendReminderEmail(
+      toEmail,
+      firstName,
+      pendingDocs,
+      pendingForms,
+      hrName,
+      hrDesignation
+    );
+
+    if (!result.success) {
+      logger.error("Reminder email failed for employee %s: %s", id, result.error);
+      return res.status(500).json({ message: "Failed to send reminder email.", error: result.error });
+    }
+
+    logger.info(
+      "Reminder email sent to %s (%s) — %d docs, %d forms",
+      toEmail, id, pendingDocs.length, pendingForms.length
+    );
+
+    res.json({
+      message: "Reminder email sent successfully.",
+      sentTo: toEmail,
+      pendingDocs: pendingDocs.length,
+      pendingForms: pendingForms.length,
+    });
+  } catch (error) {
+    logger.error("Error in sendReminder: %o", error);
+    res.status(500).json({ message: "Server error sending reminder email." });
+  }
+};

@@ -141,13 +141,13 @@ const useFormTDS = () => {
         employee_name: savedData.employee_name || autoFillData.fullName || "",
         employee_code:
           savedData.employee_code || autoFillData.employeeCode || "",
-        address_line1: savedData.address_line1 || address.line1 || "",
-        address_line2: savedData.address_line2 || address.line2 || "",
-        landmark: savedData.landmark || address.landmark || "",
-        city: savedData.city || address.city || "",
-        district: savedData.district || address.district || "",
-        state: savedData.state || address.state || "",
-        pincode: savedData.pincode || address.pincode || "",
+        address_line1: savedData.address_line1 || autoFillData.currentAddress || "",
+        address_line2: savedData.address_line2 || "",
+        landmark: savedData.landmark || "",
+        city: savedData.city || "",
+        district: savedData.district || "",
+        state: savedData.state || "",
+        pincode: savedData.pincode || "",
 
         job_title: savedData.job_title || autoFillData.designation || "",
         pan_no: savedData.pan_no || autoFillData.panNo || "",
@@ -170,12 +170,8 @@ const useFormTDS = () => {
 
   const onFormSubmit = async (values) => {
     const allValues = {
+      ...getValues(),
       ...values,
-      employee_name: getValues("employee_name"),
-      job_title: getValues("job_title"),
-      address_line1: getValues("address_line1"),
-      pan_no: getValues("pan_no"),
-      contact_no: getValues("contact_no"),
     };
 
     try {

@@ -127,6 +127,7 @@ const useFormGratuity = () => {
     reset,
     setValue,
     watch,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "all",
@@ -268,34 +269,35 @@ const useFormGratuity = () => {
   }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
-    if (values.isDraft) {
+    const allValues = { ...getValues(), ...values };
+    if (allValues.isDraft) {
       try {
         const formData = new FormData();
-        const formattedWitnessDate = formatDateForAPI(values.witnesses_date);
+        const formattedWitnessDate = formatDateForAPI(allValues.witnesses_date);
 
-        Object.keys(values).forEach((key) => {
+        Object.keys(allValues).forEach((key) => {
           if (key === "witnesses") {
             // Inject place and date into each witness object
-            const enhancedWitnesses = (values.witnesses || []).map((w) => ({
+            const enhancedWitnesses = (allValues.witnesses || []).map((w) => ({
               ...w,
-              place: values.witnesses_place || "",
+              place: allValues.witnesses_place || "",
               date: formattedWitnessDate || "",
             }));
             formData.append(key, JSON.stringify(enhancedWitnesses));
           } else if (key === "nominees") {
-            formData.append(key, JSON.stringify(values[key]));
+            formData.append(key, JSON.stringify(allValues[key]));
           } else if (key === "signature") {
-            if (values.signature instanceof File) {
-              formData.append("signature", values.signature);
+            if (allValues.signature instanceof File) {
+              formData.append("signature", allValues.signature);
             }
           } else if (
             key === "date_of_appointment" ||
             key === "witnesses_date"
           ) {
-            const dateVal = formatDateForAPI(values[key]);
+            const dateVal = formatDateForAPI(allValues[key]);
             formData.append(key, dateVal || "");
           } else {
-            formData.append(key, values[key] || "");
+            formData.append(key, allValues[key] || "");
           }
         });
 
@@ -320,7 +322,7 @@ const useFormGratuity = () => {
       navigate(`/forms/gratuity-form/preview/${employeeId}`, {
         state: {
           formData: {
-            ...values,
+            ...allValues,
             signature_path: savedData.signature_path || autoFillData?.signature,
           },
           signaturePreview: signaturePreview,

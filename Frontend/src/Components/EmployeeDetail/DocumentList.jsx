@@ -1,21 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Eye } from "lucide-react";
+import { MANDATORY_DOC_KEYS } from "../../config/documentConfig";
 
 const DocumentList = ({ documents = [], employeeId }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const rolePath = user.role === "HR_SUPER_ADMIN" ? "hr-super-admin" : "hr-admin";
-
-  const MANDATORY_DOCUMENTS = [
-    "Passport Size Photo",
-    "Signature",
-    "PAN Card",
-    "Aadhar Card",
-    "10th Marksheet",
-    "12th Marksheet",
-    "Degree Certificate",
-    "Cancelled Cheque",
-  ];
 
   // 1. Map existing documents by type for easy lookup
   const docsMap = {};
@@ -27,7 +17,7 @@ const DocumentList = ({ documents = [], employeeId }) => {
   const itemsToRender = [];
 
   // Add mandatory documents first
-  MANDATORY_DOCUMENTS.forEach((docType) => {
+  MANDATORY_DOC_KEYS.forEach((docType) => {
     if (docsMap[docType]) {
       itemsToRender.push({
         type: docType,
@@ -47,7 +37,7 @@ const DocumentList = ({ documents = [], employeeId }) => {
 
   // Add any non-mandatory documents that were uploaded
   documents.forEach((doc) => {
-    if (!MANDATORY_DOCUMENTS.includes(doc.document_type)) {
+    if (!MANDATORY_DOC_KEYS.includes(doc.document_type)) {
       itemsToRender.push({
         type: doc.document_type,
         isMandatory: false,
@@ -56,6 +46,7 @@ const DocumentList = ({ documents = [], employeeId }) => {
       });
     }
   });
+
 
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">

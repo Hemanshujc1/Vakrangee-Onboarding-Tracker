@@ -137,6 +137,7 @@ const FormMediclaim = () => {
               name="address_line1"
               error={errors.address_line1}
               required={true}
+              disabled={true}
             />
           </div>
           <div className="md:col-span-2">
@@ -146,6 +147,7 @@ const FormMediclaim = () => {
               name="address_line2"
               required={true}
               error={errors.address_line2}
+              disabled={true}
             />
           </div>
           <FormInput
@@ -153,6 +155,7 @@ const FormMediclaim = () => {
             register={register}
             name="landmark"
             error={errors.landmark}
+            disabled={true}
           />
           <FormInput
             label="Post Office"
@@ -160,6 +163,7 @@ const FormMediclaim = () => {
             name="post_office"
             error={errors.post_office}
             required={true}
+            disabled={true}
           />
           <FormInput
             label="City"
@@ -167,12 +171,14 @@ const FormMediclaim = () => {
             name="city"
             error={errors.city}
             required={true}
+            disabled={true}
           />
           <FormInput
             label="District"
             register={register}
             name="district"
             error={errors.district}
+            disabled={true}
           />
           <FormInput
             label="State"
@@ -180,6 +186,7 @@ const FormMediclaim = () => {
             name="state"
             error={errors.state}
             required={true}
+            disabled={true}
           />
           <FormInput
             label="Pincode"
@@ -192,6 +199,7 @@ const FormMediclaim = () => {
             onInput={(e) => {
               e.target.value = e.target.value.replace(/[^0-9]/g, "");
             }}
+            disabled={true}
           />
         </div>
       </FormSection>

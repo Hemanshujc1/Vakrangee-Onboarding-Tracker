@@ -6,6 +6,7 @@ const PreviewActions = ({
   isHR, 
   onBack, 
   onPrint, 
+  printLabel,
   onVerify, 
   onEdit, 
   onSubmit, 
@@ -35,7 +36,7 @@ const PreviewActions = ({
           className="flex items-center gap-2 px-4 py-2 bg-white border rounded hover:bg-gray-50 text-gray-700"
         >
           <Printer size={18} />
-          Print / Save PDF
+          {printLabel || "Print / Save PDF"}
         </button>
 
         {/* HR Actions */}

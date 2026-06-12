@@ -1,5 +1,4 @@
 import { Award } from "lucide-react";
-import DocumentVerificationItem from "./DocumentVerificationItem";
 
 const EducationIdentityCard = ({ employee }) => {
   return (

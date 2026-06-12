@@ -109,41 +109,18 @@ const DocumentPreview = () => {
       : "documents";
   const fileUrl = `/uploads/${folder}/${document.file_path}`;
 
-  const handlePrint = () => {
-    if (isPDF) {
-      const iframe = document.getElementById("pdf-preview-iframe");
-      if (iframe) {
-        try {
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
-        } catch (e) {
-          console.error("Iframe print failed, opening PDF in a new tab:", e);
-          window.open(fileUrl, "_blank");
-        }
-      } else {
-        window.open(fileUrl, "_blank");
-      }
-    } else if (isImage) {
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print Document</title>
-            <style>
-              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
-              img { max-width: 100%; max-height: 100%; object-fit: contain; }
-              @page { size: auto; margin: 10mm; }
-            </style>
-          </head>
-          <body>
-            <img src="${fileUrl}" onload="setTimeout(function(){ window.print(); window.close(); }, 500);" />
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    } else {
-      window.open(fileUrl, "_blank");
-    }
+  const handleDownload = () => {
+    const ext = document.file_path.split(".").pop();
+    const empName = `${employee?.firstName || ""}_${employee?.lastName || ""}`.trim().toLowerCase().replace(/\s+/g, "_");
+    const docName = (document.document_type || "document").toLowerCase().replace(/\s+/g, "_");
+    const fileName = `${empName}_${docName}.${ext}`;
+
+    const link = window.document.createElement("a");
+    link.href = fileUrl;
+    link.download = fileName;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
   };
 
   return (
@@ -154,7 +131,8 @@ const DocumentPreview = () => {
           isHR={isHR}
           onBack={() => navigate(-1)}
           onVerify={handleVerification}
-          onPrint={handlePrint}
+          onPrint={handleDownload}
+          printLabel="Download"
           isSubmitting={actionLoading}
           isSubmitHidden={true}
         />

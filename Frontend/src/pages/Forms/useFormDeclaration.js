@@ -122,9 +122,8 @@ const useFormDeclaration = () => {
   const onFormSubmit = async (values) => {
     // Disabled fields are excluded from 'values', so fetch them manually
     const allValues = {
+      ...getValues(),
       ...values,
-      employee_full_name: getValues("employee_full_name"),
-      current_job_title: getValues("current_job_title"),
     };
 
     try {

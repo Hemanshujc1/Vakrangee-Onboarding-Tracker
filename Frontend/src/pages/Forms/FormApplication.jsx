@@ -91,9 +91,6 @@ const FormApplication = () => {
       <AddressDetails
         register={register}
         errors={errors}
-        autoFillData={autoFillData}
-        setValue={setValue}
-        watch={watch}
       />
 
       {/* Education & Training */}

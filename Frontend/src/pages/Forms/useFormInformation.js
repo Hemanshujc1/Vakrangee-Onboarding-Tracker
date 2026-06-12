@@ -45,6 +45,7 @@ const useFormInformation = () => {
     setValue,
     watch,
     reset,
+    getValues,
     formState: { isSubmitting, errors },
   } = useForm({
     mode: "all",
@@ -117,11 +118,11 @@ const useFormInformation = () => {
         father_name: saved.father_name || "",
         father_middle_name: saved.father_middle_name || "",
         father_last_name: saved.father_last_name || "",
-        date_of_birth: formatDateForAPI(saved.date_of_birth || base.dob),
+        date_of_birth: formatDateForAPI(saved.date_of_birth || base.dateOfBirth || base.dob),
         birth_city: saved.birth_city || "",
         birth_state: saved.birth_state || "",
-        country: saved.country || "India",
-        blood_group: saved.blood_group || "",
+        country: saved.country || base.address?.country || "India",
+        blood_group: saved.blood_group || base.bloodGroup || "",
         gender: saved.gender || base.gender || "",
         marital_status: saved.marital_status || base.maritalStatus || "",
 
@@ -134,15 +135,15 @@ const useFormInformation = () => {
         std_code: saved.std_code || "",
         alternate_no: saved.alternate_no || "",
         mobile_no: saved.mobile_no || base.mobileNo || "",
-        emergency_no: saved.emergency_no || "",
+        emergency_no: saved.emergency_no || base.emergencyNo || "",
         personal_email: saved.personal_email || base.email || "",
 
         // Address
         ...saved, // Spread saved address fields
 
         current_residence_type: saved.current_residence_type || "",
-        current_pin_code: saved.current_pin_code || autoFillData.address?.pincode || "",
-        current_post_office: saved.current_post_office || autoFillData.address?.post_office || "",
+        current_pin_code: saved.current_pin_code || "",
+        current_post_office: saved.current_post_office || "",
         
         educational_details:
           saved.educational_details?.length > 0
@@ -151,7 +152,7 @@ const useFormInformation = () => {
         employment_details:
           saved.employment_details?.length > 0
             ? saved.employment_details
-            : [],
+            : defaultValues.employment_details,
         references:
           saved.references?.length >= 2
             ? saved.references
@@ -169,6 +170,7 @@ const useFormInformation = () => {
 
   const onSubmit = async (values) => {
     try {
+      const allValues = { ...getValues(), ...values };
       const formData = new FormData();
 
       // Date formatting helpers
@@ -178,19 +180,19 @@ const useFormInformation = () => {
         "passport_expiry_date",
       ];
       dateFields.forEach((f) => {
-        if (values[f]) values[f] = formatDateForAPI(values[f]);
+        if (allValues[f]) allValues[f] = formatDateForAPI(allValues[f]);
       });
 
       // Process arrays
-      if (values.educational_details) {
-        values.educational_details = values.educational_details.map((e) => ({
+      if (allValues.educational_details) {
+        allValues.educational_details = allValues.educational_details.map((e) => ({
           ...e,
           startDate: formatDateForAPI(e.startDate),
           endDate: formatDateForAPI(e.endDate),
         }));
       }
-      if (values.employment_details) {
-        values.employment_details = values.employment_details.map((e) => ({
+      if (allValues.employment_details) {
+        allValues.employment_details = allValues.employment_details.map((e) => ({
           ...e,
           startDate: formatDateForAPI(e.startDate),
           endDate: formatDateForAPI(e.endDate),
@@ -201,10 +203,10 @@ const useFormInformation = () => {
         }));
       }
 
-      Object.keys(values).forEach((key) => {
+      Object.keys(allValues).forEach((key) => {
         if (key === "signature") {
-          if (values.signature instanceof File) {
-            formData.append("signature", values.signature);
+          if (allValues.signature instanceof File) {
+            formData.append("signature", allValues.signature);
           }
         } else if (
           [
@@ -214,9 +216,9 @@ const useFormInformation = () => {
             "documents_attached",
           ].includes(key)
         ) {
-          formData.append(key, JSON.stringify(values[key]));
+          formData.append(key, JSON.stringify(allValues[key]));
         } else {
-          formData.append(key, values[key] == null ? "" : values[key]);
+          formData.append(key, allValues[key] == null ? "" : allValues[key]);
         }
       });
 
@@ -230,18 +232,18 @@ const useFormInformation = () => {
         navigate(`/forms/information/preview/${employeeId}`, {
           state: {
             formData: {
-              ...values,
+              ...allValues,
               signature_path: saved.signature_path || autoFillData?.signature,
             },
             signaturePreview: signaturePreview,
             employeeId,
           },
         });
-      } else if (values.isDraft) {
+      } else if (allValues.isDraft) {
         await showAlert("Draft Saved!", { type: "success" });
       } else {
         navigate(`/forms/information/preview/${employeeId}`, {
-          state: { formData: values, signaturePreview, employeeId },
+          state: { formData: allValues, signaturePreview, employeeId },
         });
       }
     } catch (error) {
