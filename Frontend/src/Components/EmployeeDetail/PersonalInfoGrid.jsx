@@ -56,9 +56,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
         </button>
 
         {openSections.personal && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-6 gap-x-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-6 mt-6">
             {/* First Name */}
-            <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            {/* <div className="flex items-start gap-3 text-gray-600 min-w-0">
               <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
                 <User size={18} />
               </div>
@@ -68,9 +68,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                   {employee.firstName || employee.firstname || "N/A"}
                 </p>
               </div>
-            </div>
+            </div> */}
             {/* Middle Name */}
-            <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            {/* <div className="flex items-start gap-3 text-gray-600 min-w-0">
               <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
                 <User size={18} />
               </div>
@@ -80,9 +80,9 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                   {employee.middleName || employee.middlename || "N/A"}
                 </p>
               </div>
-            </div>
+            </div> */}
             {/* Last Name */}
-            <div className="flex items-start gap-3 text-gray-600 min-w-0">
+            {/* <div className="flex items-start gap-3 text-gray-600 min-w-0">
               <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
                 <User size={18} />
               </div>
@@ -92,7 +92,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
                   {employee.lastName || employee.lastname || "N/A"}
                 </p>
               </div>
-            </div>
+            </div> */}
             {/* Email */}
             <div className="flex items-start gap-3 text-gray-600 min-w-0">
               <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">
@@ -302,7 +302,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
         </button>
 
         {openSections.academic && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-6 gap-x-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-6 mt-6">
             {/* 10th Percentage */}
             <div className="flex items-start gap-3 text-gray-600 min-w-0">
               <div className="p-2 bg-(--color-primary)/10 rounded-lg text-(--color-primary) shrink-0">

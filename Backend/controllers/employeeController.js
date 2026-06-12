@@ -1234,32 +1234,86 @@ exports.downloadDocuments = async (req, res) => {
             const formType = formRecord.form_type;
             const folderName = file.category === 'preJoiningForms' ? 'Pre Joining Forms' : 'Post Joining Forms';
             
-            // Generate PDF to a temp location
-            const tempPdfName = `temp_${formType}_${Date.now()}.pdf`;
-            const tempPdfPath = path.join(tempDir, tempPdfName);
+            let formNameFormatted = formType.replace(/_/g, '_');
+            if (formType === 'EMPLOYMENT_APP') formNameFormatted = 'Application_Form';
+            else if (formType === 'DECLARATION') formNameFormatted = 'Declaration_Form';
+            else if (formType === 'EMPLOYEE_INFO') formNameFormatted = 'Employee_Information_Form';
             
-            await pdfGenerator.generateFormPDF(employee, formRecord, tempPdfPath);
-            
-            if (fs.existsSync(tempPdfPath)) {
-              // Mapping file name formatting for forms
-              let formNameFormatted = formType.replace(/_/g, '_');
-              if (formType === 'EMPLOYMENT_APP') formNameFormatted = 'Application_Form';
-              else if (formType === 'DECLARATION') formNameFormatted = 'Declaration_Form';
-              else if (formType === 'EMPLOYEE_INFO') formNameFormatted = 'Employee_Information_Form';
+            const archiveName = `${employeeName}_${formNameFormatted}.pdf`;
+
+            try {
+              const puppeteer = require('puppeteer');
+              const frontendUrl = req.body.frontendUrl || 'http://localhost:5173';
               
-              const archiveName = `${employeeName}_${formNameFormatted}.pdf`;
+              const formPaths = {
+                EMPLOYMENT_APP: `/forms/application/preview/${employee.id}`,
+                DECLARATION: `/forms/declaration-form/preview/${employee.id}`,
+                MEDICLAIM: `/forms/mediclaim/preview/${employee.id}`,
+                GRATUITY: `/forms/gratuity-form/preview/${employee.id}`,
+                EMPLOYEE_INFO: `/forms/information/preview/${employee.id}`,
+                NDA: `/forms/non-disclosure-agreement/preview/${employee.id}`,
+                TDS: `/forms/tds-form/preview/${employee.id}`,
+                EPF: `/forms/employees-provident-fund/preview/${employee.id}`,
+              };
               
-              // Put it into the ZIP, then cleanup
-              const pdfBuffer = fs.readFileSync(tempPdfPath);
+              const formPath = formPaths[formType];
+              if (!formPath) {
+                throw new Error(`Unknown form path for ${formType}`);
+              }
+
+              const url = `${frontendUrl}${formPath}`;
+              
+              // Extract token from Auth header
+              const authHeader = req.headers.authorization || '';
+              const token = authHeader.replace('Bearer ', '').trim();
+
+              const browser = await puppeteer.launch({ 
+                headless: 'new', 
+                args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+              });
+              
+              const page = await browser.newPage();
+              
+              // Inject token and mock user role so frontend authenticates and doesn't redirect
+              await page.evaluateOnNewDocument((authToken) => {
+                localStorage.setItem('token', authToken);
+                localStorage.setItem('user', JSON.stringify({ role: 'HR_ADMIN' }));
+              }, token);
+
+              await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+              
+              // Hide the action buttons specifically (PreviewActions)
+              await page.addStyleTag({ content: '.print\\:hidden { display: none !important; }' });
+
+              const pdfBuffer = await page.pdf({
+                format: 'A4',
+                printBackground: true,
+                margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' }
+              });
+
+              await browser.close();
+
               archive.append(pdfBuffer, { name: `${employeeName}/${folderName}/${archiveName}` });
-              
-              fs.unlinkSync(tempPdfPath);
-              
               reportLines.push(`[SUCCESS] Category: Forms | Type: ${formType} -> ${folderName}/${archiveName}`);
               successCount++;
-            } else {
-              reportLines.push(`[FAILED] Category: Forms | Type: ${formType} | Reason: Failed to generate PDF`);
-              failCount++;
+            } catch (err) {
+              logger.error(`Puppeteer PDF generation failed for ${formType}: %o`, err);
+              // Fallback to older text-based PDF if puppeteer fails
+              const tempPdfName = `temp_${formType}_${Date.now()}.pdf`;
+              const tempPdfPath = path.join(tempDir, tempPdfName);
+              
+              await pdfGenerator.generateFormPDF(employee, formRecord, tempPdfPath);
+              
+              if (fs.existsSync(tempPdfPath)) {
+                const pdfBuffer = fs.readFileSync(tempPdfPath);
+                archive.append(pdfBuffer, { name: `${employeeName}/${folderName}/${archiveName}` });
+                fs.unlinkSync(tempPdfPath);
+                reportLines.push(`[SUCCESS] Category: Forms (Fallback) | Type: ${formType} -> ${folderName}/${archiveName}`);
+                successCount++;
+              } else {
+                reportLines.push(`[FAILED] Category: Forms | Type: ${formType} | Reason: Failed to generate PDF`);
+                failCount++;
+              }
             }
           }
         } catch (err) {
@@ -1274,15 +1328,12 @@ exports.downloadDocuments = async (req, res) => {
     reportLines.push(`SUMMARY: Successfully packed ${successCount} files, failed to pack ${failCount} files.`);
     reportLines.push("==================================================");
 
-    // Append report to the root of ZIP file
-    archive.append(reportLines.join("\n"), { name: `${employeeName}/download_report.txt` });
-
     // Finalize
     await archive.finalize();
 
     // Once finished, stream back and cleanup
     output.on('close', () => {
-      res.download(zipPath, `${employeeName}_documents.zip`, (downloadErr) => {
+      res.download(zipPath, zipFilename, (downloadErr) => {
         if (downloadErr) {
           logger.error('Error sending ZIP to client: %o', downloadErr);
         }
