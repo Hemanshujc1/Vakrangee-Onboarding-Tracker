@@ -80,10 +80,7 @@ const App = () => {
         {/* HR Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["HR_ADMIN"]} />}>
           <Route path="/hr-admin" element={<HRAdminDashboard />} />
-          {/* <Route
-            path="/hr-admin/other-employees"
-            element={<OtherEmployees />}
-          /> */}
+          
           <Route path="/hr-admin/employees" element={<HRAdminEmployees />} />
           <Route
             path="/hr-admin/manage-employees"
