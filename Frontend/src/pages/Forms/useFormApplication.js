@@ -15,17 +15,15 @@ const useFormApplication = () => {
   const {
     navigate,
     showAlert,
-    user,
     targetId: employeeId,
     autoFillData,
     autoFillLoading,
     signaturePreview,
     setSignaturePreview,
-    isPreviewMode,
+    isRef: isPreviewRef,
     setIsPreviewMode,
   } = useOnboardingForm();
 
-  // Redirect if no employeeId (already handled partially in shared hook via user check, but here specifically)
   useEffect(() => {
     if (!employeeId) navigate("/login");
   }, [employeeId, navigate]);
@@ -54,7 +52,6 @@ const useFormApplication = () => {
     defaultValues,
   });
 
-  // Field Arrays
   const {
     fields: educationFields,
     append: appendEdu,
@@ -120,7 +117,6 @@ const useFormApplication = () => {
           saved.emergencyNo || autoFillData.emergencyNo || "",
         ...saved,
 
-        // Ensure arrays have at least one row if empty and required
         education: saved.education?.length
           ? saved.education
           : autoFillData.education?.length
@@ -142,6 +138,9 @@ const useFormApplication = () => {
 
   const onFormSubmit = async (values) => {
     const allValues = { ...getValues(), ...values };
+    if (isPreviewRef.current) {
+      allValues.isDraft = true;
+    }
     const dateFields = [
       "dob",
       "licenseIssueDate",
@@ -171,8 +170,6 @@ const useFormApplication = () => {
 
     try {
       const formData = new FormData();
-
-      // Append basic fields
       Object.keys(allValues).forEach((key) => {
         if (Array.isArray(allValues[key])) {
           formData.append(key, JSON.stringify(allValues[key]));
@@ -197,8 +194,8 @@ const useFormApplication = () => {
       if (response.ok) {
         if (allValues.isDraft) {
           const resData = await response.json();
-          // If in Preview Mode, don't alert, just navigate
-          if (isPreviewMode) {
+
+          if (isPreviewRef.current) {
             const savedData = autoFillData?.applicationData || {};
             navigate(`/forms/application/preview/${employeeId}`, {
               state: {
@@ -215,7 +212,7 @@ const useFormApplication = () => {
             });
           } else {
             await showAlert(
-              `Draft Saved Successfully! Status: ${resData.status}`,
+              `Draft Saved!`,
               { type: "success" }
             );
           }
@@ -262,6 +259,7 @@ const useFormApplication = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -289,8 +287,9 @@ const useFormApplication = () => {
     onFormSubmit,
     onValidationFail,
     showAlert,
+    isPreviewRef,
     setIsPreviewMode,
-  };
+    };
 };
 
 export default useFormApplication;

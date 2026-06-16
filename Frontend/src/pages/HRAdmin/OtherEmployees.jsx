@@ -9,7 +9,6 @@ const OtherEmployees = () => {
   const [currentUserLocation, setCurrentUserLocation] = useState(null);
   const [isLocationLoading, setIsLocationLoading] = useState(true);
 
-  // Hook initialization
   const employeeListProps = useEmployeeList({
     filterPredicate: (emp, user) => {
       if (!currentUserLocation) return false;
@@ -26,7 +25,6 @@ const OtherEmployees = () => {
 
   const { fetchEmployees, loading: hookLoading } = employeeListProps;
 
-  // Fetch Current User Location
   useEffect(() => {
     const fetchLocation = async () => {
       try {

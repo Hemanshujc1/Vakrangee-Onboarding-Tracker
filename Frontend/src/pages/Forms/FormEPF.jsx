@@ -13,6 +13,8 @@ import EPFUndertaking from "./EPFSections/EPFUndertaking";
 import EPFEmployerDeclaration from "./EPFSections/EPFEmployerDeclaration";
 import useFormEPF from "./useFormEPF";
 
+import useOnboardingActions from "../../hooks/useOnboardingActions";
+
 const FormEPF = () => {
   const {
     targetId,
@@ -24,6 +26,7 @@ const FormEPF = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -39,6 +42,19 @@ const FormEPF = () => {
     isPreviewRef,
   } = useFormEPF();
 
+  const { actions, signatureProps } = useOnboardingActions({
+    isSubmitting,
+    setValue,
+    getValues,
+    isPreviewRef,
+    setIsPreviewMode,
+    onFormSubmit,
+    errors,
+    signaturePreview,
+    setSignaturePreview,
+    hasSavedSignature,
+  });
+
   if (loading) return <div>Loading Form Data...</div>;
 
   return (
@@ -52,27 +68,8 @@ const FormEPF = () => {
       onSubmit={handleSubmit(onFormSubmit, (e) =>
         onValidationFail(e, showAlert),
       )}
-      actions={{
-        isSubmitting,
-        onSaveDraft: () => {
-          setValue("isDraft", true);
-          isPreviewRef.current = false;
-          handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-        onSubmit: () => {
-          setValue("isDraft", true);
-          isPreviewRef.current = true;
-          handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-      }}
-      signature={{
-        setValue,
-        error: errors.signature,
-        preview: signaturePreview,
-        setPreview: setSignaturePreview,
-        isSaved: hasSavedSignature,
-        fieldName: "signature",
-      }}
+      actions={actions}
+      signature={signatureProps}
     >
       <EPFFormHeader />
 

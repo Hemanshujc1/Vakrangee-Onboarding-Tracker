@@ -12,7 +12,6 @@ const QuickActionsGrid = ({ title = "Quick Actions", actions = [] }) => {
             <div className="grid grid-cols-2 gap-4">
                 {actions.map((action, index) => {
                     const Icon = action.icon;
-                    // Default colors if not provided
                     const borderColorClass = action.borderColor || "hover:border-(--color-primary)";
                     const textColorClass = action.textColor || "hover:text-(--color-primary)";
                     const bgColorClass = action.bgColor || "hover:bg-blue-50";

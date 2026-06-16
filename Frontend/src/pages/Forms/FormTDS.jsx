@@ -13,6 +13,8 @@ import OtherInvestmentsSection from "./TDSSections/OtherInvestmentsSection";
 import EmployeeDeclaration from "./TDSSections/EmployeeDeclaration";
 import useFormTDS from "./useFormTDS";
 
+import useOnboardingActions from "../../hooks/useOnboardingActions";
+
 const FormTDS = () => {
   const {
     autoFillData,
@@ -24,6 +26,7 @@ const FormTDS = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -32,6 +35,18 @@ const FormTDS = () => {
     watchRelatedLandlord,
     isPreviewRef, // We use the ref here to match the logic in useFormTDS
   } = useFormTDS();
+
+  const { actions, signatureProps } = useOnboardingActions({
+    isSubmitting,
+    setValue,
+    getValues,
+    isPreviewRef,
+    onFormSubmit,
+    errors,
+    signaturePreview,
+    setSignaturePreview,
+    hasSavedSignature,
+  });
 
   if (loading) return <div>Loading...</div>;
 
@@ -46,27 +61,8 @@ const FormTDS = () => {
       onSubmit={handleSubmit(onFormSubmit, (e) =>
         onValidationFail(e, showAlert),
       )}
-      actions={{
-        isSubmitting,
-        onSaveDraft: () => {
-          setValue("isDraft", true);
-          isPreviewRef.current = false;
-          handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-        onSubmit: () => {
-          setValue("isDraft", true);
-          isPreviewRef.current = true;
-          handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-      }}
-      signature={{
-        setValue,
-        error: errors.signature,
-        preview: signaturePreview,
-        setPreview: setSignaturePreview,
-        isSaved: hasSavedSignature,
-        fieldName: "signature",
-      }}
+      actions={actions}
+      signature={signatureProps}
     >
       <TaxRegimeSelection register={register} errors={errors} />
 

@@ -1,6 +1,8 @@
 import React from "react";
 import DocumentUploadItem from "./DocumentUploadItem";
 import { DOC_CONFIG_MAP } from "../../../config/documentConfig";
+import FormInputField from "../../UI/FormInputField";
+import FormSelectField from "../../UI/FormSelectField";
 
 const ProfileIdentitySection = ({
   register,
@@ -35,103 +37,50 @@ const ProfileIdentitySection = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5 md:col-span-2">
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            First Name (as per PAN) <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("firstname")}
-                readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.firstname ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-              {errors.firstname && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.firstname.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.firstname || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="First Name (as per PAN)"
+          name="firstname"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.firstname}
+          readOnly={panVerified || isLocked}
+          required={true}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Middle Name (as per PAN)
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("middlename")}
-                readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.middlename ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-              {errors.middlename && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.middlename.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.middlename || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Middle Name (as per PAN)"
+          name="middlename"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.middlename}
+          readOnly={panVerified || isLocked}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Last Name (as per PAN) <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("lastname")}
-                readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.lastname ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-              {errors.lastname && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.lastname.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.lastname || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Last Name (as per PAN)"
+          name="lastname"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.lastname}
+          readOnly={panVerified || isLocked}
+          required={true}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Date of Birth (as per PAN) <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("date_of_birth")}
-                type="date"
-                max={maxDate}
-                readOnly={panVerified || isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.date_of_birth ? "border-red-500" : "border-gray-200"} ${panVerified || isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-              {errors.date_of_birth && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.date_of_birth.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formatDate(formData.date_of_birth) || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Date of Birth (as per PAN)"
+          name="date_of_birth"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formatDate(formData.date_of_birth)}
+          type="date"
+          readOnly={panVerified || isLocked}
+          required={true}
+          max={maxDate}
+        />
 
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -217,67 +166,44 @@ const ProfileIdentitySection = ({
         </div>
 
         <div className="sm:col-span-2 md:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Blood Group <span className="text-red-500">*</span>
-            </label>
-            {isEditing ? (
-              <>
-                <select
-                  {...register("blood_group")}
-                  disabled={isLocked}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.blood_group ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
-                >
-                  <option value="">Select Blood Group</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-                {errors.blood_group && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.blood_group.message}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="font-medium text-gray-800 py-2">
-                {formData.blood_group || "-"}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Aadhaar Number <span className="text-red-500">*</span>
-            </label>
-            {isEditing ? (
-              <>
-                <input
-                  {...register("adhar_number")}
-                  readOnly={isLocked}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.adhar_number ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                  maxLength={12}
-                  minLength={12}
-                  onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                  }}
-                />
-                {errors.adhar_number && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.adhar_number.message}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="font-medium text-gray-800 py-2">
-                {formData.adhar_number || "-"}
-              </p>
-            )}
-          </div>
+          <FormSelectField
+            label="Blood Group"
+            name="blood_group"
+            register={register}
+            errors={errors}
+            isEditing={isEditing}
+            value={formData.blood_group}
+            disabled={isLocked}
+            required={true}
+            options={[
+              { value: "A+", label: "A+" },
+              { value: "A-", label: "A-" },
+              { value: "B+", label: "B+" },
+              { value: "B-", label: "B-" },
+              { value: "AB+", label: "AB+" },
+              { value: "AB-", label: "AB-" },
+              { value: "O+", label: "O+" },
+              { value: "O-", label: "O-" },
+            ]}
+            placeholder="Select Blood Group"
+          />
+          
+          <FormInputField
+            label="Aadhaar Number"
+            name="adhar_number"
+            register={register}
+            errors={errors}
+            isEditing={isEditing}
+            value={formData.adhar_number}
+            readOnly={isLocked}
+            required={true}
+            maxLength={12}
+            minLength={12}
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
+          />
+          
           <div className="flex items-end">
             <DocumentUploadItem
               label="Aadhaar Card Upload"

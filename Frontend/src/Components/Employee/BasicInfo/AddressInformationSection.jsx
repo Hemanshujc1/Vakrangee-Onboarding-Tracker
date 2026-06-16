@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import SearchableSelect from "../../UI/SearchableSelect";
+import FormInputField from "../../UI/FormInputField";
 
 const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
-// Helper component for one address block (Permanent or Communication)
 const AddressBlock = ({
   prefix,
   register,
@@ -13,7 +13,7 @@ const AddressBlock = ({
   setValue,
   trigger,
   title,
-  disabledInputs = false, // True when comm address is "Same as Permanent"
+  disabledInputs = false, 
 }) => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -26,7 +26,6 @@ const AddressBlock = ({
   const [selectedStateId, setSelectedStateId] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-  // Fetch States on mount
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -44,9 +43,8 @@ const AddressBlock = ({
       }
     };
     fetchStates();
-  }, [watchState]); // WatchState dependency helps when form resets with data
+  }, [watchState]); 
 
-  // Fetch Districts when selectedStateId changes
   useEffect(() => {
     if (!selectedStateId) {
       setDistricts([]);
@@ -77,7 +75,6 @@ const AddressBlock = ({
     fetchDistricts();
   }, [selectedStateId, watchDistrict]);
 
-  // Fetch Cities when selectedDistrictId changes
   useEffect(() => {
     if (!selectedStateId || !selectedDistrictId) {
       setCities([]);
@@ -132,7 +129,6 @@ const AddressBlock = ({
 
   return (
     <div className="border border-gray-200 rounded-lg p-5 mb-6 bg-white relative">
-      {/* Semi-transparent overlay if disabled inputs (for same as permanent visual cue) */}
       {disabledInputs && !isLocked && (
         <div className="absolute inset-0 bg-gray-50 bg-opacity-50 z-10 rounded-lg pointer-events-none"></div>
       )}
@@ -140,54 +136,37 @@ const AddressBlock = ({
       <h5 className="font-semibold text-gray-700 mb-4">{title}</h5>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-        {/* Address Line 1 */}
-        <div className="relative z-20">
-          <label className="block text-sm text-gray-500 mb-1">
-            Address Line 1 <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register(`${prefix}address_line1`)}
-            readOnly={effectiveLock}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-              errors[`${prefix}address_line1`]
-                ? "border-red-500"
-                : "border-gray-200"
-            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
-          />
-          {errors[`${prefix}address_line1`] && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors[`${prefix}address_line1`].message}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Address Line 1"
+          name={`${prefix}address_line1`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={effectiveLock}
+          required={true}
+          className="relative z-20"
+        />
 
-        {/* Address Line 2 */}
-        <div className="relative z-20">
-          <label className="block text-sm text-gray-500 mb-1">
-            Address Line 2
-          </label>
-          <input
-            {...register(`${prefix}address_line2`)}
-            readOnly={effectiveLock}
-            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${
-              effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"
-            }`}
-          />
-        </div>
+        <FormInputField
+          label="Address Line 2"
+          name={`${prefix}address_line2`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={effectiveLock}
+          className="relative z-20"
+        />
 
-        {/* Landmark */}
-        <div className="relative z-20">
-          <label className="block text-sm text-gray-500 mb-1">Landmark</label>
-          <input
-            {...register(`${prefix}landmark`)}
-            readOnly={effectiveLock}
-            className={`w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${
-              effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"
-            }`}
-          />
-        </div>
+        <FormInputField
+          label="Landmark"
+          name={`${prefix}landmark`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={effectiveLock}
+          className="relative z-20"
+        />
 
-        {/* State */}
         <div className="relative z-20">
           <SearchableSelect
             label="State"
@@ -207,7 +186,6 @@ const AddressBlock = ({
           />
         </div>
 
-        {/* District */}
         <div className="relative z-20">
           <SearchableSelect
             label="District"
@@ -227,7 +205,6 @@ const AddressBlock = ({
           />
         </div>
 
-        {/* City */}
         <div className="relative z-20">
           <SearchableSelect
             label="City"
@@ -245,61 +222,42 @@ const AddressBlock = ({
           />
         </div>
 
-        {/* Post Office */}
-        <div className="relative z-20">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Post Office <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register(`${prefix}post_office`)}
-            readOnly={effectiveLock}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-              errors[`${prefix}post_office`]
-                ? "border-red-500"
-                : "border-gray-200"
-            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
-          />
-          {errors[`${prefix}post_office`] && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors[`${prefix}post_office`].message}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Post Office"
+          name={`${prefix}post_office`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={effectiveLock}
+          required={true}
+          className="relative z-20"
+        />
 
-        {/* Pincode */}
-        <div className="relative z-20">
-          <label className="block text-sm text-gray-500 mb-1">
-            Pincode <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register(`${prefix}pincode`)}
-            readOnly={effectiveLock}
-            maxLength={6}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-              errors[`${prefix}pincode`] ? "border-red-500" : "border-gray-200"
-            } ${effectiveLock ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}
-            onInput={(e) => {
-              e.target.value = e.target.value.replace(/[^0-9]/g, "");
-            }}
-          />
-          {errors[`${prefix}pincode`] && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors[`${prefix}pincode`].message}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Pincode"
+          name={`${prefix}pincode`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={effectiveLock}
+          required={true}
+          maxLength={6}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
+          className="relative z-20"
+        />
 
-        {/* Country */}
-        <div className="relative z-20">
-          <label className="block text-sm text-gray-500 mb-1">
-            Country <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register(`${prefix}country`)}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
-            readOnly
-          />
-        </div>
+        <FormInputField
+          label="Country"
+          name={`${prefix}country`}
+          register={register}
+          errors={errors}
+          isEditing={true}
+          readOnly={true}
+          required={true}
+          className="relative z-20"
+        />
       </div>
     </div>
   );
@@ -336,7 +294,6 @@ const AddressInformationSection = ({
     setValue("comm_same_as_permanent", isChecked);
 
     if (isChecked) {
-      // Copy all existing permanent fields to comm fields immediately
       const currentValues = watch();
       [
         "address_line1",

@@ -4,10 +4,10 @@ import {
   yupResolver,
   Yup,
   axios,
-  commonSchemas,
   createSignatureSchema,
   onValidationFail,
   formatDateForAPI,
+  readOnlySchemas,
 } from "../../utils/formDependencies";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
@@ -16,7 +16,6 @@ const useFormEPF = () => {
     navigate,
     location,
     showAlert,
-    user,
     targetId,
     autoFillData,
     autoFillLoading,
@@ -32,13 +31,12 @@ const useFormEPF = () => {
     autoFillData?.epfData?.signature_path || autoFillData?.signature
   );
 
-  // --- Validation Schema ---
   const validationSchema = useMemo(
     () =>
       Yup.object().shape({
         isDraft: Yup.boolean(),
-        member_name_aadhar: commonSchemas.nameString,
-        dob: commonSchemas.datePast
+        member_name_aadhar: readOnlySchemas.nameString,
+        dob: readOnlySchemas.datePast
           .max(
             new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
             "Must be 18 years or older"
@@ -50,19 +48,19 @@ const useFormEPF = () => {
 
         father_name: Yup.string().when("relationship_type", {
           is: "Father",
-          then: (schema) => commonSchemas.nameStringOptional.optional(),
+          then: () => readOnlySchemas.nameStringOptional.optional(),
         }),
         spouse_name: Yup.string().when("relationship_type", {
           is: "Spouse",
-          then: (schema) => commonSchemas.nameStringOptional.optional(),
+          then: () => readOnlySchemas.nameStringOptional.optional(),
         }),
-        email: commonSchemas.email,
-        mobile: commonSchemas.mobile,
+        email: readOnlySchemas.email,
+        mobile: readOnlySchemas.mobile,
 
         uan_number: Yup.string().when(["prev_epf_member", "prev_eps_member"], {
           is: (epf, eps) => epf === "Yes" || eps === "Yes",
-          then: (schema) => commonSchemas.uan.required("UAN Required"),
-          otherwise: (schema) => schema.notRequired().nullable(),
+          then: () => commonSchemas.uan.required("UAN Required"),
+          otherwise: () => schema.notRequired().nullable(),
         }),
         prev_pf_number: Yup.string().nullable().optional(),
         date_of_exit_prev: commonSchemas.datePastOptional
@@ -71,42 +69,39 @@ const useFormEPF = () => {
         scheme_cert_no: Yup.string().nullable().optional(),
         ppo_no: Yup.string().nullable().optional(),
 
-        // International Worker
         international_worker: Yup.string().required("Required"),
         country_of_origin: Yup.string().when("international_worker", {
           is: "Yes",
-          then: (schema) =>
+          then: () =>
             commonSchemas.stringRequired
               .label("Country")
               .required("Country Required"),
         }),
         passport_no: Yup.string().when("international_worker", {
           is: "Yes",
-          then: (schema) =>
+          then: () =>
             commonSchemas.passport.required("Passport Required"),
         }),
         passport_valid_from: Yup.date()
           .nullable()
           .when("international_worker", {
             is: "Yes",
-            then: (schema) => commonSchemas.datePast.required("Required"),
+            then: () => commonSchemas.datePast.required("Required"),
           })
           .transform((v, o) => (o === "" ? null : v)),
         passport_valid_to: Yup.date()
           .nullable()
           .when("international_worker", {
             is: "Yes",
-            then: (schema) => commonSchemas.dateFuture.required("Required"),
+            then: () => commonSchemas.dateFuture.required("Required"),
           })
           .transform((v, o) => (o === "" ? null : v)),
 
-        // KYC
-        bank_account_no: commonSchemas.bankAccount,
-        ifsc_code: commonSchemas.ifsc,
-        aadhaar_no: commonSchemas.aadhaar,
-        pan_no: commonSchemas.pan,
+        bank_account_no: readOnlySchemas.bankAccount,
+        ifsc_code: readOnlySchemas.ifsc,
+        aadhaar_no: readOnlySchemas.aadhaar,
+        pan_no: readOnlySchemas.pan,
 
-        // PF History
         first_epf_enrolled_date: commonSchemas.datePast
           .nullable()
           .transform((v, o) => (o === "" ? null : v)),
@@ -116,7 +111,6 @@ const useFormEPF = () => {
         withdrawn_eps: Yup.string().nullable().optional(),
         post_2014_eps_withdrawn: Yup.string().nullable().optional(),
 
-        // Previous Employment
         prev_epf_member: Yup.string().optional(),
         prev_eps_member: Yup.string().optional(),
 
@@ -128,17 +122,15 @@ const useFormEPF = () => {
         present_kyc_status: Yup.string().nullable().optional(),
         present_transfer_status: Yup.string().nullable().optional(),
 
-        // Signature
         signature: Yup.mixed().when("isDraft", {
           is: true,
-          then: (schema) => Yup.mixed().nullable().optional(),
-          otherwise: (schema) => createSignatureSchema(hasSavedSignature),
+          then: () => Yup.mixed().nullable().optional(),
+          otherwise: () => createSignatureSchema(hasSavedSignature),
         }),
       }),
     [hasSavedSignature]
   );
 
-  // --- React Hook Form ---
   const {
     register,
     handleSubmit,
@@ -159,17 +151,14 @@ const useFormEPF = () => {
     },
   });
 
-  // --- Watchers ---
   const prevEpfMember = watch("prev_epf_member");
   const prevEpsMember = watch("prev_eps_member");
   const internationalWorker = watch("international_worker");
   const relationshipType = watch("relationship_type");
   const isEmployee = user.role === "EMPLOYEE";
 
-  // --- Load Data ---
   useEffect(() => {
     if (stateData) {
-      // Prioritize stateData (from preview 'Back' or 'Edit')
       reset(stateData);
       if (stateData.signature_path) {
         setSignaturePreview(`/uploads/signatures/${stateData.signature_path}`);
@@ -214,7 +203,6 @@ const useFormEPF = () => {
 
       reset(formValues);
 
-      // Handle Signature Preview
       const sigPath = savedData.signature_path || autoFillData.signature;
       if (sigPath) {
         setSignaturePreview(`/uploads/signatures/${sigPath}`);
@@ -222,12 +210,15 @@ const useFormEPF = () => {
     }
   }, [autoFillData, reset, stateData, setSignaturePreview]);
 
-  // --- Submit Handler ---
   const onFormSubmit = async (values) => {
     const allValues = {
       ...getValues(),
       ...values,
     };
+
+    if (isPreviewRef.current) {
+      allValues.isDraft = true;
+    }
 
     const isDraft = allValues.isDraft;
 
@@ -244,7 +235,6 @@ const useFormEPF = () => {
         ) {
           let value = allValues[key];
 
-          // Format dates
           if (
             [
               "dob",
@@ -325,13 +315,14 @@ const useFormEPF = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
     onFormSubmit,
     onValidationFail,
     showAlert,
-    // Expose setters to UI actions
+
     isPreviewRef,
     prevEpfMember,
     prevEpsMember,

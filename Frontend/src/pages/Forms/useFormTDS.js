@@ -4,7 +4,6 @@ import {
   yupResolver,
   Yup,
   axios,
-  commonSchemas,
   createSignatureSchema,
 } from "../../utils/formDependencies";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
@@ -13,13 +12,11 @@ const useFormTDS = () => {
   const {
     navigate,
     showAlert,
-    user,
     targetId,
     autoFillData,
     autoFillLoading,
     signaturePreview,
     setSignaturePreview,
-    setIsPreviewMode,
     isRef: isPreviewRef, 
   } = useOnboardingForm();
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(autoFillData?.tdsStatus);
@@ -37,7 +34,6 @@ const useFormTDS = () => {
         employee_name: commonSchemas.nameString.label("Employee Name"),
         job_title: commonSchemas.stringRequired,
 
-        // Numerical fields
         education_loan_amt: commonSchemas.currency,
         education_interest: commonSchemas.currency,
         housing_loan_principal: commonSchemas.currency,
@@ -87,8 +83,8 @@ const useFormTDS = () => {
 
         signature: Yup.mixed().when("isDraft", {
           is: true,
-          then: (schema) => Yup.mixed().nullable().optional(),
-          otherwise: (schema) => createSignatureSchema(hasSavedSignature),
+          then: () => Yup.mixed().nullable().optional(),
+          otherwise: () => createSignatureSchema(hasSavedSignature),
         }),
       }),
     [hasSavedSignature],
@@ -130,7 +126,6 @@ const useFormTDS = () => {
   useEffect(() => {
     if (autoFillData) {
       const savedData = autoFillData.tdsData || {};
-      const address = autoFillData.address || {};
 
       reset({
         ...savedData,
@@ -173,6 +168,10 @@ const useFormTDS = () => {
       ...getValues(),
       ...values,
     };
+
+    if (isPreviewRef.current) {
+      allValues.isDraft = true;
+    }
 
     try {
       const formData = new FormData();
@@ -237,6 +236,7 @@ const useFormTDS = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,

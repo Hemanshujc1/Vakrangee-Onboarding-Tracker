@@ -7,6 +7,8 @@ import EmploymentDetails from "./InformationSections/EmploymentDetails";
 import ReferenceDetails from "./InformationSections/ReferenceDetails";
 import useFormInformation from "./useFormInformation";
 
+import useOnboardingActions from "../../hooks/useOnboardingActions";
+
 const FormInformation = () => {
   const {
     autoFillData,
@@ -18,6 +20,7 @@ const FormInformation = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     errors,
     isSubmitting,
     eduFields,
@@ -26,8 +29,22 @@ const FormInformation = () => {
     onSubmit,
     onValidationFail,
     setIsPreview,
+    isPreviewRef,
     showAlert,
   } = useFormInformation();
+
+  const { actions, signatureProps } = useOnboardingActions({
+    isSubmitting,
+    setValue,
+    getValues,
+    isPreviewRef,
+    setIsPreviewMode: setIsPreview,
+    onFormSubmit: onSubmit,
+    errors,
+    signaturePreview,
+    setSignaturePreview,
+    hasSavedSignature,
+  });
 
   if (loading) return <div>Loading...</div>;
 
@@ -40,26 +57,8 @@ const FormInformation = () => {
       signaturePreview={signaturePreview}
       isLocked={isLocked}
       onSubmit={handleSubmit(onSubmit, (e) => onValidationFail(e, showAlert))}
-      actions={{
-        isSubmitting,
-        onSaveDraft: () => {
-          setValue("isDraft", true);
-          setIsPreview(false);
-          handleSubmit(onSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-        onSubmit: () => {
-          setValue("isDraft", true); // Save as draft first for preview
-          setIsPreview(true);
-        },
-      }}
-      signature={{
-        setValue,
-        error: errors.signature,
-        preview: signaturePreview,
-        setPreview: setSignaturePreview,
-        isSaved: hasSavedSignature,
-        fieldName: "signature",
-      }}
+      actions={actions}
+      signature={signatureProps}
     >
       {/* Instructions */}
       <div className="bg-blue-50 p-4 rounded mb-6 text-sm text-blue-900 border border-blue-200">

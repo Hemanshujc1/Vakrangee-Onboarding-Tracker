@@ -1,14 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
-import { useAlert } from "../../context/AlertContext";
-
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { basicInfoValidationSchema, defaultBasicInfoValues, fieldToSectionMap } from "./BasicInfo/basicInfoSchema";
-import { usePanVerification } from "../../hooks/usePanVerification";
-import { useDocumentManager } from "../../hooks/useDocumentManager";
-import { useEmployeeProfile } from "../../hooks/useEmployeeProfile";
-import { formatDate, getSectionStatus, isProfileComplete } from "../../utils/basicInfoHelpers";
 import BasicInfoHeader from "../../Components/Employee/BasicInfo/BasicInfoHeader";
 import ProfilePhotoSection from "../../Components/Employee/BasicInfo/ProfilePhotoSection";
 import ProfileIdentitySection from "../../Components/Employee/BasicInfo/ProfileIdentitySection";
@@ -19,172 +10,57 @@ import AcademicDetailsSection from "../../Components/Employee/BasicInfo/Academic
 import FinancialHRDocumentsSection from "../../Components/Employee/BasicInfo/FinancialHRDocumentsSection";
 import SignatureSection from "../../Components/Employee/BasicInfo/SignatureSection";
 import AccordionSection from "../../Components/Employee/BasicInfo/AccordionSection";
+import { useBasicInformation } from "./hooks/useBasicInformation";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 const BasicInformation = () => {
-  const [expandedSection, setExpandedSection] = useState("identity");
-  const [isEditing, setIsEditing] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  // work_location is a JSON object {state,district,city} — not a form field
-  const [workLocation, setWorkLocation] = useState(null);
-  const { showConfirm, showAlert } = useAlert();
-
   const {
-    documents,
-    uploadingState,
-    fetchDocuments,
-    handleUpload,
-    handleDelete,
-    getDocStatus,
-  } = useDocumentManager(showAlert, showConfirm);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    trigger,
-    getValues,
-    clearErrors,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(basicInfoValidationSchema),
-    defaultValues: defaultBasicInfoValues,
-    mode: "all",
-  });
-
-  const formData = watch();
-
-  const {
-    panVerifying,
-    panVerified,
-    setPanVerified,
-    panVerificationFailed,
-    panFormatError,
-    setLastVerifiedPanData
-  } = usePanVerification(formData, setValue, trigger, showAlert, isEditing);
-
-
-
-  const {
-    autoSaving,
-    lastSavedData,
-    setLastSavedData,
+    expandedSection,
+    isEditing,
+    setIsEditing,
+    message,
+    workLocation,
     loading,
     saving,
     submitting,
     verificationStatus,
     rejectionReason,
     verifiedByName,
+    documents,
+    uploadingState,
+    handleUpload,
+    handleDelete,
+    getDocStatus,
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    getValues,
+    clearErrors,
+    errors,
+    formData,
+    panVerifying,
+    panVerified,
+    panVerificationFailed,
+    panFormatError,
+    autoSaving,
     previewImage,
     previewSignature,
-    fetchProfile,
     handleImageChange,
     handleSignatureChange,
     onSubmit,
     handleSubmitForVerification,
-  } = useEmployeeProfile({
-    reset,
-    setIsEditing,
-    setPanVerified,
-    setLastVerifiedPanData,
-    handleUpload,
-    panVerified,
-    setMessage,
-    showConfirm,
-    setWorkLocation,
-  });
+    handleToggleSection,
+    effectiveBasicInfoLocked,
+    onError,
+    fullAddress,
+    _getSectionStatus,
+    isComplete,
+    fetchProfile,
+    showAlert,
+  } = useBasicInformation();
 
-  useEffect(() => {
-    fetchProfile();
-    fetchDocuments();
-  }, [fetchProfile, fetchDocuments]);
-
-  const handleToggleSection = (sectionId) => {
-    setExpandedSection(expandedSection === sectionId ? null : sectionId);
-  };
-
-  const effectiveBasicInfoLocked = 
-      verificationStatus === "SUBMITTED" || 
-      verificationStatus === "VERIFIED";
-
-  // Auto-save logic
-  useEffect(() => {
-    if (!isEditing || effectiveBasicInfoLocked) return;
-
-    const delayDebounceFn = setTimeout(() => {
-      // Check if data actually changed to avoid redundant saves
-      const currentData = JSON.stringify(formData);
-      if (lastSavedData !== currentData && lastSavedData !== null) {
-        onSubmit(formData, true);
-        setLastSavedData(currentData);
-      } else if (lastSavedData === null) {
-        setLastSavedData(currentData);
-      }
-    }, 2000);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [formData, isEditing, effectiveBasicInfoLocked, lastSavedData, onSubmit, setLastSavedData]);
-
-  const onError = (errors) => {
-    console.error("Form Validation Errors:", errors);
-    setMessage({
-      type: "error",
-      text: "Please fix the validation errors highlighting in red before saving.",
-    });
-
-    const firstErrorField = Object.keys(errors)[0];
-    if (firstErrorField) {
-      const sectionToExpand = fieldToSectionMap[firstErrorField];
-      if (sectionToExpand) {
-        setExpandedSection(sectionToExpand);
-        
-        setTimeout(() => {
-          const inputElement = document.querySelector(`[name="${firstErrorField}"]`);
-          if (inputElement) {
-            inputElement.focus({ preventScroll: true }); 
-            const yOffset = -150; 
-            const y = inputElement.getBoundingClientRect().top + window.scrollY + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-          } else {
-            const sectionEl = document.getElementById(sectionToExpand);
-            if (sectionEl) {
-              const yOffset = -100;
-              const y = sectionEl.getBoundingClientRect().top + window.scrollY + yOffset;
-              window.scrollTo({ top: y, behavior: 'smooth' });
-            }
-          }
-        }, 300);
-      }
-    }
-  };
-
-  const fullAddress = [
-    formData.perm_address_line1,
-    formData.perm_address_line2,
-    formData.perm_landmark,
-    formData.perm_post_office && formData.perm_district
-      ? `${formData.perm_post_office}, ${formData.perm_district}`
-      : formData.perm_post_office || formData.perm_district,
-    formData.perm_city && formData.perm_pincode
-      ? `${formData.perm_city} - ${formData.perm_pincode}`
-      : formData.perm_city || formData.perm_pincode,
-    formData.perm_state && formData.perm_country
-      ? `${formData.perm_state}, ${formData.perm_country}`
-      : formData.perm_state || formData.perm_country,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  const _getSectionStatus = (id) => getSectionStatus(id, { formData, getDocStatus, panVerified });
-
-  const isComplete = isProfileComplete({
-    formData,
-    documents,
-    previewImage,
-    previewSignature,
-    panVerified
-  });
   if (loading)
     return (
       <DashboardLayout>
@@ -220,7 +96,10 @@ const BasicInformation = () => {
             setIsEditing(true);
             setTimeout(() => {
               trigger();
-              showAlert("Please fill all the required fields and upload required documents to submit.", { type: "error" });
+              showAlert(
+                "Please fill all the required fields and upload required documents to submit.",
+                { type: "error" }
+              );
             }, 100);
           }}
         />
@@ -240,8 +119,10 @@ const BasicInformation = () => {
 
           {autoSaving && (
             <div className="fixed bottom-6 right-6 bg-white shadow-lg border border-blue-100 px-4 py-2 rounded-full flex items-center gap-2 animate-pulse z-50">
-               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-               <span className="text-sm text-blue-600 font-medium">Auto-saving...</span>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+              <span className="text-sm text-blue-600 font-medium">
+                Auto-saving...
+              </span>
             </div>
           )}
 
@@ -287,7 +168,7 @@ const BasicInformation = () => {
               onToggle={handleToggleSection}
               isCompleted={_getSectionStatus("job")}
             >
-            <JobInformationSection
+              <JobInformationSection
                 register={register}
                 formData={{ ...formData, work_location: workLocation }}
                 formatDate={formatDate}

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
 import { validateDocumentFile } from "../config/documentConfig";
+import { getAuthToken } from "../utils/employeeUtils";
 
 export const useDocumentManager = (showAlert, showConfirm) => {
   const [documents, setDocuments] = useState([]);
@@ -8,7 +9,7 @@ export const useDocumentManager = (showAlert, showConfirm) => {
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       const response = await axios.get("/api/documents", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -28,7 +29,7 @@ export const useDocumentManager = (showAlert, showConfirm) => {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     setUploadingState((prev) => ({ ...prev, [docType]: true }));
 
     const formData = new FormData();
@@ -59,7 +60,7 @@ export const useDocumentManager = (showAlert, showConfirm) => {
     if (!isConfirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       await axios.delete(`/api/documents/${docId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

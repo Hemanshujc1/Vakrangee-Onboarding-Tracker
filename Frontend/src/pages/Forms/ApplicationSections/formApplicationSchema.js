@@ -1,21 +1,21 @@
 import * as Yup from "yup";
-import { commonSchemas, createSignatureSchema } from "../../../utils/formDependencies";
+import { commonSchemas, readOnlySchemas, createSignatureSchema } from "../../../utils/formDependencies";
 
 export const getValidationSchema = (hasSavedSignature) =>
   Yup.object().shape({
     // Personal Info
-    firstname: commonSchemas.nameString.label("First Name"),
-    lastname: commonSchemas.nameString.label("Last Name"),
+    firstname: readOnlySchemas.nameString.label("First Name"),
+    lastname: readOnlySchemas.nameString.label("Last Name"),
     middlename: commonSchemas.nameStringOptional.label("Middle Name"),
     Maidenname: commonSchemas.nameStringOptional.label("Maiden Name"),
     currentAddress: commonSchemas.addressString.label("Current Address"),
     permanentAddress: commonSchemas.addressString.label("Permanent Address"),
-    mobileNo: commonSchemas.mobile,
+    mobileNo: readOnlySchemas.mobile,
     alternateNo: commonSchemas.mobile,
-    email: commonSchemas.email,
-    emergencyNo: commonSchemas.mobile,
-    gender: commonSchemas.stringRequired,
-    dob: commonSchemas.datePast
+    email: readOnlySchemas.email,
+    emergencyNo: readOnlySchemas.mobile,
+    gender: Yup.string().required("Required"),
+    dob: readOnlySchemas.datePast
       .max(
         new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
         "Must be 18 years or older"

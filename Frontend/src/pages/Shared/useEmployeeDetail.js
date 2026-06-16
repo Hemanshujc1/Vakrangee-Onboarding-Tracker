@@ -1,420 +1,62 @@
-import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useAlert } from "../../context/AlertContext";
-import { MANDATORY_DOC_KEYS } from "../../config/documentConfig";
+import { useEmployeeFetch } from "./hooks/useEmployeeFetch";
+import { useEmployeeVerification } from "./hooks/useEmployeeVerification";
+import { useEmployeeActions } from "./hooks/useEmployeeActions";
+import {
+  isBasicInfoComplete,
+  isEverythingReviewed,
+  isEverythingVerified,
+} from "./hooks/employeeComputedLogic";
 
 const useEmployeeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showAlert, showConfirm, showPrompt } = useAlert();
-  const [employee, setEmployee] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [hrAdmins, setHrAdmins] = useState([]);
-  const [documents, setDocuments] = useState([]);
-  const [emailSent, setEmailSent] = useState(false);
 
-  const [editForm, setEditForm] = useState({
-    department: "",
-    department_id: "",
-    jobTitle: "",
-    designation_id: "",
-    location: "",
-    dateOfJoining: "",
-    personalEmail: "",
-    onboardingHrId: "",
-    band: "",
-    level: "",
-  });
+  // 1. Fetching Logic
+  const {
+    employee,
+    loading,
+    hrAdmins,
+    documents,
+    emailSent,
+    setEmailSent,
+    editForm,
+    setEditForm,
+    departmentsList,
+    designationsList,
+    loadingDropdowns,
+    fetchEmployeeDetails,
+    fetchDocuments,
+  } = useEmployeeFetch(id);
 
-  const [departmentsList, setDepartmentsList] = useState([]);
-  const [designationsList, setDesignationsList] = useState([]);
-  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  // 2. Verification Logic
+  const {
+    actionLoading,
+    setActionLoading,
+    handleVerificationAction,
+    handleDocumentVerification,
+    handleFinalVerify,
+  } = useEmployeeVerification(
+    id,
+    fetchEmployeeDetails,
+    fetchDocuments,
+    setEmailSent
+  );
 
-  useEffect(() => {
-    fetchEmployeeDetails();
-    fetchHrAdmins();
-    fetchDocuments();
-    fetchDropdownData();
-  }, [id]);
+  // 3. Actions Logic
+  const {
+    isEditing,
+    setIsEditing,
+    handleSave: baseHandleSave,
+    handleAdvanceStage: baseHandleAdvanceStage,
+    handleToggleFormAccess,
+  } = useEmployeeActions(id, fetchEmployeeDetails);
 
-  // Sync emailSent is now handled directly inside fetchEmployeeDetails
+  // Wrap actions to inject actionLoading state dependency
+  const handleSave = () => baseHandleSave(editForm, setActionLoading);
+  const handleAdvanceStage = (stage) => baseHandleAdvanceStage(stage, setActionLoading);
 
-  const fetchDropdownData = async () => {
-    setLoadingDropdowns(true);
-    try {
-      const BASE_URL = "/vakrangee-onboarding-portal/vakrangee-connect/OnBoarding";
-      const responses = await Promise.all([
-        fetch(`${BASE_URL}/department-list`),
-        fetch(`${BASE_URL}/designation-list`),
-      ]);
-
-      const [deptRes, desRes] = await Promise.all(
-        responses.map((r) => r.json()),
-      );
-
-      if (deptRes?.status) setDepartmentsList(deptRes.data);
-      if (desRes?.status) setDesignationsList(desRes.data);
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
-    } finally {
-      setLoadingDropdowns(false);
-    }
-  };
-
-  const fetchDocuments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data } = await axios.get(`/api/documents/list/${id}`, config);
-      setDocuments(data);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
-
-  const fetchHrAdmins = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data } = await axios.get("/api/employees", config);
-      const hrs = data.filter(
-        (emp) =>
-          (emp.role === "HR_ADMIN" || emp.role === "HR_SUPER_ADMIN") &&
-          emp.accountStatus === "ACTIVE"
-      );
-      setHrAdmins(hrs);
-    } catch (error) {
-      console.error("Error fetching HR admins:", error);
-    }
-  };
-
-  const fetchEmployeeDetails = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      // 1. Fetch Basic Info
-      const { data: empData } = await axios.get(`/api/employees/${id}`, config);
-
-      // 2. Fetch Form Data (AutoFill) to get statuses and details
-      const { data: formData } = await axios.get(
-        `/api/forms/auto-fill/${id}`,
-        config
-      );
-
-      // Sync email sent state directly from empData (before any spread overwrite)
-      if (empData.finalVerificationEmailSent === true) {
-        setEmailSent(true);
-      }
-
-      // Map permanent address fields to root level for AddressCard and isBasicInfoComplete checks
-      const permAddr = empData.permanent_address || {};
-      const mappedAddressFields = {
-        addressLine1: permAddr.address_line1 || "",
-        addressLine2: permAddr.address_line2 || "",
-        landmark: permAddr.landmark || "",
-        postOffice: permAddr.post_office || "",
-        city: permAddr.city || "",
-        district: permAddr.district || "",
-        state: permAddr.state || "",
-        pincode: permAddr.pincode || "",
-        country: permAddr.country || "India",
-      };
-
-      // Merge Data
-      setEmployee({ ...empData, ...formData, ...mappedAddressFields });
-
-      setEditForm({
-        department: empData.department || "",
-        department_id: empData.department_id || "",
-        jobTitle: empData.jobTitle || "",
-        designation_id: empData.designation_id || "",
-        location: empData.location || "",
-        dateOfJoining: empData.dateOfJoining || "",
-        personalEmail: empData.personalEmail || "",
-        onboardingHrId: empData.onboardingHrId || "",
-        band: empData.band || "",
-        level: empData.level || "",
-      });
-    } catch (error) {
-      console.error("Error fetching employee details:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      const payload = {
-        ...editForm,
-        department_id: editForm.department_id === "" ? null : editForm.department_id,
-        designation_id: editForm.designation_id === "" ? null : editForm.designation_id,
-        onboardingHrId: editForm.onboardingHrId === "" ? null : editForm.onboardingHrId,
-      };
-
-      await axios.put(`/api/employees/${id}`, payload, config);
-
-      await fetchEmployeeDetails();
-      setIsEditing(false);
-      await showAlert("Details updated successfully!", { type: "success" });
-    } catch (error) {
-      console.error("Error updating details:", error);
-      await showAlert("Failed to update details.", { type: "error" });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleVerificationAction = async (status, reason = null) => {
-    const isConfirmed = await showConfirm(
-      `Are you sure you want to ${
-        status === "VERIFIED" ? "verify" : "reject"
-      } this profile?`,
-      { type: status === "VERIFIED" ? "info" : "warning" }
-    );
-    if (!isConfirmed) return;
-
-    if (status === "REJECTED" && !reason) {
-      reason = await showPrompt(
-        "Please provide a detailed reason for rejecting this profile:",
-        {
-          title: "Rejection Reason",
-          type: "warning",
-          placeholder:
-            "Enter the reason for rejection (minimum 10 characters)...",
-          confirmText: "Submit Rejection",
-          cancelText: "Cancel",
-        }
-      );
-      if (!reason) return; // Cancelled if no reason provided
-    }
-
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `/api/employees/${id}/verify-basic-info`,
-        {
-          status,
-          rejectionReason: reason,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      await fetchEmployeeDetails();
-      await showAlert(
-        `Profile ${
-          status === "VERIFIED" ? "verified" : "rejected"
-        } successfully.`,
-        { type: "success" }
-      );
-    } catch (error) {
-      console.error("Error verifying profile:", error);
-      await showAlert("Failed to update status.", { type: "error" });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDocumentVerification = async (docId, status) => {
-    const isConfirmed = await showConfirm(
-      `Are you sure you want to ${
-        status === "VERIFIED" ? "verify" : "reject"
-      } this document?`,
-      { type: status === "VERIFIED" ? "info" : "warning" }
-    );
-    if (!isConfirmed) return;
-
-    let reason = null;
-    if (status === "REJECTED") {
-      reason = await showPrompt(
-        "Please provide a detailed reason for rejecting this document:",
-        {
-          title: "Rejection Reason",
-          type: "warning",
-          placeholder:
-            "Enter the reason for rejection (minimum 10 characters)...",
-          confirmText: "Submit Rejection",
-          cancelText: "Cancel",
-        }
-      );
-      if (!reason) return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `/api/documents/verify/${docId}`,
-        {
-          status,
-          rejectionReason: reason,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      await fetchDocuments();
-      await showAlert(
-        `Document ${
-          status === "VERIFIED" ? "verified" : "rejected"
-        } successfully.`,
-        { type: "success" }
-      );
-    } catch (error) {
-      console.error("Error verifying document:", error);
-      await showAlert("Failed to update document status.", { type: "error" });
-    } finally {
-      setEmailSent(false); // Reset if doc status changed
-    }
-  };
-
-  const handleAdvanceStage = async (newStage) => {
-    const isConfirmed = await showConfirm(
-      `Are you sure you want to advance this employee to ${newStage}?`
-    );
-    if (!isConfirmed) return;
-
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `/api/employees/${id}/advance-stage`,
-        { stage: newStage },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await fetchEmployeeDetails();
-      await showAlert(`Stage advanced to ${newStage}`, { type: "success" });
-    } catch (error) {
-      console.error("Error advancing stage:", error);
-      await showAlert("Failed to advance stage.", { type: "error" });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleToggleFormAccess = async (formType, category, currentStatus) => {
-    const isConfirmed = await showConfirm(
-      `Are you sure you want to ${
-        currentStatus ? "ENABLE" : "DISABLE"
-      } this form for the employee?`,
-      { type: "warning" }
-    );
-    if (!isConfirmed) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const newStatus = !currentStatus; // Toggle
-
-      await axios.put(
-        `/api/employees/${id}/form-access`,
-        {
-          formKey: formType,
-          disabled: newStatus,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      await fetchEmployeeDetails(); // Refresh to get new status
-      await showAlert(
-        `Form access ${newStatus ? "DISABLED" : "ENABLED"} successfully.`,
-        { type: "success" }
-      );
-    } catch (error) {
-      console.error("Error toggling form access:", error);
-      await showAlert("Failed to update form access.", { type: "error" });
-    }
-  };
-
-  const handleFinalVerify = async () => {
-    const isConfirmed = await showConfirm(
-      "Are you sure you want to perform the final verification for this employee? This will send a summary email to the employee.",
-      { type: "info" }
-    );
-    if (!isConfirmed) return;
-
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const { data } = await axios.post(
-        `/api/employees/${id}/final-verify`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      await fetchEmployeeDetails();
-      await fetchDocuments();
-      await showAlert(
-        `Final verification completed: ${data.isSuccess ? "Approved" : "Rejected"}`,
-        { type: "success" }
-      );
-      setEmailSent(true);
-    } catch (error) {
-      console.error("Error in final verification:", error);
-      await showAlert(error.response?.data?.message || "Failed to complete final verification.", { type: "error" });
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const isBasicInfoComplete = () => {
-    if (!employee) return false;
-    const mandatoryFields = [
-      "firstName",
-      "lastName",
-      "personalEmail",
-      "phone",
-      "gender",
-      "dateOfBirth",
-      "adharNumber",
-      "panNumber",
-      "addressLine1",
-      "city",
-      "district",
-      "state",
-      "pincode",
-      "postOffice",
-    ];
-    // Return true if all mandatory fields have values
-    return mandatoryFields.every((field) => {
-      const val = employee[field];
-      return val !== null && val !== undefined && String(val).trim() !== "";
-    });
-  };
-
-  const isEverythingReviewed = () => {
-    if (!employee) return false;
-    
-    // Basic info is reviewed if it is explicitly VERIFIED or REJECTED.
-    // SUBMITTED status means it's waiting for review.
-    const isBasicInfoReviewed = 
-      employee.basicInfoStatus === "VERIFIED" || employee.basicInfoStatus === "REJECTED";
-
-    const areAllDocumentsReviewed = 
-      documents.length > 0 && 
-      documents.every(doc => doc.status !== "PENDING" && doc.status !== "UPLOADED" && doc.status !== "SUBMITTED");
-    
-    return isBasicInfoReviewed && areAllDocumentsReviewed;
-  };
-
-  const isEverythingVerified = () => {
-    if (!employee) return false;
-
-    const isBasicInfoVerified = employee.basicInfoStatus === "VERIFIED";
-
-    const verifiedDocs = documents.filter((doc) => doc.status === "VERIFIED");
-    const areAllMandatoryDocsVerified = MANDATORY_DOC_KEYS.every((docType) =>
-      verifiedDocs.some((d) => d.document_type === docType)
-    );
-
-    return isBasicInfoVerified && areAllMandatoryDocsVerified;
-  };
-
+  // 4. Input Handlers
   const handleDeptChange = (e) => {
     setEditForm((prev) => ({
       ...prev,
@@ -443,8 +85,10 @@ const useEmployeeDetail = () => {
         dateOfJoining: employee.dateOfJoining || "",
         personalEmail: employee.personalEmail || "",
         onboardingHrId: employee.onboardingHrId || "",
-        band: employee.band || "",
-        level: employee.level || "",
+        band_id: employee.band_id || "",
+        band_name: employee.band_name || "",
+        band_level_id: employee.band_level_id || "",
+        level_name: employee.level_name || "",
       });
     }
   };
@@ -467,9 +111,9 @@ const useEmployeeDetail = () => {
     handleAdvanceStage,
     handleToggleFormAccess,
     handleFinalVerify,
-    isEverythingReviewed,
-    isEverythingVerified,
-    isBasicInfoComplete,
+    isEverythingReviewed: () => isEverythingReviewed(employee, documents),
+    isEverythingVerified: () => isEverythingVerified(employee, documents),
+    isBasicInfoComplete: () => isBasicInfoComplete(employee),
     emailSent,
     departmentsList,
     designationsList,

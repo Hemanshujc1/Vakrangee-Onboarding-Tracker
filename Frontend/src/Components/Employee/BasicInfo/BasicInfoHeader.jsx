@@ -189,7 +189,6 @@ const BasicInfoHeader = ({
         </div>
       </div>
 
-      {/* Status banner — full width below title row */}
       {statusBanner && <div className="mt-3">{statusBanner}</div>}
     </header>
   );

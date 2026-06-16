@@ -1,5 +1,6 @@
 import React from "react";
 import { formatWorkLocation } from "../../../utils/employeeUtils";
+import FormInputField from "../../UI/FormInputField";
 
 const JobInformationSection = ({ register, formData, formatDate }) => {
   return (
@@ -11,25 +12,25 @@ const JobInformationSection = ({ register, formData, formatDate }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 md:col-span-2">
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">Job</label>
-          <input
-            {...register("job_title")}
-            disabled
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-            placeholder="Not Assigned"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">Department</label>
-          <input
-            {...register("department_name")}
-            disabled
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-            placeholder="Not Assigned"
-          />
-        </div>
-        <div>
+        <FormInputField
+          label="Job"
+          name="job_title"
+          register={register}
+          isEditing={true}
+          value={formData.job_title}
+          disabled={true}
+          placeholder="Not Assigned"
+        />
+        <FormInputField
+          label="Department"
+          name="department_name"
+          register={register}
+          isEditing={true}
+          value={formData.department_name}
+          disabled={true}
+          placeholder="Not Assigned"
+        />
+        <div className="w-full">
           <label className="block text-sm text-gray-500 mb-1">
             Work Location
           </label>
@@ -37,18 +38,18 @@ const JobInformationSection = ({ register, formData, formatDate }) => {
             value={formatWorkLocation(formData.work_location) || ""}
             readOnly
             disabled
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
             placeholder="Not Assigned"
           />
         </div>
-        <div>
+        <div className="w-full">
           <label className="block text-sm text-gray-500 mb-1">
             Joining Date
           </label>
           <input
-            value={formatDate(formData.date_of_joining)}
+            value={formatDate(formData.date_of_joining) || ""}
             disabled
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
             placeholder="-"
           />
         </div>

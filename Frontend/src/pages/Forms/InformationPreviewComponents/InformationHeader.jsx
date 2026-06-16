@@ -51,9 +51,9 @@ const InformationHeader = ({ data, record }) => {
         </div>
       </div>
 
-      <div className="flex items-center mb-4 text-left mt-4 print:mt-8">
-        <span className="font-bold w-24 uppercase">Designation</span>
-        <div className="border-b border-gray-800 flex-1 px-2 font-mono uppercase">
+      <div className="flex items-end mb-4 text-left mt-4 print:mt-8">
+        <span className="font-bold shrink-0 whitespace-nowrap mr-2 uppercase">Designation</span>
+        <div className="border-b border-gray-800 flex-1 px-2 font-mono uppercase leading-none">
           {data.designation || record.job_title}
         </div>
       </div>

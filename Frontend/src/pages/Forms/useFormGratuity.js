@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
   yupResolver,
   Yup,
-  commonSchemas,
+  readOnlySchemas,
   createSignatureSchema,
   formatDateForAPI,
 } from "../../utils/formDependencies";
@@ -13,15 +13,14 @@ const useFormGratuity = () => {
   const {
     navigate,
     showAlert,
-    user,
     targetId: employeeId,
     autoFillData,
     loading: autoFillLoading,
     signaturePreview,
     setSignaturePreview,
-  } = useOnboardingForm();
+    isRef: isPreviewRef,
+    } = useOnboardingForm();
 
-  // Determine if form is locked
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
     autoFillData?.gratuityStatus
   );
@@ -29,7 +28,6 @@ const useFormGratuity = () => {
     autoFillData?.gratuityData?.signature_path || autoFillData?.signature
   );
 
-  // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData) {
       navigate(`/forms/gratuity-form/preview/${employeeId}`, {
@@ -52,27 +50,25 @@ const useFormGratuity = () => {
     () =>
       Yup.object({
         isDraft: Yup.boolean(),
-        // Personal
-        firstname: commonSchemas.nameString.label("First Name"),
-        lastname: commonSchemas.nameString.label("Last Name"),
-        middlename: commonSchemas.nameStringOptional.label("Middle Name"),
 
-        // Details
-        religion: commonSchemas.stringRequired,
-        marital_status: commonSchemas.stringRequired,
-        gender: commonSchemas.stringRequired,
-        department: commonSchemas.stringRequired,
+        firstname: readOnlySchemas.nameString.label("First Name"),
+        lastname: readOnlySchemas.nameString.label("Last Name"),
+        middlename: readOnlySchemas.nameStringOptional.label("Middle Name"),
+
+        religion: readOnlySchemas.stringRequired,
+        marital_status: readOnlySchemas.stringRequired,
+        gender: readOnlySchemas.stringRequired,
+        department: readOnlySchemas.stringRequired,
         ticket_no: Yup.string().optional(),
-        date_of_appointment: commonSchemas.dateOptional,
+        date_of_appointment: readOnlySchemas.dateOptional,
 
-        // Address
-        city: commonSchemas.stringRequired,
-        thana: commonSchemas.stringRequired,
+        city: readOnlySchemas.stringRequired,
+        thana: readOnlySchemas.stringRequired,
         sub_division: Yup.string().optional(),
-        post_office: commonSchemas.stringRequired,
-        district: commonSchemas.stringRequired,
-        state: commonSchemas.stringRequired,
-        place: commonSchemas.stringRequired,
+        post_office: readOnlySchemas.stringRequired,
+        district: readOnlySchemas.stringRequired,
+        state: readOnlySchemas.stringRequired,
+        place: readOnlySchemas.stringRequired,
 
         nominees: Yup.array().of(
           Yup.object().shape({
@@ -87,7 +83,6 @@ const useFormGratuity = () => {
           })
         ),
 
-        // Witnesses - New Array Structure
         witnesses: Yup.array().of(
           Yup.object().shape({
             name: commonSchemas.nameStringOptional,
@@ -97,19 +92,19 @@ const useFormGratuity = () => {
 
         witnesses_place: Yup.string().when("isDraft", {
           is: false,
-          then: (schema) => commonSchemas.stringOptional,
-          otherwise: (schema) => schema.optional(),
+          then: () => commonSchemas.stringOptional,
+          otherwise: () => schema.optional(),
         }),
         witnesses_date: Yup.date().when("isDraft", {
           is: false,
-          then: (schema) => commonSchemas.dateOptional,
-          otherwise: (schema) => schema.optional(),
+          then: () => commonSchemas.dateOptional,
+          otherwise: () => schema.optional(),
         }),
 
         signature: Yup.mixed().when("isDraft", {
           is: true,
-          then: (schema) => Yup.mixed().nullable().optional(),
-          otherwise: (schema) => createSignatureSchema(hasSavedSignature),
+          then: () => Yup.mixed().nullable().optional(),
+          otherwise: () => createSignatureSchema(hasSavedSignature),
         }),
       }),
     [hasSavedSignature]
@@ -191,7 +186,6 @@ const useFormGratuity = () => {
       const savedData = autoFillData.gratuityData || {};
       const appData = autoFillData.applicationData || {};
 
-      // Extract common witness place/date from first witness if available
       const wPlace = savedData.witnesses?.[0]?.place || "";
       const wDate = savedData.witnesses?.[0]?.date || "";
 
@@ -224,7 +218,7 @@ const useFormGratuity = () => {
             : savedData.nominee_name
             ? [
                 {
-                  // Fallback for legacy single fields
+
                   name: savedData.nominee_name,
                   address: savedData.nominee_address,
                   relationship: savedData.nominee_relationship,
@@ -259,7 +253,7 @@ const useFormGratuity = () => {
 
       const sigPath = savedData.signature_path || savedData.signature;
       if (sigPath) {
-        // If it's a full URL (rare), use it, otherwise assume filename
+
         const url = sigPath.startsWith("http")
           ? sigPath
           : `/uploads/signatures/${sigPath}`;
@@ -277,7 +271,7 @@ const useFormGratuity = () => {
 
         Object.keys(allValues).forEach((key) => {
           if (key === "witnesses") {
-            // Inject place and date into each witness object
+
             const enhancedWitnesses = (allValues.witnesses || []).map((w) => ({
               ...w,
               place: allValues.witnesses_place || "",
@@ -345,6 +339,7 @@ const useFormGratuity = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -354,7 +349,8 @@ const useFormGratuity = () => {
     witnessFields,
     appendNominee,
     removeNominee,
-  };
+    isPreviewRef,
+    };
 };
 
 export default useFormGratuity;

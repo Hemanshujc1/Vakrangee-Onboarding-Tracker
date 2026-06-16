@@ -12,7 +12,7 @@ const EmployeeDocument = sequelize.define('EmployeeDocument', {
     allowNull: false
   },
   document_type: {
-    type: DataTypes.STRING, // We'll validate valid types in controller or use ENUM
+    type: DataTypes.STRING, 
     allowNull: false
   },
   file_path: {

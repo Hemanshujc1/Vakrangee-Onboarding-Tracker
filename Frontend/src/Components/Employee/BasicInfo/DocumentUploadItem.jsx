@@ -12,7 +12,7 @@ const DocumentUploadItem = ({
   isEditing,
   optional = false,
   verificationStatus,
-  docConfig,   // from DOC_CONFIG_MAP[docKey] — provides accept & maxSizeMB
+  docConfig,   
 }) => {
   const acceptStr = docConfig?.accept || ".pdf,.jpg,.jpeg,.png";
   const maxSizeMB = docConfig?.maxSizeMB;
@@ -95,7 +95,7 @@ const DocumentUploadItem = ({
                   />
                   <label
                     htmlFor={`file-${docKey}`}
-                    className={`flex items-center gap-2 px-3 py-1.5 border border-dashed border-gray-300 rounded-md text-xs text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer ${
+                    className={`flex flex-col items-center gap-1 px-3 py-1.5 border border-dashed border-gray-300 rounded-md text-xs text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer ${
                       isUploading ||
                       status === "VERIFIED" ||
                       verificationStatus === "SUBMITTED"
@@ -109,7 +109,7 @@ const DocumentUploadItem = ({
                           ? "..."
                           : data
                           ? "Re-upload"
-                          : "Upload"}
+                          : ""}
                       </span>
                       {maxSizeMB && !isUploading && (
                         <span className="text-[9px] text-gray-400 ml-1">max {maxSizeMB}MB</span>

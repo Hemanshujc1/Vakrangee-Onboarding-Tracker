@@ -4,69 +4,52 @@ import { X, Plus, UserPlus } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import SearchableSelect from "../UI/SearchableSelect";
-import { commonSchemas } from "../../utils/validationSchemas";
+import Input from "../UI/Input";
+import WorkLocationPicker from "../UI/WorkLocationPicker";
+import { commonSchemas } from "../../utils/validations";
+import { useFormValidation } from "../../hooks/useFormValidation";
+import { useDropdowns } from "../../hooks/useDropdowns";
 
 const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
   const { showAlert } = useAlert();
-  const [formData, setFormData] = useState({
-    employee_id: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    cc: "",
-    role: "HR_ADMIN",
-    department: "Human Resource",
-    jobTitle: "",
-    location: "",
-    password: "Admin@123",
-  });
+  const { departments, designations, loadingDropdowns } = useDropdowns(isOpen);
+
+  const {
+    formData,
+    setFormData,
+    fieldErrors,
+    handleChange,
+    validateField,
+    validateAll,
+    resetForm,
+  } = useFormValidation(
+    {
+      employee_id: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      cc: "",
+      role: "HR_ADMIN",
+      department: "Human Resource",
+      jobTitle: "",
+      location: "",
+      password: "Admin@123",
+    },
+    {
+      firstName: commonSchemas.nameString,
+      lastName: commonSchemas.nameString,
+      email: commonSchemas.email,
+    }
+  );
 
   const [loading, setLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-  });
-
-  const schemaMap = {
-    firstName: commonSchemas.nameString,
-    lastName: commonSchemas.nameString,
-    email: commonSchemas.email,
-  };
-
-  const validateField = async (name, value) => {
-    const schema = schemaMap[name];
-    if (!schema) return true;
-    try {
-      await schema.validate(value);
-      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
-      return true;
-    } catch (err) {
-      setFieldErrors((prev) => ({ ...prev, [name]: err.message }));
-      return false;
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Re-validate live only if the field already has an error shown
-    if (fieldErrors[name]) validateField(name, value);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate required fields before submitting
-    const [fnOk, lnOk, emailOk] = await Promise.all([
-      validateField("firstName", formData.firstName),
-      validateField("lastName", formData.lastName),
-      validateField("email", formData.email),
-    ]);
-    if (!fnOk || !lnOk || !emailOk) return;
+    const isValid = await validateAll(["firstName", "lastName", "email"]);
+    if (!isValid) return;
 
     setLoading(true);
     try {
@@ -128,7 +111,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
         console.error("Admin welcome email failed to send:", emailErr);
       }
 
-      setFormData({
+      resetForm({
         employee_id: "",
         firstName: "",
         lastName: "",
@@ -144,8 +127,6 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
         password: "Admin@123",
       });
       setWorkLocation({ state: "", district: "", city: "" });
-      setSelectedStateId("");
-      setSelectedDistrictId("");
     } catch (error) {
       console.error("Error adding admin:", error);
       await showAlert(
@@ -158,144 +139,36 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     }
   };
 
-  const [hrDetails, setHrDetails] = useState({ name: "", designation: "" });
-  const [departments, setDepartments] = useState([]);
-  const [designations, setDesignations] = useState([]);
-  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      fetchCurrentUserDetails();
+    }
+  }, [isOpen]);
 
-  // New location states
+  // Adjust default department ID if needed after departments load
+  useEffect(() => {
+    if (formData.department === "Human Resource" && departments.length > 0) {
+      const hrDept = departments.find(
+        (d) =>
+          d.department_name &&
+          d.department_name.toLowerCase() === "human resource",
+      );
+      if (hrDept) {
+        setFormData((prev) => ({
+          ...prev,
+          department: String(hrDept.department_id),
+        }));
+      }
+    }
+  }, [departments, formData.department, setFormData]);
+
+  const [hrDetails, setHrDetails] = useState({ name: "", designation: "" });
+
   const [workLocation, setWorkLocation] = useState({
     state: "",
     district: "",
     city: "",
   });
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedStateId, setSelectedStateId] = useState("");
-  const [selectedDistrictId, setSelectedDistrictId] = useState("");
-  const [loadingRegions, setLoadingRegions] = useState(false);
-
-  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchCurrentUserDetails();
-      fetchDropdownData();
-    }
-  }, [isOpen]);
-
-  const fetchDropdownData = async () => {
-    setLoadingDropdowns(true);
-    try {
-      const responses = await Promise.all([
-        fetch(`${DROPDOWN_BASE_URL}/department-list`),
-        fetch(`${DROPDOWN_BASE_URL}/designation-list`),
-        fetch(`${DROPDOWN_BASE_URL}/state-list`),
-      ]);
-
-      const [deptRes, desRes, stateRes] = await Promise.all(
-        responses.map((r) => r.json()),
-      );
-
-      if (deptRes?.status) {
-        setDepartments(deptRes.data);
-        // Resolve default department ID if not already an ID
-        if (formData.department === "Human Resource") {
-          const hrDept = deptRes.data.find(
-            (d) =>
-              d.department_name &&
-              d.department_name.toLowerCase() === "human resource",
-          );
-          if (hrDept) {
-            setFormData((prev) => ({
-              ...prev,
-              department: String(hrDept.department_id),
-            }));
-          }
-        }
-      }
-      if (desRes?.status) {
-        setDesignations(desRes.data);
-      }
-      if (stateRes?.status) {
-        setStates(stateRes.data);
-      }
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
-    } finally {
-      setLoadingDropdowns(false);
-    }
-  };
-
-  // Fetch Districts when selectedStateId changes
-  useEffect(() => {
-    if (!selectedStateId) {
-      setDistricts([]);
-      return;
-    }
-    const fetchDistricts = async () => {
-      setLoadingRegions(true);
-      try {
-        const response = await fetch(
-          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
-        );
-        const data = await response.json();
-        if (data?.status) setDistricts(data.data);
-      } catch (error) {
-        console.error("Error fetching districts:", error);
-      } finally {
-        setLoadingRegions(false);
-      }
-    };
-    fetchDistricts();
-  }, [selectedStateId]);
-
-  // Fetch Cities when selectedDistrictId changes
-  useEffect(() => {
-    if (!selectedStateId || !selectedDistrictId) {
-      setCities([]);
-      return;
-    }
-    const fetchCities = async () => {
-      setLoadingRegions(true);
-      try {
-        const response = await fetch(
-          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
-        );
-        const data = await response.json();
-        if (data?.status) setCities(data.data);
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-      } finally {
-        setLoadingRegions(false);
-      }
-    };
-    fetchCities();
-  }, [selectedDistrictId, selectedStateId]);
-
-  const handleStateChange = (id, name) => {
-    setSelectedStateId(id);
-    setSelectedDistrictId("");
-    setDistricts([]);
-    setCities([]);
-    setWorkLocation((prev) => ({
-      ...prev,
-      state: name,
-      district: "",
-      city: "",
-    }));
-  };
-
-  const handleDistrictChange = (id, name) => {
-    setSelectedDistrictId(id);
-    setCities([]);
-    setWorkLocation((prev) => ({ ...prev, district: name, city: "" }));
-  };
-
-  const handleCityChange = (name) => {
-    setWorkLocation((prev) => ({ ...prev, city: name }));
-  };
 
   const fetchCurrentUserDetails = async () => {
     try {
@@ -362,109 +235,62 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Employee ID <span className="text-red-500">*</span>
-              </label>
-              <input
+              <Input
+                label={<>Employee ID <span className="text-red-500">*</span></>}
                 type="text"
                 name="employee_id"
                 value={formData.employee_id}
                 onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
                 placeholder="EMP2001"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("firstName", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.firstName
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="Rahul"
-                  required
-                />
-                {fieldErrors.firstName && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.firstName}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("lastName", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.lastName
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="Verma"
-                  required
-                />
-                {fieldErrors.lastName && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.lastName}
-                  </p>
-                )}
-              </div>
+              <Input
+                label={<>First Name <span className="text-red-500">*</span></>}
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                onBlur={(e) => validateField("firstName", e.target.value)}
+                placeholder="Rahul"
+                error={fieldErrors.firstName}
+                required
+              />
+              <Input
+                label={<>Last Name <span className="text-red-500">*</span></>}
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                onBlur={(e) => validateField("lastName", e.target.value)}
+                placeholder="Verma"
+                error={fieldErrors.lastName}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("email", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.email
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="rahul.v@company.com"
-                  required
-                />
-                {fieldErrors.email && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.email}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CC Email (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="cc"
-                  value={formData.cc}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="manager@company.com"
-                />
-              </div>
+              <Input
+                label={<>Email Address <span className="text-red-500">*</span></>}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={(e) => validateField("email", e.target.value)}
+                placeholder="rahul.v@company.com"
+                error={fieldErrors.email}
+                required
+              />
+              <Input
+                label="CC Email (Optional)"
+                type="text"
+                name="cc"
+                value={formData.cc}
+                onChange={handleChange}
+                placeholder="manager@company.com"
+              />
             </div>
 
             <SearchableSelect
@@ -496,63 +322,7 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
             />
 
             {/* Hierarchical Location */}
-            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">
-                Work Location <span className="text-red-500">*</span>
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                <SearchableSelect
-                  label="State"
-                  name="state"
-                  options={states.map((s) => ({
-                    id: s.lg_state_id,
-                    name: s.state_name,
-                  }))}
-                  value={workLocation.state}
-                  onChange={(e) =>
-                    handleStateChange(
-                      e.target.value,
-                      e.target.option?.name || "",
-                    )
-                  }
-                  placeholder="State"
-                  required
-                />
-                <SearchableSelect
-                  label="District"
-                  name="district"
-                  options={districts.map((d) => ({
-                    id: d.district_id,
-                    name: d.district_name,
-                  }))}
-                  value={workLocation.district}
-                  onChange={(e) =>
-                    handleDistrictChange(
-                      e.target.value,
-                      e.target.option?.name || "",
-                    )
-                  }
-                  placeholder="District"
-                  disabled={!selectedStateId || loadingRegions}
-                  required
-                />
-                <SearchableSelect
-                  label="City"
-                  name="city"
-                  options={cities.map((c) => ({
-                    id: c.lg_village_id,
-                    name: c.village_name,
-                  }))}
-                  value={workLocation.city}
-                  onChange={(e) =>
-                    handleCityChange(e.target.option?.name || "")
-                  }
-                  placeholder="City"
-                  disabled={!selectedDistrictId || loadingRegions}
-                  required
-                />
-              </div>
-            </div>
+            <WorkLocationPicker location={workLocation} setLocation={setWorkLocation} />
 
             {/* Removed phone block per user request */}
 

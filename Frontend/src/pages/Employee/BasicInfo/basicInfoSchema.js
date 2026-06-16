@@ -1,11 +1,9 @@
 import * as Yup from "yup";
 import {
   commonSchemas,
-} from "../../../utils/validationSchemas";
+} from "../../../utils/validations";
 
-// ── Address block helper: builds Yup fields for one address block ──────────────
-// prefix: "perm_" | "comm_"
-// isRequired: true for permanent, conditional for communication
+
 const addressFields = (prefix, isRequired) => {
   const req = (schema) => (isRequired ? schema : schema.optional().nullable());
   return {
@@ -79,7 +77,6 @@ const addressFields = (prefix, isRequired) => {
 };
 
 export const basicInfoValidationSchema = Yup.object().shape({
-  // ── Personal Info ────────────────────────────────────────────────────────────
   firstname: commonSchemas.nameString.label("First Name"),
   middlename: commonSchemas.nameStringOptional.label("Middle Name"),
   lastname: commonSchemas.nameString.label("Last Name"),
@@ -94,7 +91,6 @@ export const basicInfoValidationSchema = Yup.object().shape({
   adhar_number: commonSchemas.aadhaar.label("Aadhaar Number"),
   pan_number: commonSchemas.pan.label("PAN Number"),
 
-  // ── Contact Info ─────────────────────────────────────────────────────────────
   email: commonSchemas.emailOptional.nullable(),
   personal_email_id: commonSchemas.email.label("Personal Email"),
   phone: commonSchemas.mobile.label("Phone"),
@@ -109,14 +105,11 @@ export const basicInfoValidationSchema = Yup.object().shape({
     .matches(/^[0-9]{10}$/, { message: "Invalid phone number", excludeEmptyString: true })
     .label("Emergency Contact Number"),
 
-  // ── Permanent Address (always required) ──────────────────────────────────────
   ...addressFields("perm_", true),
 
-  // ── Communication Address (required only when not same as permanent) ──────────
   comm_same_as_permanent: Yup.boolean().default(false),
   ...addressFields("comm_", false),
 
-  // ── Academic Details ─────────────────────────────────────────────────────────
   tenth_percentage: Yup.number()
     .typeError("Must be a number")
     .min(0, "Min 0")
@@ -136,7 +129,6 @@ export const basicInfoValidationSchema = Yup.object().shape({
 });
 
 export const defaultBasicInfoValues = {
-  // Personal Info
   firstname: "",
   middlename: "",
   lastname: "",
@@ -146,7 +138,6 @@ export const defaultBasicInfoValues = {
   adhar_number: "",
   pan_number: "",
 
-  // Contact Info
   email: "",
   personal_email_id: "",
   phone: "",
@@ -154,12 +145,10 @@ export const defaultBasicInfoValues = {
   emergency_contact_relationship: "",
   emergency_contact_number: "",
 
-  // Job Info (read-only, no validation)
   job_title: "",
   department_name: "",
   date_of_joining: "",
 
-  // Permanent Address
   perm_address_line1: "",
   perm_address_line2: "",
   perm_landmark: "",
@@ -170,7 +159,6 @@ export const defaultBasicInfoValues = {
   perm_state: "",
   perm_country: "India",
 
-  // Communication Address
   comm_same_as_permanent: false,
   comm_address_line1: "",
   comm_address_line2: "",
@@ -182,7 +170,6 @@ export const defaultBasicInfoValues = {
   comm_state: "",
   comm_country: "India",
 
-  // Academic Details
   tenth_percentage: "",
   twelfth_percentage: "",
   degree_name: "",
@@ -190,7 +177,6 @@ export const defaultBasicInfoValues = {
 };
 
 export const fieldToSectionMap = {
-  // Personal Info → identity section
   firstname: "identity",
   middlename: "identity",
   lastname: "identity",
@@ -200,7 +186,6 @@ export const fieldToSectionMap = {
   pan_number: "identity",
   adhar_number: "identity",
 
-  // Contact Info → contact section
   email: "contact",
   personal_email_id: "contact",
   phone: "contact",
@@ -208,7 +193,6 @@ export const fieldToSectionMap = {
   emergency_contact_relationship: "contact",
   emergency_contact_number: "contact",
 
-  // Permanent Address → address section
   perm_address_line1: "address",
   perm_address_line2: "address",
   perm_landmark: "address",
@@ -219,7 +203,6 @@ export const fieldToSectionMap = {
   perm_state: "address",
   perm_country: "address",
 
-  // Communication Address → address section
   comm_same_as_permanent: "address",
   comm_address_line1: "address",
   comm_address_line2: "address",
@@ -231,7 +214,6 @@ export const fieldToSectionMap = {
   comm_state: "address",
   comm_country: "address",
 
-  // Academic Details → academic section
   tenth_percentage: "academic",
   twelfth_percentage: "academic",
   degree_name: "academic",

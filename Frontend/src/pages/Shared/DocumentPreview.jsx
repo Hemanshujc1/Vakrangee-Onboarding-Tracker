@@ -138,7 +138,6 @@ const DocumentPreview = () => {
         />
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Document Info Header */}
           <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
@@ -163,7 +162,6 @@ const DocumentPreview = () => {
            
           </div>
 
-          {/* Preview Area */}
           <div className="p-8 bg-gray-900 flex justify-center min-h-150">
             {isImage ? (
               <img src={fileUrl} alt={document.document_type} className="max-w-full h-auto shadow-2xl rounded-lg" />
@@ -178,7 +176,6 @@ const DocumentPreview = () => {
             )}
           </div>
           
-          {/* Footer Info */}
           {document.status === "REJECTED" && document.rejection_reason && (
             <div className="p-6 bg-red-50 border-t border-red-100">
               <h4 className="text-sm font-bold text-red-800 mb-2">Rejection Reason:</h4>

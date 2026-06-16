@@ -4,7 +4,7 @@ import {
   yupResolver,
   Yup,
   axios,
-  commonSchemas,
+  readOnlySchemas,
   createSignatureSchema,
 } from "../../utils/formDependencies";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
@@ -13,47 +13,42 @@ const useFormNDA = () => {
   const {
     navigate,
     showAlert,
-    user,
     targetId,
     autoFillData,
     loading,
     signaturePreview,
     setSignaturePreview,
-    setIsPreviewMode,
     isRef: isPreviewRef,
   } = useOnboardingForm();
 
-  // Determine if form is locked
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(autoFillData?.ndaStatus);
   const hasSavedSignature = !!(
     autoFillData?.ndaData?.signature_path || autoFillData?.signature
   );
 
-  // Validation Schema
   const validationSchema = useMemo(
     () =>
       Yup.object().shape({
         isDraft: Yup.boolean(),
-        employee_full_name: commonSchemas.nameString.label("Full Name"),
-        address_line1: commonSchemas.addressString.label("Address Line 1"),
+        employee_full_name: readOnlySchemas.nameString.label("Full Name"),
+        address_line1: readOnlySchemas.addressString.label("Address Line 1"),
         address_line2:
-          commonSchemas.addressStringOptional.label("Address Line 2"),
-        post_office: commonSchemas.stringRequired.label("Post Office"),
-        city: commonSchemas.stringRequired,
-        district: commonSchemas.stringRequired,
-        state: commonSchemas.stringRequired,
-        pincode: commonSchemas.pincode,
+          readOnlySchemas.addressStringOptional.label("Address Line 2"),
+        post_office: readOnlySchemas.stringRequired.label("Post Office"),
+        city: readOnlySchemas.stringRequired,
+        district: readOnlySchemas.stringRequired,
+        state: readOnlySchemas.stringRequired,
+        pincode: readOnlySchemas.pincode,
 
         signature: Yup.mixed().when("isDraft", {
           is: true,
-          then: (schema) => Yup.mixed().nullable().optional(),
-          otherwise: (schema) => createSignatureSchema(hasSavedSignature),
+          then: () => Yup.mixed().nullable().optional(),
+          otherwise: () => createSignatureSchema(hasSavedSignature),
         }),
       }),
     [hasSavedSignature],
   );
 
-  // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData) {
       navigate(`/forms/non-disclosure-agreement/preview/${targetId}`, {
@@ -141,11 +136,15 @@ const useFormNDA = () => {
   }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
-    // Disabled fields are excluded from 'values', so fetch them manually
+
     const allValues = {
       ...getValues(),
       ...values,
     };
+
+    if (isPreviewRef.current) {
+      allValues.isDraft = true;
+    }
 
     try {
       const formData = new FormData();
@@ -174,7 +173,7 @@ const useFormNDA = () => {
       if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: "success" });
       } else {
-        // Navigate to Preview
+
         const savedData = autoFillData?.ndaData || {};
         navigate(`/forms/non-disclosure-agreement/preview/${targetId}`, {
           state: {
@@ -209,6 +208,7 @@ const useFormNDA = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     errors,
     isSubmitting,
     onFormSubmit,

@@ -1,14 +1,6 @@
 import React from "react";
-
-const getInputClass = (error, disabled = false) => {
-  const baseClass =
-    "w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary)";
-  const errorClass = error ? "border-red-500" : "border-gray-200";
-  const disabledClass = disabled
-    ? "cursor-not-allowed bg-gray-50 text-gray-500"
-    : "";
-  return `${baseClass} ${errorClass} ${disabledClass}`;
-};
+import FormInputField from "../../UI/FormInputField";
+import FormSelectField from "../../UI/FormSelectField";
 
 const PersonalDetailsSection = ({
   register,
@@ -28,199 +20,109 @@ const PersonalDetailsSection = ({
           Personal Details
         </h4>
       </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">Employee ID</label>
-        {isEditing ? (
-          <input
-            disabled
-            value={formData.employeeId || formData.id || "-"}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-          />
-        ) : (
-          <p className="font-medium text-gray-800 bg-gray-50 px-2 py-2 rounded-md">
-            {formData.employeeId || formData.id || "Not Assigned"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          First Name <span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("firstname")}
-              disabled
-              className={getInputClass(errors.firstname, true)}
-              placeholder="Rohit"
-            />
-            {errors.firstname && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.firstname.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formData.firstname || "-"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Last Name <span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("lastname")}
-              disabled
-              className={getInputClass(errors.lastname, true)}
-              placeholder="Sharma"
-            />
-            {errors.lastname && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.lastname.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formData.lastname || "-"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Company Email Address
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("email")}
-              type="email"
-              disabled
-              placeholder="Not Assigned Yet"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-            />
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 bg-gray-50 px-2 py-2 rounded-md">
-            {formData.email || "Not Assigned"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Personal Email Address <span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("personal_email_id")}
-              disabled
-              type="email"
-              className={getInputClass(errors.personal_email_id, true)}
-              placeholder="john.doe@gmail.com"
-            />
-            {errors.personal_email_id && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.personal_email_id.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formData.personal_email_id || "-"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Phone Number <span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("phone")}
-              type="tel"
-              className={getInputClass(errors.phone)}
-              placeholder="9876543210"
-              maxLength={10}
-              minLength={10}
-              onInput={(e) => {
-                e.target.value = e.target.value.replace(/[^0-9]/g, "");
-              }}
-              inputMode="numeric"
+      
+      <FormInputField
+        label="Employee ID"
+        name="employeeId"
+        register={register}
+        isEditing={isEditing}
+        value={formData.employeeId || formData.id}
+        disabled={true}
+      />
 
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.phone.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formData.phone || "-"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Date of Birth <span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <input
-              {...register("date_of_birth")}
-              type="date"
-              max={maxDate}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) ${
-                errors.date_of_birth ? "border-red-500" : "border-gray-200"
-              }`}
-            />
-            {errors.date_of_birth && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.date_of_birth.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formatDate(formData.date_of_birth) || "-"}
-          </p>
-        )}
-      </div>
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Gender<span className="text-red-500">*</span>
-        </label>
-        {isEditing ? (
-          <>
-            <select
-              {...register("gender")}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-(--color-primary) bg-white ${
-                errors.gender ? "border-red-500" : "border-gray-200"
-              }`}
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-            {errors.gender && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.gender.message}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="font-medium text-gray-800 py-2">
-            {formData.gender || "-"}
-          </p>
-        )}
-      </div>
+      <FormInputField
+        label="First Name"
+        name="firstname"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formData.firstname}
+        disabled={true}
+        required={true}
+        placeholder="Rohit"
+      />
+
+      <FormInputField
+        label="Last Name"
+        name="lastname"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formData.lastname}
+        disabled={true}
+        required={true}
+        placeholder="Sharma"
+      />
+
+      <FormInputField
+        label="Company Email Address"
+        name="email"
+        register={register}
+        isEditing={isEditing}
+        value={formData.email}
+        type="email"
+        disabled={true}
+        placeholder="Not Assigned Yet"
+      />
+
+      <FormInputField
+        label="Personal Email Address"
+        name="personal_email_id"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formData.personal_email_id}
+        type="email"
+        disabled={true}
+        required={true}
+        placeholder="john.doe@gmail.com"
+      />
+
+      <FormInputField
+        label="Phone Number"
+        name="phone"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formData.phone}
+        type="tel"
+        required={true}
+        placeholder="9876543210"
+        maxLength={10}
+        minLength={10}
+        inputMode="numeric"
+        onInput={(e) => {
+          e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        }}
+      />
+
+      <FormInputField
+        label="Date of Birth"
+        name="date_of_birth"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formatDate(formData.date_of_birth)}
+        type="date"
+        required={true}
+        max={maxDate}
+      />
+
+      <FormSelectField
+        label="Gender"
+        name="gender"
+        register={register}
+        errors={errors}
+        isEditing={isEditing}
+        value={formData.gender}
+        required={true}
+        options={[
+          { value: "Male", label: "Male" },
+          { value: "Female", label: "Female" },
+          { value: "Other", label: "Other" },
+        ]}
+        placeholder="Select Gender"
+      />
     </>
   );
 };

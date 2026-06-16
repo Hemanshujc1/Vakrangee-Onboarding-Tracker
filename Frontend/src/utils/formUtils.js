@@ -6,9 +6,7 @@ export const onValidationFail = (errors, showAlert) => {
   if (showAlert) {
       showAlert(message, { type: 'error' });
   } else {
-      // Fallback or just log
       console.warn("showAlert function not provided to onValidationFail");
-      // Intentionally not using alert() to meet requirement
   }
 };
 

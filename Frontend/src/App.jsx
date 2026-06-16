@@ -13,7 +13,6 @@ import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 // HR Admin Pages
 import HRAdminDashboard from "./pages/HRAdmin/Dashboard";
 import HRAdminEmployees from "./pages/HRAdmin/MyEmployees";
-// import OtherEmployees from "./pages/HRAdmin/OtherEmployees";
 
 // Employee Pages
 import EmployeeDashboard from "./pages/Employee/Dashboard";

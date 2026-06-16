@@ -7,6 +7,8 @@ import WorkExperience from "./ApplicationSections/WorkExperience";
 import OtherDetails from "./ApplicationSections/OtherDetails";
 import useFormApplication from "./useFormApplication";
 
+import useOnboardingActions from "../../hooks/useOnboardingActions";
+
 const FormApplication = () => {
   const {
     autoFillData,
@@ -19,6 +21,7 @@ const FormApplication = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -46,8 +49,22 @@ const FormApplication = () => {
     onFormSubmit,
     onValidationFail,
     showAlert,
+    isPreviewRef,
     setIsPreviewMode,
   } = useFormApplication();
+
+  const { actions, signatureProps } = useOnboardingActions({
+    isSubmitting,
+    setValue,
+    getValues,
+    isPreviewRef,
+    setIsPreviewMode,
+    onFormSubmit,
+    errors,
+    signaturePreview,
+    setSignaturePreview,
+    hasSavedSignature,
+  });
 
   if (loading) return <div>Loading...</div>;
 
@@ -62,25 +79,8 @@ const FormApplication = () => {
       onSubmit={handleSubmit(onFormSubmit, (e) =>
         onValidationFail(e, showAlert),
       )}
-      actions={{
-        isSubmitting,
-        onSaveDraft: () => {
-          setValue("isDraft", true);
-          handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-        },
-        onSubmit: () => {
-          setIsPreviewMode(true);
-          setValue("isDraft", true);
-        },
-      }}
-      signature={{
-        setValue,
-        error: errors.signature,
-        preview: signaturePreview,
-        setPreview: setSignaturePreview,
-        isSaved: hasSavedSignature,
-        fieldName: "signature",
-      }}
+      actions={actions}
+      signature={signatureProps}
     >
       {/* Personal Information & Address */}
       <PersonalInformation

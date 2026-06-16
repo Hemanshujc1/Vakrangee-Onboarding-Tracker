@@ -1,4 +1,4 @@
-import { MANDATORY_DOC_KEYS, isDocMandatory } from "../config/documentConfig";
+import { MANDATORY_DOC_KEYS, DOCUMENT_CONFIG } from "../config/documentConfig";
 
 export const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -10,10 +10,30 @@ export const formatDate = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
-export const getSectionStatus = (sectionId, { formData, getDocStatus, panVerified }) => {
+export const formatForDateInput = (dateInput) => {
+  if (!dateInput) return "";
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const isDocGroupComplete = (section, getDocStatus) => {
+  const mandatoryDocsForSection = DOCUMENT_CONFIG
+    .filter((d) => !d.optional && d.section === section)
+    .map((d) => d.key);
+  return mandatoryDocsForSection.every((key) => getDocStatus(key).status !== "PENDING");
+};
+
+export const getSectionStatus = (
+  sectionId,
+  { formData, getDocStatus, panVerified },
+) => {
   switch (sectionId) {
     case "photo":
-      return getDocStatus("Passport Size Photo").status !== "PENDING";
+      return isDocGroupComplete("photo", getDocStatus);
 
     case "identity":
       return !!(
@@ -24,12 +44,11 @@ export const getSectionStatus = (sectionId, { formData, getDocStatus, panVerifie
         formData.pan_number &&
         formData.adhar_number &&
         panVerified &&
-        getDocStatus("PAN Card").status !== "PENDING" &&
-        getDocStatus("Aadhar Card").status !== "PENDING"
+        isDocGroupComplete("identity", getDocStatus)
       );
 
     case "job":
-      return true; // Read-only — always considered complete
+      return true;
 
     case "contact":
       return !!(
@@ -41,7 +60,6 @@ export const getSectionStatus = (sectionId, { formData, getDocStatus, panVerifie
       );
 
     case "address":
-      // Permanent address is the minimum requirement
       return !!(
         formData.perm_address_line1 &&
         formData.perm_city &&
@@ -57,24 +75,27 @@ export const getSectionStatus = (sectionId, { formData, getDocStatus, panVerifie
         formData.twelfth_percentage &&
         formData.degree_name &&
         formData.degree_percentage &&
-        getDocStatus("10th Marksheet").status !== "PENDING" &&
-        getDocStatus("12th Marksheet").status !== "PENDING" &&
-        getDocStatus("Degree Certificate").status !== "PENDING"
+        isDocGroupComplete("academic", getDocStatus)
       );
 
     case "financial":
-      return getDocStatus("Cancelled Cheque").status !== "PENDING";
+      return isDocGroupComplete("financial", getDocStatus);
 
     case "signature":
-      return getDocStatus("Signature").status !== "PENDING";
+      return isDocGroupComplete("signature", getDocStatus);
 
     default:
       return false;
   }
 };
 
-export const isProfileComplete = ({ formData, documents, previewImage, previewSignature, panVerified }) => {
-  // Required personal + contact + address fields
+export const isProfileComplete = ({
+  formData,
+  documents,
+  previewImage,
+  previewSignature,
+  panVerified,
+}) => {
   const requiredFields = [
     "firstname",
     "lastname",
@@ -90,7 +111,6 @@ export const isProfileComplete = ({ formData, documents, previewImage, previewSi
     "emergency_contact_name",
     "emergency_contact_relationship",
     "emergency_contact_number",
-    // Permanent address (perm_ prefix)
     "perm_address_line1",
     "perm_city",
     "perm_district",
@@ -103,7 +123,6 @@ export const isProfileComplete = ({ formData, documents, previewImage, previewSi
     if (!formData[field]) return false;
   }
 
-  // Communication address required only when not same as permanent
   if (!formData.comm_same_as_permanent) {
     const commFields = [
       "comm_address_line1",
@@ -118,7 +137,6 @@ export const isProfileComplete = ({ formData, documents, previewImage, previewSi
     }
   }
 
-  // Required documents — driven by MANDATORY_DOC_KEYS from documentConfig
   for (const docKey of MANDATORY_DOC_KEYS) {
     const doc = documents.find((d) => d.document_type === docKey);
     if (!doc || doc.status === "REJECTED") return false;

@@ -1,6 +1,7 @@
 import React from "react";
 import { Building, MapPin, Calendar, UserCheck, Briefcase } from "lucide-react";
 import SearchableSelect from "../UI/SearchableSelect";
+import { bandLevelData, uniqueBands } from "../../utils/bandLevelData";
 
 const JobDetailsCard = ({
   employee,
@@ -117,7 +118,7 @@ const JobDetailsCard = ({
                 placeholder="Work Location"
               />
             ) : (
-              <p className="font-medium text-sm break-words whitespace-normal">
+              <p className="font-medium text-sm wrap-break-word whitespace-normal">
                 {employee.location || "N/A"}
               </p>
             )}
@@ -160,18 +161,36 @@ const JobDetailsCard = ({
           <div className="w-full min-w-0">
             <p className="text-xs text-gray-400">Band</p>
             {isEditing ? (
-              <input
-                type="text"
-                value={editForm.band}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, band: e.target.value })
-                }
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="Band"
-              />
+              <select
+                name="band_id"
+                value={editForm.band_id || ""}
+                onChange={(e) => {
+                  const selectedBandId = e.target.value
+                    ? parseInt(e.target.value)
+                    : "";
+                  const selectedBand = uniqueBands.find(
+                    (b) => b.id === selectedBandId,
+                  );
+                  setEditForm({
+                    ...editForm,
+                    band_id: selectedBandId,
+                    band_name: selectedBand ? selectedBand.name : "",
+                    band_level_id: "",
+                    level_name: "",
+                  });
+                }}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all bg-white"
+              >
+                <option value="">Select Band</option>
+                {uniqueBands.map((band) => (
+                  <option key={band.id} value={band.id}>
+                    {band.name}
+                  </option>
+                ))}
+              </select>
             ) : (
               <p className="font-medium text-sm truncate">
-                {employee.band || "N/A"}
+                {employee.band_name || employee.band || "N/A"}
               </p>
             )}
           </div>
@@ -185,18 +204,42 @@ const JobDetailsCard = ({
           <div className="w-full min-w-0">
             <p className="text-xs text-gray-400">Level</p>
             {isEditing ? (
-              <input
-                type="text"
-                value={editForm.level}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, level: e.target.value })
-                }
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="Level"
-              />
+              <select
+                name="band_level_id"
+                value={editForm.band_level_id || ""}
+                onChange={(e) => {
+                  const selectedLevelId = e.target.value
+                    ? parseInt(e.target.value)
+                    : "";
+                  const selectedLevel = bandLevelData.find(
+                    (l) => l.band_level_id === selectedLevelId,
+                  );
+                  setEditForm({
+                    ...editForm,
+                    band_level_id: selectedLevelId,
+                    level_name: selectedLevel ? selectedLevel.level_name : "",
+                  });
+                }}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all bg-white"
+                disabled={!editForm.band_id}
+              >
+                <option value="">Select Level</option>
+                {bandLevelData
+                  .filter(
+                    (item) => Number(item.band_id) === Number(editForm.band_id),
+                  )
+                  .map((level) => (
+                    <option
+                      key={level.band_level_id}
+                      value={level.band_level_id}
+                    >
+                      {level.level_name}
+                    </option>
+                  ))}
+              </select>
             ) : (
               <p className="font-medium text-sm truncate">
-                {employee.level || "N/A"}
+                {employee.level_name || employee.level || "N/A"}
               </p>
             )}
           </div>

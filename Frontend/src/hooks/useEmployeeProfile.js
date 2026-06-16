@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
+import { getAuthToken } from "../utils/employeeUtils";
+import { formatForDateInput } from "../utils/basicInfoHelpers";
 
 export const useEmployeeProfile = ({
   reset,
@@ -29,7 +31,7 @@ export const useEmployeeProfile = ({
 
   const fetchProfile = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       const response = await axios.get("/api/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -46,24 +48,13 @@ export const useEmployeeProfile = ({
       setVerifiedByName(vName);
 
       if (record) {
-        // ── Unpack JSON groups from the record ─────────────────────────────────
         const pi = record.personal_info || {};
         const ci = record.contact_info || {};
         const ji = record.job_info || {};
         const acad = record.academic_details || {};
         const addressInfo = record.address_info || [];
-        const perm = addressInfo[0] || {};   // Permanent Address
-        const comm = addressInfo[1] || {};   // Communication Address
-
-        const formatForDateInput = (dateString) => {
-          if (!dateString) return "";
-          const date = new Date(dateString);
-          if (isNaN(date.getTime())) return "";
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        };
+        const perm = addressInfo[0] || {};   
+        const comm = addressInfo[1] || {};  
 
         const dob = formatForDateInput(pi.date_of_birth);
         const doj = formatForDateInput(ji.date_of_joining);
@@ -184,18 +175,14 @@ export const useEmployeeProfile = ({
     setMessage({ type: "", text: "" });
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       const formPayload = new FormData();
 
       // Append all form fields (perm_* and comm_* prefixed address fields)
       Object.keys(data).forEach((key) => {
         let val = data[key];
-        // Format Date objects to YYYY-MM-DD
-        if (val instanceof Date && !isNaN(val.getTime())) {
-          const year = val.getFullYear();
-          const month = String(val.getMonth() + 1).padStart(2, "0");
-          const day = String(val.getDate()).padStart(2, "0");
-          val = `${year}-${month}-${day}`;
+        if (val instanceof Date) {
+          val = formatForDateInput(val);
         }
         // Convert booleans to string for FormData
         if (typeof val === "boolean") {
@@ -250,7 +237,7 @@ export const useEmployeeProfile = ({
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       await axios.post(
         "/api/employees/submit-basic-info",
         {},

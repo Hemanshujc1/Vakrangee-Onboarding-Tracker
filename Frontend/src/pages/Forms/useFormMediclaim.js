@@ -1,12 +1,11 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import {
-  commonSchemas,
+  readOnlySchemas,
   createSignatureSchema,
   formatDateForAPI,
-  onValidationFail,
 } from "../../utils/formDependencies";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
@@ -39,26 +38,23 @@ const useFormMediclaim = () => {
     autoFillLoading: loading,
     signaturePreview,
     setSignaturePreview,
-  } = useOnboardingForm();
+    isRef: isPreviewRef,
+    } = useOnboardingForm();
 
-  // Redirect if no employeeId
   useEffect(() => {
     if (!employeeId) {
       navigate("/login");
     }
   }, [employeeId, navigate]);
 
-  // Determine if form is locked (Submitted or Verified)
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
     autoFillData?.mediclaimStatus
   );
 
-  // Determine if a signature is already saved on the server
   const hasSavedSignature = !!(
     autoFillData?.mediclaimData?.signature_path || autoFillData?.signature
   );
 
-  // Redirect if locked (Optional)
   useEffect(() => {
     if (isLocked) {
      navigate('/forms/mediclaim/preview', { state: { formData: autoFillData.mediclaimData } });
@@ -68,30 +64,48 @@ const useFormMediclaim = () => {
   const validationSchema = useMemo(
     () =>
       Yup.object({
-        employee_full_name: commonSchemas.nameString.label("Full Name"),
-        date_of_birth: commonSchemas.dateRequired,
-        gender: commonSchemas.stringRequired,
-        marital_status: commonSchemas.stringRequired,
-        mobile_number: commonSchemas.mobile,
-        address_line1: commonSchemas.addressString.label("Address Line 1"),
-        address_line2: commonSchemas.addressString.label("Address Line 2"),
-        landmark: commonSchemas.landmark,
-        post_office: commonSchemas.stringRequired,
-        city: commonSchemas.stringRequired,
-        state: commonSchemas.stringRequired,
-        pincode: commonSchemas.pincode,
+        employee_full_name: readOnlySchemas.nameString.label("Full Name"),
+        date_of_birth: readOnlySchemas.dateRequired,
+        gender: readOnlySchemas.stringRequired,
+        marital_status: readOnlySchemas.stringRequired,
+        mobile_number: readOnlySchemas.mobile,
+        address_line1: readOnlySchemas.addressString.label("Address Line 1"),
+        address_line2: readOnlySchemas.addressStringOptional.label("Address Line 2"),
+        landmark: readOnlySchemas.landmark,
+        post_office: readOnlySchemas.stringRequired,
+        city: readOnlySchemas.stringRequired,
+        state: readOnlySchemas.stringRequired,
+        pincode: readOnlySchemas.pincode,
         dependents: Yup.array().when("marital_status", {
           is: "Married",
-          then: (schema) =>
-            schema.of(
-              Yup.object().shape({
-                name: commonSchemas.nameString.label("Name"),
-                relationship: commonSchemas.stringRequired,
-                age: commonSchemas.age.required("Required"),
-                dob: commonSchemas.datePast.required("DOB is required"),
-              })
-            ),
-          otherwise: (schema) => schema.notRequired().nullable(),
+          then: () =>
+            schema
+              .min(1, "Please add at least one dependent (Spouse is mandatory).")
+              .test(
+                "has-spouse",
+                "Spouse details are mandatory when Married",
+                (value) => value && value.some((dep) => dep.relationship === "Spouse")
+              )
+              .of(
+                Yup.object().shape({
+                  name: commonSchemas.nameString.label("Name"),
+                  relationship: commonSchemas.stringRequired,
+                  age: commonSchemas.age.when("relationship", {
+                    is: "Spouse",
+                    then: () => schema.min(18, "Spouse must be 18+").required("Required"),
+                    otherwise: () => schema.required("Required"),
+                  }),
+                  dob: commonSchemas.datePast.when("relationship", {
+                    is: "Spouse",
+                    then: () => schema.max(
+                      new Date(new Date().setFullYear(new Date().getFullYear() - 18)), 
+                      "Spouse must be 18+"
+                    ).required("DOB is required"),
+                    otherwise: () => schema.required("DOB is required"),
+                  }),
+                })
+              ),
+          otherwise: () => schema.notRequired().nullable(),
         }),
         signature: createSignatureSchema(hasSavedSignature),
       }),
@@ -126,8 +140,6 @@ const useFormMediclaim = () => {
     control,
     name: "dependents",
   });
-
-  // const maritalStatus = watch("marital_status");
 
   useEffect(() => {
     if (autoFillData) {
@@ -175,7 +187,7 @@ const useFormMediclaim = () => {
 
   const onFormSubmit = async (values) => {
     const allValues = { ...getValues(), ...values };
-    // If it's a draft, save via API immediately
+
     if (allValues.isDraft) {
       try {
         const formData = new FormData();
@@ -258,14 +270,14 @@ const useFormMediclaim = () => {
     getValues,
     trigger,
     errors,
-    isSubmitting, // map formState.isSubmitting to isSubmitting
+    isSubmitting,
     onFormSubmit,
     showAlert,
-    // Field Array refs
     fields,
     append,
     remove,
-  };
+    isPreviewRef,
+    };
 };
 
 export default useFormMediclaim;

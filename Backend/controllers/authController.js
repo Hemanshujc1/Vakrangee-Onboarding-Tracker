@@ -7,7 +7,6 @@ const logger = require('../utils/logger');
 
 const secretKey = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-// ─── Helpers for JSON group access ────────────────────────────────────────────
 const getEmpStatus = (emp) => emp?.employee_status || {};
 const getBasicInfo = (emp) => emp?.basic_info || {};
 
@@ -25,7 +24,7 @@ exports.register = async (req, res) => {
         username, password, role, 
         firstName, lastName, department, jobTitle, location, phone, startDate, onboarding_hr_id,
         department_id, designation_id,
-        band, level, work_location, employee_id: employee_code
+        band_id, band_name, band_level_id, level_name, work_location, employee_id: employee_code
     } = req.body;
 
     // Check if user already exists
@@ -96,10 +95,8 @@ exports.register = async (req, res) => {
     // Create EmployeeRecord entry with JSON groups
     await EmployeeRecord.create({
         employee_id: newEmployee.employee_id,
-        // Flat FK columns (kept outside JSON for queryability)
         onboarding_hr_id: onboarding_hr_id || null,
         onboarding_hr_assigned_at: onboarding_hr_id ? new Date() : null,
-        // JSON groups
         personal_info: {
           firstname: firstName || null,
           middlename: null,
@@ -124,8 +121,10 @@ exports.register = async (req, res) => {
           job_title: jobTitle || null,
           designation_id: designation_id || null,
           date_of_joining: startDate || null,
-          band: band || null,
-          level: level || null,
+          band_id: band_id || null,
+          band_name: band_name || null,
+          band_level_id: band_level_id || null,
+          level_name: level_name || null,
         },
         work_location: resolvedWorkLocation,
     }, { transaction: t });

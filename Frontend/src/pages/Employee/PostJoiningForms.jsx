@@ -20,7 +20,6 @@ const PostJoiningForms = () => {
     }
   }, [autoFillData, navigate]);
 
-  // Default forms configuration
   const initialForms = [
     {
       id: 1,
@@ -56,7 +55,6 @@ const PostJoiningForms = () => {
     },
   ];
 
-  // Merge backend status into forms
   const forms = React.useMemo(() => {
     if (!autoFillData) return initialForms;
 
@@ -98,7 +96,6 @@ const PostJoiningForms = () => {
           isDisabled = autoFillData.epfDisabled;
         }
 
-        // Map backend status to UI status
         let uiStatus =
           status === "PENDING"
             ? "Pending"
@@ -108,7 +105,7 @@ const PostJoiningForms = () => {
             ? "Approved"
             : status === "REJECTED"
             ? "Rejected"
-            : "Submitted"; // Covers 'SUBMITTED'
+            : "Submitted"; 
 
         return {
           ...form,
@@ -124,7 +121,6 @@ const PostJoiningForms = () => {
   }, [autoFillData]);
 
   const handleCardClick = (form) => {
-    // Navigation Path Construction
     const previewPath = `${form.path}/preview/${employeeId}`;
 
     if (["Approved", "Submitted", "Rejected"].includes(form.status)) {

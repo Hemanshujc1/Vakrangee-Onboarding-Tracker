@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getAuthToken } from '../utils/employeeUtils';
 
 const useAutoFill = (employeeId) => {
   const [data, setData] = useState(null);
@@ -15,7 +16,7 @@ const useAutoFill = (employeeId) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         const response = await axios.get(`/api/forms/auto-fill/${employeeId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });

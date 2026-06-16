@@ -2,13 +2,6 @@ import React from "react";
 import DocumentUploadItem from "./DocumentUploadItem";
 import { DOCUMENT_CONFIG, DOC_CONFIG_MAP } from "../../../config/documentConfig";
 
-/**
- * Renders all documents with section: "financial" from documentConfig.js
- * ─────────────────────────────────────────────────────────────────────────
- * To ADD a document here → add an entry to documentConfig.js with section: "financial"
- * To REMOVE a document  → delete / comment out its entry in documentConfig.js
- * No changes needed in this file.
- */
 
 const FINANCIAL_DOCS = DOCUMENT_CONFIG.filter((d) => d.section === "financial");
 

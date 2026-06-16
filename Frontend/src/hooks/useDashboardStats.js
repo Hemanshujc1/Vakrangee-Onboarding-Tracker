@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { getEmployeeStatus } from '../utils/employeeUtils';
+import { getEmployeeStatus, getAuthToken } from '../utils/employeeUtils';
 
 const useDashboardStats = ({ role, userId } = {}) => {
   const [stats, setStats] = useState({
@@ -18,11 +18,7 @@ const useDashboardStats = ({ role, userId } = {}) => {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const userInfoStr = localStorage.getItem("userInfo");
-        const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-        let token = userInfo?.token || localStorage.getItem("token");
-
-        if (!token && userInfo) token = userInfo.token;
+        const token = getAuthToken();
 
         if (!token) {
              console.error("No token found");

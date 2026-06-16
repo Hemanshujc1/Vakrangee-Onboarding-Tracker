@@ -27,13 +27,21 @@ export const getUniqueOptions = (data, field) => {
     return [...new Set(data.map(item => item[field]).filter(Boolean))];
 };
 
-/**
- * Formats the work_location JSON object { state, district, city }
- * into a human-readable string.
- * Falls back gracefully if passed a plain string (legacy data).
- */
+
 export const formatWorkLocation = (wl) => {
     if (!wl) return null;
     if (typeof wl === "string") return wl;
     return [wl.city, wl.district, wl.state].filter(Boolean).join(", ") || null;
+};
+
+export const getAuthToken = () => {
+    const userInfoStr = localStorage.getItem("userInfo");
+    const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+    return userInfo?.token || localStorage.getItem("token");
+};
+
+export const getAuthUser = () => {
+    const userInfoStr = localStorage.getItem("userInfo");
+    const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+    return userInfo?.user || JSON.parse(localStorage.getItem("user") || "{}");
 };

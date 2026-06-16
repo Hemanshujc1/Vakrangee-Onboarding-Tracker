@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, CheckSquare, Square, Info, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 
 const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
@@ -30,24 +28,28 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
       label: "Application Form",
       statusKey: "applicationStatus",
       idKey: "applicationId",
-    },
-    {
-      key: "DECLARATION",
-      label: "Declaration Form",
-      statusKey: "declarationStatus",
-      idKey: "declarationId",
+      disabledKey: "applicationDisabled",
     },
     {
       key: "MEDICLAIM",
       label: "Mediclaim Form",
       statusKey: "mediclaimStatus",
       idKey: "mediclaimId",
+      disabledKey: "mediclaimDisabled",
+    },
+    {
+      key: "EMPLOYEE_INFO",
+      label: "Employee Information Form",
+      statusKey: "employeeInfoStatus",
+      idKey: "employeeInfoId",
+      disabledKey: "employeeInfoDisabled",
     },
     {
       key: "GRATUITY",
       label: "Gratuity Form (Form F)",
       statusKey: "gratuityStatus",
       idKey: "gratuityId",
+      disabledKey: "gratuityDisabled",
     },
   ];
 
@@ -55,13 +57,14 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
     .map((form) => {
       const id = employee[form.idKey];
       const status = employee[form.statusKey] || "PENDING";
+      const isDisabled = employee[form.disabledKey];
       return {
         id,
         name: form.label,
         status,
         category: "preJoiningForms",
         key: form.key,
-        available: id !== null && id !== undefined && status !== "PENDING",
+        available: id !== null && id !== undefined && status !== "PENDING" && !isDisabled,
       };
     })
     .filter((f) => f.available);
@@ -69,37 +72,47 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
   // 3. Map Available Post-Joining Forms
   const postJoiningFormsList = [
     {
-      key: "EMPLOYEE_INFO",
-      label: "Employee Information Form",
-      statusKey: "employeeInfoStatus",
-      idKey: "employeeInfoId",
-    },
-    {
       key: "NDA",
       label: "Non-Disclosure Agreement (NDA)",
       statusKey: "ndaStatus",
       idKey: "ndaId",
+      disabledKey: "ndaDisabled",
     },
     {
       key: "TDS",
       label: "TDS Declaration Form",
       statusKey: "tdsStatus",
       idKey: "tdsId",
+      disabledKey: "tdsDisabled",
     },
-    { key: "EPF", label: "EPF Form", statusKey: "epfStatus", idKey: "epfId" },
+    {
+      key: "DECLARATION",
+      label: "Declaration Form",
+      statusKey: "declarationStatus",
+      idKey: "declarationId",
+      disabledKey: "declarationDisabled",
+    },
+    { 
+      key: "EPF", 
+      label: "EPF Form", 
+      statusKey: "epfStatus", 
+      idKey: "epfId",
+      disabledKey: "epfDisabled", 
+    },
   ];
 
   const availablePostForms = postJoiningFormsList
     .map((form) => {
       const id = employee[form.idKey];
       const status = employee[form.statusKey] || "PENDING";
+      const isDisabled = employee[form.disabledKey];
       return {
         id,
         name: form.label,
         status,
         category: "postJoiningForms",
         key: form.key,
-        available: id !== null && id !== undefined && status !== "PENDING",
+        available: id !== null && id !== undefined && status !== "PENDING" && !isDisabled,
       };
     })
     .filter((f) => f.available);
@@ -206,137 +219,6 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
     }
   };
 
-  const getPreviewPath = (key, employeeId) => {
-    const paths = {
-      EMPLOYMENT_APP: `/forms/application/preview/${employeeId}`,
-      DECLARATION: `/forms/declaration-form/preview/${employeeId}`,
-      MEDICLAIM: `/forms/mediclaim/preview/${employeeId}`,
-      GRATUITY: `/forms/gratuity-form/preview/${employeeId}`,
-      EMPLOYEE_INFO: `/forms/information/preview/${employeeId}`,
-      NDA: `/forms/non-disclosure-agreement/preview/${employeeId}`,
-      TDS: `/forms/tds-form/preview/${employeeId}`,
-      EPF: `/forms/employees-provident-fund/preview/${employeeId}`,
-    };
-    return paths[key] || "";
-  };
-
-  const captureFormAsPDF = (key, employeeId) => {
-    return new Promise((resolve, reject) => {
-      const path = getPreviewPath(key, employeeId);
-      if (!path) {
-        return reject(new Error(`Unknown form key: ${key}`));
-      }
-
-      // Create a hidden iframe
-      const iframe = document.createElement("iframe");
-      iframe.src = path;
-      iframe.style.position = "absolute";
-      iframe.style.left = "0";
-      iframe.style.top = "0";
-      iframe.style.width = "1024px";
-      iframe.style.height = "1448px";
-      iframe.style.opacity = "0.01";
-      iframe.style.pointerEvents = "none";
-      iframe.style.zIndex = "-9999";
-      document.body.appendChild(iframe);
-
-      let attempts = 0;
-      const maxAttempts = 120; // 12 seconds max
-      const checkInterval = setInterval(async () => {
-        attempts++;
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          if (!iframeDoc) return;
-
-          // Check for loading text/indicator
-          const hasLoadingText = Array.from(iframeDoc.querySelectorAll("div, p, span"))
-            .some(el => {
-              const text = el.textContent || "";
-              return text.trim().toLowerCase().includes("loading");
-            });
-
-          // Target the sheet paper container (.shadow-lg)
-          const printableElement = iframeDoc.querySelector(".shadow-lg") || 
-                                    iframeDoc.querySelector("div.bg-white.shadow-lg") ||
-                                    iframeDoc.querySelector("div.max-w-4xl") ||
-                                    iframeDoc.querySelector("form") ||
-                                    iframeDoc.body.children[0];
-
-          // Wait at least 1.5 seconds for React mounting/state to stabilize
-          if (printableElement && !hasLoadingText && attempts > 15) {
-            clearInterval(checkInterval);
-
-            // Wait for all images to fully load (e.g., signatures)
-            const images = Array.from(printableElement.querySelectorAll("img"));
-            await Promise.all(
-              images.map((img) => {
-                if (img.complete) return Promise.resolve();
-                return new Promise((res) => {
-                  img.onload = res;
-                  img.onerror = res;
-                });
-              })
-            );
-
-            // Capture the element using html2canvas
-            const canvas = await html2canvas(printableElement, {
-              useCORS: true,
-              allowTaint: true,
-              scale: 2,
-              logging: false,
-              window: iframe.contentWindow,
-            });
-
-            const imgData = canvas.toDataURL("image/jpeg", 1.0);
-            const pdf = new jsPDF("p", "mm", "a4");
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-
-            while (heightLeft >= 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-
-            const pdfBlob = pdf.output("blob");
-
-            // Convert to Base64
-            const reader = new FileReader();
-            reader.readAsDataURL(pdfBlob);
-            reader.onloadend = () => {
-              const base64data = reader.result.split(",")[1];
-              if (document.body.contains(iframe)) {
-                document.body.removeChild(iframe);
-              }
-              resolve(base64data);
-            };
-          }
-        } catch (err) {
-          clearInterval(checkInterval);
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-          reject(err);
-        }
-
-        if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-          reject(new Error(`Timeout loading preview page for ${key}`));
-        }
-      }, 100);
-    });
-  };
-
   // Download Trigger
   const handleDownloadSelected = async () => {
     if (selectedItems.length === 0) {
@@ -357,10 +239,7 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
 
       const response = await axios.post(
         `/api/employees/${employee.id}/download-documents`,
-        { 
-          selectedFiles: selectedItems,
-          frontendUrl: window.location.origin 
-        },
+        { selectedFiles: selectedItems },
         config,
       );
 

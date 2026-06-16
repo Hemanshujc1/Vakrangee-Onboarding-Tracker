@@ -4,7 +4,7 @@ import {
   yupResolver,
   Yup,
   axios,
-  commonSchemas,
+  readOnlySchemas,
   createSignatureSchema,
 } from "../../utils/formDependencies";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
@@ -13,16 +13,14 @@ const useFormDeclaration = () => {
   const {
     navigate,
     showAlert,
-    user,
     targetId: employeeId,
     autoFillData,
     loading: autoFillLoading,
     signaturePreview,
     setSignaturePreview,
-    isRef: isPreviewRef, // Use ref matching original logic
+    isRef: isPreviewRef, 
   } = useOnboardingForm();
 
-  // Determine if form is locked
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
     autoFillData?.declarationStatus
   );
@@ -31,7 +29,6 @@ const useFormDeclaration = () => {
     autoFillData?.declarationData?.signature_path || autoFillData?.signature
   );
 
-  // Redirect if locked
   useEffect(() => {
     if (isLocked && autoFillData?.declarationData) {
       const savedData = autoFillData.declarationData;
@@ -48,23 +45,22 @@ const useFormDeclaration = () => {
     }
   }, [isLocked, autoFillData, navigate, employeeId]);
 
-  // Validation Schema
   const validationSchema = useMemo(
     () =>
       Yup.object({
         isDraft: Yup.boolean(),
         title: Yup.string().required("Required"),
-        employee_full_name: commonSchemas.nameString.label("Full Name"),
+        employee_full_name: readOnlySchemas.nameString.label("Full Name"),
         previous_company_name:
-          commonSchemas.stringOptional.label("Company Name"),
-        previous_job_title: commonSchemas.stringOptional.label("Designation"),
-        current_job_title: commonSchemas.stringOptional.label(
+          readOnlySchemas.stringOptional.label("Company Name"),
+        previous_job_title: readOnlySchemas.stringOptional.label("Designation"),
+        current_job_title: readOnlySchemas.stringOptional.label(
           "Current Designation"
         ),
         signature: Yup.mixed().when("isDraft", {
           is: true,
-          then: (schema) => Yup.mixed().nullable().optional(),
-          otherwise: (schema) => createSignatureSchema(hasSavedSignature),
+          then: () => Yup.mixed().nullable().optional(),
+          otherwise: () => createSignatureSchema(hasSavedSignature),
         }),
       }),
     [hasSavedSignature]
@@ -120,11 +116,14 @@ const useFormDeclaration = () => {
   }, [autoFillData, reset, setSignaturePreview]);
 
   const onFormSubmit = async (values) => {
-    // Disabled fields are excluded from 'values', so fetch them manually
     const allValues = {
       ...getValues(),
       ...values,
     };
+
+    if (isPreviewRef.current) {
+      allValues.isDraft = true;
+    }
 
     try {
       const formData = new FormData();
@@ -154,7 +153,6 @@ const useFormDeclaration = () => {
       if (allValues.isDraft && !isPreviewRef.current) {
         await showAlert("Draft Saved!", { type: "success" });
       } else {
-        // Navigate to Preview
         const savedData = autoFillData?.declarationData || {};
         navigate(`/forms/declaration-form/preview/${employeeId}`, {
           state: {
@@ -166,7 +164,7 @@ const useFormDeclaration = () => {
             signaturePreview: signaturePreview,
             employeeId: employeeId,
             isHR: false,
-            status: "DRAFT", // Still Draft until confirmed
+            status: "DRAFT", 
             fromPreviewSubmit: true,
           },
         });
@@ -190,6 +188,7 @@ const useFormDeclaration = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     errors,
     isSubmitting,
     onFormSubmit,

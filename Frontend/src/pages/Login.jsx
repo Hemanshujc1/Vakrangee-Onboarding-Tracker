@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import axios from "axios";
-// import { useAlert } from "../context/AlertContext";
 import Logger from "../utils/Logger";
 import OfficeBackground from "../assets/office_image.avif";
-import { commonSchemas } from "../utils/validationSchemas";
+import { commonSchemas } from "../utils/validations";
 
 const Login = () => {
   const navigate = useNavigate();
-  // const { showAlert } = useAlert();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -73,11 +71,9 @@ const Login = () => {
       Logger.error("Auth Error details:", err);
 
       if (err.response) {
-        // Backend responded — differentiate by status code
         Logger.log("Backend error response:", err.response.data);
         const status = err.response.status;
         if (status === 429) {
-          // Rate limit hit — show the backend's message directly
           setError(
             err.response.data?.message ||
               "Too many login attempts. Please try again later.",
@@ -85,11 +81,11 @@ const Login = () => {
         } else if (status === 400 || status === 401 || status === 403) {
           setError(err.response.data?.message || "Invalid credentials.");
         } else {
-          // 404, 500, or any other unexpected status
+          // 404, 500
           setError("Something went wrong. Please try again later.");
         }
       } else if (err.request) {
-        // Request sent but no response (server down / network issue)
+        //(server down / network issue)
         Logger.log("No response received (request made)");
         setError("Server is unreachable. Please try again later.");
       } else {
@@ -121,7 +117,6 @@ const Login = () => {
           <div>
             <div className="flex items-center gap-3 mb-8">
               <img
-                // src={`${import.meta.env.BASE_URL}vakrangee-logo.png`}
                 src={`${import.meta.env.BASE_URL}vakrangee-logo-white.png`}
                 alt="Vakrangee Logo"
                 className="h-30 w-75 object-contain brightness"
@@ -281,7 +276,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail("hemanshuwork26@vakrangee.com");
+                    setEmail("hemanshuwork26@gmail.com");
                     setPassword("User@123");
                   }}
                   className="px-3 py-1.5 border rounded text-sm font-medium transition-colors hover:scale-96 hover:animate-pulse"

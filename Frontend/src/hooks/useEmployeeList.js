@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { useAlert } from "../context/AlertContext";
-import { getEmployeeStatus, getUniqueOptions } from "../utils/employeeUtils";
+import { getEmployeeStatus, getUniqueOptions, getAuthToken, getAuthUser } from "../utils/employeeUtils";
 
 const useEmployeeList = ({
   initialFilters = {},
@@ -34,10 +34,8 @@ const useEmployeeList = ({
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const userInfoStr = localStorage.getItem("userInfo");
-      const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-      const token = userInfo?.token || localStorage.getItem("token");
-      const user = userInfo?.user || JSON.parse(localStorage.getItem("user"));
+      const token = getAuthToken();
+      const user = getAuthUser();
       
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.get(fetchEndpoint, config);
@@ -74,7 +72,7 @@ const useEmployeeList = ({
     const newStatus = hasLoggedIn ? "ACTIVE" : "INVITED";
 
     try {
-        const token = localStorage.getItem("token");
+        const token = getAuthToken();
         const config = { headers: { Authorization: `Bearer ${token}` } };
         
         await axios.put(`/api/employees/${emp.id}`, { 
@@ -101,7 +99,7 @@ const useEmployeeList = ({
     const isConfirmed = await showConfirm(`Are you sure you want to remove ${emp.firstName} ${emp.lastName}? This will mark them as 'Not Joined'.`, { type: 'warning' });
     if(isConfirmed) {
         try {
-            const token = localStorage.getItem("token");
+            const token = getAuthToken();
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.delete(`/api/employees/${emp.id}`, config);
             

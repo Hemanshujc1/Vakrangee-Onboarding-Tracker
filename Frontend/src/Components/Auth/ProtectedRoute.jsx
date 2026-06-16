@@ -11,7 +11,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to appropriate dashboard if role doesn't match
     if (user.role === 'HR_SUPER_ADMIN') return <Navigate to="/hr-super-admin" replace />;
     if (user.role === 'HR_ADMIN') return <Navigate to="/hr-admin" replace />;
     if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;

@@ -4,7 +4,12 @@ import { X, Plus, UserPlus } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import SearchableSelect from "../UI/SearchableSelect";
-import { commonSchemas } from "../../utils/validationSchemas";
+import Input from "../UI/Input";
+import WorkLocationPicker from "../UI/WorkLocationPicker";
+import { commonSchemas } from "../../utils/validations";
+import { bandLevelData, uniqueBands } from "../../utils/bandLevelData";
+import { useFormValidation } from "../../hooks/useFormValidation";
+import { useDropdowns } from "../../hooks/useDropdowns";
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   const todayObj = new Date();
@@ -13,148 +18,56 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
   maxDateObj.setDate(todayObj.getDate() + 15);
   const maxDate = maxDateObj.toISOString().split("T")[0];
   const { showAlert } = useAlert();
-  const [formData, setFormData] = useState({
-    employee_id: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    cc: "",
-    phone: null,
-    role: "EMPLOYEE",
-    jobTitle: "",
-    department: "",
-    band: "",
-    level: "",
-    startDate: "",
-    managerId: "",
-    onboarding_stage: "BASIC_INFO",
-    password: "User@123",
-  });
+  const { departments, designations, loadingDropdowns } = useDropdowns(isOpen);
+
+  const {
+    formData,
+    setFormData,
+    fieldErrors,
+    handleChange,
+    validateField,
+    validateAll,
+    resetForm,
+  } = useFormValidation(
+    {
+      employee_id: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      cc: "",
+      phone: null,
+      role: "EMPLOYEE",
+      jobTitle: "",
+      department: "",
+      band_id: "",
+      band_name: "",
+      band_level_id: "",
+      level_name: "",
+      startDate: "",
+      managerId: "",
+      onboarding_stage: "BASIC_INFO",
+      password: "User@123",
+    },
+    {
+      firstName: commonSchemas.nameString,
+      lastName: commonSchemas.nameString,
+      email: commonSchemas.email,
+    }
+  );
+
   const [loading, setLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-  });
-
   const [managers, setManagers] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [designations, setDesignations] = useState([]);
-  const [loadingDropdowns, setLoadingDropdowns] = useState(false);
-
-  // New location states
   const [workLocation, setWorkLocation] = useState({
     state: "",
     district: "",
     city: "",
   });
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedStateId, setSelectedStateId] = useState("");
-  const [selectedDistrictId, setSelectedDistrictId] = useState("");
-  const [loadingRegions, setLoadingRegions] = useState(false);
-
-  const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
   useEffect(() => {
     if (isOpen) {
       fetchManagers();
-      fetchDropdownData();
     }
   }, [isOpen]);
-
-  const fetchDropdownData = async () => {
-    setLoadingDropdowns(true);
-    try {
-      const responses = await Promise.all([
-        fetch(`${DROPDOWN_BASE_URL}/department-list`),
-        fetch(`${DROPDOWN_BASE_URL}/designation-list`),
-        fetch(`${DROPDOWN_BASE_URL}/state-list`),
-      ]);
-
-      const [deptRes, desRes, stateRes] = await Promise.all(
-        responses.map((r) => r.json()),
-      );
-
-      if (deptRes?.status) setDepartments(deptRes.data);
-      if (desRes?.status) setDesignations(desRes.data);
-      if (stateRes?.status) setStates(stateRes.data);
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
-    } finally {
-      setLoadingDropdowns(false);
-    }
-  };
-
-  // Fetch Districts when selectedStateId changes
-  useEffect(() => {
-    if (!selectedStateId) {
-      setDistricts([]);
-      return;
-    }
-    const fetchDistricts = async () => {
-      setLoadingRegions(true);
-      try {
-        const response = await fetch(
-          `${DROPDOWN_BASE_URL}/district-list/${selectedStateId}`,
-        );
-        const data = await response.json();
-        if (data?.status) setDistricts(data.data);
-      } catch (error) {
-        console.error("Error fetching districts:", error);
-      } finally {
-        setLoadingRegions(false);
-      }
-    };
-    fetchDistricts();
-  }, [selectedStateId]);
-
-  // Fetch Cities when selectedDistrictId changes
-  useEffect(() => {
-    if (!selectedStateId || !selectedDistrictId) {
-      setCities([]);
-      return;
-    }
-    const fetchCities = async () => {
-      setLoadingRegions(true);
-      try {
-        const response = await fetch(
-          `${DROPDOWN_BASE_URL}/city-list/${selectedStateId}/${selectedDistrictId}`,
-        );
-        const data = await response.json();
-        if (data?.status) setCities(data.data);
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-      } finally {
-        setLoadingRegions(false);
-      }
-    };
-    fetchCities();
-  }, [selectedDistrictId, selectedStateId]);
-
-  const handleStateChange = (id, name) => {
-    setSelectedStateId(id);
-    setSelectedDistrictId("");
-    setDistricts([]);
-    setCities([]);
-    setWorkLocation((prev) => ({
-      ...prev,
-      state: name,
-      district: "",
-      city: "",
-    }));
-  };
-
-  const handleDistrictChange = (id, name) => {
-    setSelectedDistrictId(id);
-    setCities([]);
-    setWorkLocation((prev) => ({ ...prev, district: name, city: "" }));
-  };
-
-  const handleCityChange = (name) => {
-    setWorkLocation((prev) => ({ ...prev, city: name }));
-  };
 
   const fetchManagers = async () => {
     try {
@@ -174,7 +87,8 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         : userInfo
           ? JSON.parse(userInfo)
           : null;
-      const loggedInEmployeeId = loggedInUser?.employeeId || loggedInUser?.userId || loggedInUser?.id;
+      const loggedInEmployeeId =
+        loggedInUser?.employeeId || loggedInUser?.userId || loggedInUser?.id;
 
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -209,45 +123,12 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     }
   };
 
-  const schemaMap = {
-    firstName: commonSchemas.nameString,
-    lastName: commonSchemas.nameString,
-    email: commonSchemas.email,
-  };
-
-  const validateField = async (name, value) => {
-    const schema = schemaMap[name];
-    if (!schema) return true;
-    try {
-      await schema.validate(value);
-      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
-      return true;
-    } catch (err) {
-      setFieldErrors((prev) => ({ ...prev, [name]: err.message }));
-      return false;
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Re-validate live only if the field already has an error shown
-    if (fieldErrors[name]) validateField(name, value);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate required fields before submitting
-    const [fnOk, lnOk, emailOk] = await Promise.all([
-      validateField("firstName", formData.firstName),
-      validateField("lastName", formData.lastName),
-      validateField("email", formData.email),
-    ]);
-    if (!fnOk || !lnOk || !emailOk) return;
+    const isValid = await validateAll(["firstName", "lastName", "email"]);
+    if (!isValid) return;
 
     setLoading(true);
 
@@ -326,7 +207,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         console.error("Welcome email failed to send:", emailErr);
       }
 
-      setFormData({
+      resetForm({
         employee_id: "",
         firstName: "",
         lastName: "",
@@ -336,16 +217,16 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
         role: "EMPLOYEE",
         jobTitle: "",
         department: "",
-        band: "",
-        level: "",
+        band_id: "",
+        band_name: "",
+        band_level_id: "",
+        level_name: "",
         startDate: "",
         managerId: "",
         onboarding_stage: "BASIC_INFO",
         password: "User@123",
       });
       setWorkLocation({ state: "", district: "", city: "" });
-      setSelectedStateId("");
-      setSelectedDistrictId("");
     } catch (error) {
       console.error("Error adding employee:", error);
       await showAlert(
@@ -367,7 +248,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -383,127 +264,73 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Employee ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="employee_id"
-                  value={formData.employee_id}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="EMP1001"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Joining Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  min={today}
-                  max={maxDate}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  style={{ colorScheme: "light" }}
-                  required
-                />
-              </div>
+              <Input
+                label={<>Employee ID <span className="text-red-500">*</span></>}
+                type="text"
+                name="employee_id"
+                value={formData.employee_id}
+                onChange={handleChange}
+                placeholder="EMP1001"
+                required
+              />
+              <Input
+                label={<>Joining Date <span className="text-red-500">*</span></>}
+                type="date"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                min={today}
+                max={maxDate}
+                style={{ colorScheme: "light" }}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("firstName", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.firstName
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="Rohit"
-                  required
-                />
-                {fieldErrors.firstName && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.firstName}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("lastName", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.lastName
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="Sharma"
-                  required
-                />
-                {fieldErrors.lastName && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.lastName}
-                  </p>
-                )}
-              </div>
+              <Input
+                label={<>First Name <span className="text-red-500">*</span></>}
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                onBlur={(e) => validateField("firstName", e.target.value)}
+                placeholder="Rohit"
+                error={fieldErrors.firstName}
+                required
+              />
+              <Input
+                label={<>Last Name <span className="text-red-500">*</span></>}
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                onBlur={(e) => validateField("lastName", e.target.value)}
+                placeholder="Sharma"
+                error={fieldErrors.lastName}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Personal Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={(e) => validateField("email", e.target.value)}
-                  className={`w-full px-4 py-2 rounded-xl border focus:ring-2 outline-hidden transition-all ${
-                    fieldErrors.email
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                  }`}
-                  placeholder="rohit@gmail.com"
-                  required
-                />
-                {fieldErrors.email && (
-                  <p className="text-xs text-red-500 font-medium mt-1 flex items-center gap-1">
-                    <span>⚠</span> {fieldErrors.email}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CC (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="cc"
-                  value={formData.cc}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="hr@example.com, manager@example.com"
-                />
-              </div>
+              <Input
+                label={<>Personal Email <span className="text-red-500">*</span></>}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={(e) => validateField("email", e.target.value)}
+                placeholder="rohit@gmail.com"
+                error={fieldErrors.email}
+                required
+              />
+              <Input
+                label="CC (Optional)"
+                type="text"
+                name="cc"
+                value={formData.cc}
+                onChange={handleChange}
+                placeholder="hr@example.com, manager@example.com"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -511,29 +338,67 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Band <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="band"
-                  value={formData.band}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="E.g. B1"
+                <select
+                  name="band_id"
+                  value={formData.band_id}
+                  onChange={(e) => {
+                    const selectedBandId = parseInt(e.target.value);
+                    const selectedBand = uniqueBands.find(
+                      (b) => b.id === selectedBandId,
+                    );
+                    setFormData({
+                      ...formData,
+                      band_id: selectedBandId,
+                      band_name: selectedBand ? selectedBand.name : "",
+                      band_level_id: "",
+                      level_name: "",
+                    });
+                  }}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all bg-white"
                   required
-                />
+                >
+                  <option value="">Select Band</option>
+                  {uniqueBands.map((band) => (
+                    <option key={band.id} value={band.id}>
+                      {band.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Level <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="level"
-                  value={formData.level}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all"
-                  placeholder="E.g. L1"
+                <select
+                  name="band_level_id"
+                  value={formData.band_level_id}
+                  onChange={(e) => {
+                    const selectedLevelId = parseInt(e.target.value);
+                    const selectedLevel = bandLevelData.find(
+                      (l) => l.band_level_id === selectedLevelId,
+                    );
+                    setFormData({
+                      ...formData,
+                      band_level_id: selectedLevelId,
+                      level_name: selectedLevel ? selectedLevel.level_name : "",
+                    });
+                  }}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all bg-white"
                   required
-                />
+                  disabled={!formData.band_id}
+                >
+                  <option value="">Select Level</option>
+                  {bandLevelData
+                    .filter((item) => item.band_id === formData.band_id)
+                    .map((level) => (
+                      <option
+                        key={level.band_level_id}
+                        value={level.band_level_id}
+                      >
+                        {level.level_name}
+                      </option>
+                    ))}
+                </select>
               </div>
             </div>
 
@@ -586,63 +451,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
             </div>
 
             {/* Hierarchical Location */}
-            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">
-                Work Location <span className="text-red-500">*</span>
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                <SearchableSelect
-                  label="State"
-                  name="state"
-                  options={states.map((s) => ({
-                    id: s.lg_state_id,
-                    name: s.state_name,
-                  }))}
-                  value={workLocation.state}
-                  onChange={(e) =>
-                    handleStateChange(
-                      e.target.value,
-                      e.target.option?.name || "",
-                    )
-                  }
-                  placeholder="State"
-                  required
-                />
-                <SearchableSelect
-                  label="District"
-                  name="district"
-                  options={districts.map((d) => ({
-                    id: d.district_id,
-                    name: d.district_name,
-                  }))}
-                  value={workLocation.district}
-                  onChange={(e) =>
-                    handleDistrictChange(
-                      e.target.value,
-                      e.target.option?.name || "",
-                    )
-                  }
-                  placeholder="District"
-                  disabled={!selectedStateId || loadingRegions}
-                  required
-                />
-                <SearchableSelect
-                  label="City"
-                  name="city"
-                  options={cities.map((c) => ({
-                    id: c.lg_village_id,
-                    name: c.village_name,
-                  }))}
-                  value={workLocation.city}
-                  onChange={(e) =>
-                    handleCityChange(e.target.option?.name || "")
-                  }
-                  placeholder="City"
-                  disabled={!selectedDistrictId || loadingRegions}
-                  required
-                />
-              </div>
-            </div>
+            <WorkLocationPicker location={workLocation} setLocation={setWorkLocation} />
 
             <div className="flex justify-center items-center gap-3 pt-4">
               <button

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-// PAN format: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g. ABCDE1234F)
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
 export const usePanVerification = (
@@ -18,21 +17,20 @@ export const usePanVerification = (
   const [lastVerifiedPanData, setLastVerifiedPanData] = useState(null);
 
   const handleVerifyPan = async (currentDataString) => {
-    if (panVerifying) return; // double check
+    if (panVerifying) return;
 
     const { pan_number, firstname, middlename, lastname, date_of_birth } =
       formData;
 
     if (!pan_number || !firstname || !lastname || !date_of_birth) {
-      return; // Handled quietly
+      return; 
     }
 
     setPanVerifying(true);
     setPanVerificationFailed(false);
-    setLastVerifiedPanData(currentDataString); // Mark this exact combination as attempted
+    setLastVerifiedPanData(currentDataString); 
 
     try {
-      // Format DOB to DD/MM/YYYY
       const dobParts = date_of_birth.split("-");
       const formattedDob = `${dobParts[2]}/${dobParts[1]}/${dobParts[0]}`;
 
@@ -79,23 +77,20 @@ export const usePanVerification = (
     }
   };
 
-  // Auto-verify PAN only when ALL required fields are filled and PAN format is valid
   useEffect(() => {
     if (panVerified) {
-      setPanFormatError(null); // Clear format error once verified
+      setPanFormatError(null); 
       return;
     }
     if (panVerifying || !isEditing) return;
 
     const { pan_number, firstname, lastname, date_of_birth } = formData;
 
-    // All required fields must be present
     if (!pan_number || !firstname || !lastname || !date_of_birth) {
-      setPanFormatError(null); // Clear error if user hasn't typed enough yet
+      setPanFormatError(null); 
       return;
     }
 
-    // Validate PAN format first — must be exact 10-char uppercase format
     const panUpper = pan_number.toUpperCase();
     if (!PAN_REGEX.test(panUpper)) {
       setPanFormatError("Invalid PAN number format (e.g. ABCPE1234F)");
@@ -103,16 +98,14 @@ export const usePanVerification = (
       return;
     }
 
-    // Format is valid — clear any previous format error
     setPanFormatError(null);
 
     const currentDataString = `${panUpper}-${firstname}-${lastname}-${date_of_birth}`;
     if (lastVerifiedPanData === currentDataString) return;
 
-    // Trigger verification automatically with a debounce
     const timeoutId = setTimeout(() => {
       handleVerifyPan(currentDataString);
-    }, 1000); // 1-second debounce after all fields are complete
+    }, 1000); 
 
     return () => clearTimeout(timeoutId);
   }, [

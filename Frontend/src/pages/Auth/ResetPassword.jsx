@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, Check, Eye, EyeOff } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
-import { commonSchemas } from '../../utils/validationSchemas';
+import { commonSchemas } from '../../utils/validations';
 import * as Yup from 'yup';
 
 const ResetPassword = () => {

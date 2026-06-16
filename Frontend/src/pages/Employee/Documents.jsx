@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../Components/Layout/DashboardLayout';
-import { Upload, Trash2, Eye, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Upload, Eye, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAlert } from '../../context/AlertContext';
 import axios from 'axios';
 import { DOCUMENT_CONFIG, validateDocumentFile } from '../../config/documentConfig';
@@ -9,7 +9,7 @@ import { DOCUMENT_CONFIG, validateDocumentFile } from '../../config/documentConf
 const Documents = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploadingState, setUploadingState] = useState({}); // { docKey: boolean }
+  const [uploadingState, setUploadingState] = useState({}); 
   const { showAlert, showConfirm } = useAlert();
 
   const token = localStorage.getItem('token');
@@ -37,7 +37,6 @@ const Documents = () => {
   const handleUpload = async (file, docType) => {
     if (!file) return;
 
-    // ── Validate file type & size from config ──────────────────────────
     const validationError = validateDocumentFile(file, docType);
     if (validationError) {
       await showAlert(validationError, { type: 'error' });
@@ -73,28 +72,7 @@ const Documents = () => {
     }
   };
 
-  const handleDelete = async (docId) => {
-      const isConfirmed = await showConfirm("Are you sure you want to delete this document?", { type: 'warning' });
-      if(!isConfirmed) return;
-
-      try {
-        const response = await fetch(`/api/documents/${docId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.ok) {
-            fetchDocuments();
-            await showAlert("Document deleted successfully.", { type: 'success' });
-        } else {
-            await showAlert('Failed to delete.', { type: 'error' });
-        }
-      } catch (error) {
-          console.error('Delete error:', error);
-      }
-  };
-
   const handleSubmitForVerification = async () => {
-    // Check for missing mandatory docs
     const missingMandatoryDocs = DOCUMENT_CONFIG.filter(
       (doc) => !doc.optional && !documents.some((d) => d.document_type === doc.key)
     );
@@ -206,7 +184,6 @@ const Documents = () => {
                                         >
                                             <Eye size={20} />
                                         </a>
-                                        {/* Removed Delete button as per requirements */}
                                     </>
                                 ) : (
                                     <div className="relative w-full md:w-auto">

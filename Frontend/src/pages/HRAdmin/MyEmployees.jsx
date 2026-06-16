@@ -58,6 +58,8 @@ const MyEmployees = () => {
           department: "Department",
           jobTitle: "Job Title",
           location: "Location",
+          band: "Band",
+          level: "Level",
           dateOfJoining: "Joining Date",
           status: "Status",
           role: "Role",

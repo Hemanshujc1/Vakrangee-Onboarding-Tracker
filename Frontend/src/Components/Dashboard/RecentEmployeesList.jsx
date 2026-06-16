@@ -17,7 +17,6 @@ const RecentEmployeesList = ({
         if (onEmployeeClick) {
             onEmployeeClick(id);
         } else if (viewAllLink) {
-             // Default behavior if viewAllLink base is provided, though explicit handler is safer
              navigate(`${viewAllLink}/${id}`);
         }
     };

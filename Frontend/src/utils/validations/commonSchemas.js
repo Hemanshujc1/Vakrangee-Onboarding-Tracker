@@ -1,27 +1,5 @@
 import * as Yup from "yup";
-
-const MAX_FILE_SIZE = 200 * 1024; // 200KB
-
-export const commonPatterns = {
-  mobile: /^[6-9]\d{9}$/,
-  pincode: /^[0-9]{6}$/,
-  pan: /^[A-Z]{3}P[A-Z]{1}[0-9]{4}[A-Z]{1}$/,
-  aadhaar: /^[2-9]\d{11}$/,
-  ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/,
-  passport: /^[A-Z][0-9]{7}$/,
-  uan: /^\d{12}$/,
-  license: /^[A-Z]{2}[-\s]?\d{2}[-\s]?\d{4}[-\s]?\d{7}$/,
-  bankAccount: /^\d{9,18}$/,
-  email:
-    /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._]{0,62}[A-Za-z0-9]@(?:gmail|vakrangee|admin|hotmail|yahoo|zohomail|outlook|live|icloud|aol|proton|protonmail|rediff|zoho)\.(?:com|co\.in|io|co|in)$/,
-  // Min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char, no spaces
-  password:
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])\S{8,}$/,
-  // Address patterns (per spec)
-  address1: /^[a-zA-Z0-9\s,.\-\/]{3,200}$/, // letters, digits, space, comma, hyphen, slash
-  address2: /^[a-zA-Z0-9\s.]{3,200}$/, // letters, digits, space
-  landmark: /^[a-zA-Z\s.]{3,200}$/, // letters and space only
-};
+import { commonPatterns } from "./patterns";
 
 export const commonSchemas = {
   // --- Basic Types ---
@@ -144,7 +122,7 @@ export const commonSchemas = {
     .max(200, "Maximum 200 characters allowed")
     .matches(
       commonPatterns.address1,
-      "Only letters, dots, digits, spaces, commas, hyphens and slashes allowed",
+      "Only letters, digits, space, comma, hyphen, slash, brackets allowed",
     )
     .trim()
     .required("Required"),
@@ -156,7 +134,7 @@ export const commonSchemas = {
     .max(200, "Maximum 200 characters allowed")
     .matches(
       commonPatterns.address2,
-      "Only letters, dots, digits and spaces allowed",
+      "Only letters, digits, space, comma, hyphen, slash, brackets allowed",
     )
     .trim(),
 
@@ -285,60 +263,4 @@ export const commonSchemas = {
     .max(new Date("2100-01-01"), "Invalid Date")
     .typeError("Invalid Date")
     .required("Required"),
-};
-
-// --- Reusable Objects ---
-
-export const addressSchema = Yup.object().shape({
-  address_line1: commonSchemas.addressString,
-  address_line2: commonSchemas.addressStringOptional,
-  city: commonSchemas.stringRequired,
-  district: commonSchemas.stringRequired,
-  state: commonSchemas.stringRequired,
-  pincode: commonSchemas.pincode,
-  country: Yup.string().default("India"),
-});
-
-export const educationSchema = Yup.object().shape({
-  degree: commonSchemas.stringRequired,
-  university: commonSchemas.stringRequired,
-  passing_year: Yup.string()
-    .matches(/^(19|20)\d{2}$/, "Invalid Year")
-    .required("Required"),
-  percentage: Yup.number()
-    .min(0, "Min 0")
-    .max(100, "Max 100")
-    .required("Required"),
-  grade: Yup.string().max(10, "Max 10 chars").required("Required"),
-});
-
-export const familyMemberSchema = Yup.object().shape({
-  name: commonSchemas.nameString,
-  relationship: commonSchemas.stringRequired,
-  dob: commonSchemas.datePast,
-  age: commonSchemas.age,
-  occupation: Yup.string().max(30).nullable(),
-});
-
-export const employmentSchema = Yup.object().shape({
-  company_name: commonSchemas.stringRequired,
-  designation: commonSchemas.stringRequired,
-  from_date: commonSchemas.dateRequired,
-  to_date: commonSchemas.dateRequired,
-  address: Yup.string().max(100).nullable(),
-});
-
-export const createSignatureSchema = (hasSavedSignature) => {
-  return Yup.mixed()
-    .nullable()
-    .optional()
-    .test("required", "Signature is required", (value) => {
-      if (hasSavedSignature) return true; // Already saved on server
-      if (value instanceof File) return true; // New file uploaded
-      return false; // Neither
-    })
-    .test("fileSize", "File too large (max 200KB)", (value) => {
-      if (value instanceof File) return value.size <= MAX_FILE_SIZE;
-      return true;
-    });
 };

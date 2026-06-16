@@ -14,8 +14,6 @@ const FinalVerifyCard = ({
   const isBasicRejected = employee.basicInfoStatus === "REJECTED";
   const hasRejections = rejectedDocs.length > 0 || isBasicRejected;
 
-  // Only show final verify if everything is reviewed OR if we have documents to verify
-  // If basic info is still pending and no docs, hide the final verify too
   if (
     !isReviewed &&
     employee.basicInfoStatus === "PENDING" &&

@@ -21,7 +21,7 @@ const useFormInformation = () => {
     autoFillLoading: loading,
     signaturePreview,
     setSignaturePreview,
-    isPreviewMode: isPreview,
+    isRef: isPreviewRef,
     setIsPreviewMode: setIsPreview,
   } = useOnboardingForm();
 
@@ -66,7 +66,6 @@ const useFormInformation = () => {
     name: "references",
   });
 
-  // Address Copy Logic
   const sameAddress = watch("sameAddress");
   const currentAddress = watch([
     "current_residence_type",
@@ -103,7 +102,6 @@ const useFormInformation = () => {
     }
   }, [sameAddress, JSON.stringify(currentAddress), setValue]);
 
-  // AutoFill
   useEffect(() => {
     if (autoFillData) {
       const saved = autoFillData.employeeInfoData || {};
@@ -138,7 +136,6 @@ const useFormInformation = () => {
         emergency_no: saved.emergency_no || base.emergencyNo || "",
         personal_email: saved.personal_email || base.email || "",
 
-        // Address
         ...saved, // Spread saved address fields
 
         current_residence_type: saved.current_residence_type || "",
@@ -171,9 +168,11 @@ const useFormInformation = () => {
   const onSubmit = async (values) => {
     try {
       const allValues = { ...getValues(), ...values };
+      if (isPreviewRef.current) {
+        allValues.isDraft = true;
+      }
       const formData = new FormData();
 
-      // Date formatting helpers
       const dateFields = [
         "date_of_birth",
         "passport_date_of_issue",
@@ -183,7 +182,6 @@ const useFormInformation = () => {
         if (allValues[f]) allValues[f] = formatDateForAPI(allValues[f]);
       });
 
-      // Process arrays
       if (allValues.educational_details) {
         allValues.educational_details = allValues.educational_details.map((e) => ({
           ...e,
@@ -227,7 +225,7 @@ const useFormInformation = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (isPreview) {
+      if (isPreviewRef.current) {
         const saved = autoFillData?.employeeInfoData || {};
         navigate(`/forms/information/preview/${employeeId}`, {
           state: {
@@ -265,6 +263,7 @@ const useFormInformation = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     errors,
     isSubmitting,
     eduFields,
@@ -273,6 +272,7 @@ const useFormInformation = () => {
     onSubmit,
     onValidationFail,
     setIsPreview,
+    isPreviewRef,
     showAlert,
   };
 };

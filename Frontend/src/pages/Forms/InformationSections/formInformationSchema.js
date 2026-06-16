@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { commonSchemas, createSignatureSchema } from "../../../utils/formDependencies";
+import { commonSchemas, readOnlySchemas, createSignatureSchema } from "../../../utils/formDependencies";
 
 export const getValidationSchema = (hasSavedSignature) =>
   Yup.object().shape({
@@ -9,13 +9,13 @@ export const getValidationSchema = (hasSavedSignature) =>
     designation: commonSchemas.stringRequired,
 
     // Personal Details
-    first_name: commonSchemas.nameString.label("First Name"),
+    first_name: readOnlySchemas.nameString.label("First Name"),
     middle_name: commonSchemas.nameStringOptional.label("Middle Name"),
-    last_name: commonSchemas.nameString.label("Last Name"),
+    last_name: readOnlySchemas.nameString.label("Last Name"),
     father_name: commonSchemas.nameStringOptional.label("Father's Name"),
     father_middle_name: commonSchemas.nameStringOptional.label("Father's Middle Name"),
     father_last_name: commonSchemas.nameStringOptional.label("Father's Last Name"),
-    date_of_birth: commonSchemas.datePast
+    date_of_birth: readOnlySchemas.datePast
       .max(
         new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
         "Must be 18 years or older"
@@ -23,7 +23,7 @@ export const getValidationSchema = (hasSavedSignature) =>
       .required("Date of Birth is required"),
     birth_city: commonSchemas.stringRequired,
     birth_state: commonSchemas.stringRequired,
-    country: commonSchemas.country,
+    country: readOnlySchemas.country,
     blood_group: Yup.string().required("Required"),
     gender: Yup.string().required("Required"),
     marital_status: Yup.string().required("Required"),
@@ -33,18 +33,18 @@ export const getValidationSchema = (hasSavedSignature) =>
       .nullable()
       .transform((value) => (value === "" ? null : value))
       .optional(),
-    passport_date_of_issue: commonSchemas.datePast.nullable().optional(),
-    passport_expiry_date: commonSchemas.dateFuture.nullable().optional(),
+    passport_date_of_issue: readOnlySchemas.datePast.nullable().optional(),
+    passport_expiry_date: readOnlySchemas.dateFuture.nullable().optional(),
 
-    pan_number: commonSchemas.pan.required("Required"),
-    aadhar_number: commonSchemas.aadhaar.required("Required"),
+    pan_number: readOnlySchemas.pan.required("Required"),
+    aadhar_number: readOnlySchemas.aadhaar.required("Required"),
 
     // Contacts
     std_code: Yup.string().nullable().optional(),
     alternate_no: commonSchemas.mobile,
-    mobile_no: commonSchemas.mobile,
-    emergency_no: commonSchemas.mobile,
-    personal_email: commonSchemas.email,
+    mobile_no: readOnlySchemas.mobile,
+    emergency_no: readOnlySchemas.mobile,
+    personal_email: readOnlySchemas.email,
 
     // Address - Current
     current_residence_type: Yup.string().required("Required"),

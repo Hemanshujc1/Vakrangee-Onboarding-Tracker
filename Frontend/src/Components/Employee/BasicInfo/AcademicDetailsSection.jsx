@@ -2,7 +2,19 @@ import React from "react";
 import DocumentUploadItem from "./DocumentUploadItem";
 import SearchableSelect from "../../UI/SearchableSelect";
 import { DOC_CONFIG_MAP } from "../../../config/documentConfig";
+import FormInputField from "../../UI/FormInputField";
+import { DEGREE_OPTIONS } from "../../../config/dropdownOptions";
 
+const percentageOnInput = (e) => {
+  let val = e.target.value.replace(/[^0-9.]/g, "");
+  if (val.includes(".")) {
+    const parts = val.split(".");
+    val = parts[0].slice(0, 3) + "." + parts.slice(1).join("").slice(0, 2);
+  } else {
+    val = val.slice(0, 3);
+  }
+  e.target.value = val;
+};
 
 const AcademicDetailsSection = ({
   register,
@@ -33,52 +45,20 @@ const AcademicDetailsSection = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 md:col-span-2">
         {/* 10th */}
         <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              10th Percentage <span className="text-red-500">*</span>
-            </label>
-            {isEditing ? (
-              <>
-                <input
-                  {...register("tenth_percentage")}
-                  type="number"
-                  step="0.01"
-                  readOnly={isLocked}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-                    errors.tenth_percentage
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  } ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                  maxLength={3}
-                  onInput={(e) => {
-                    // Restrict to max 3 digits (e.g. 100) and allow optional decimals
-                    let val = e.target.value.replace(/[^0-9.]/g, "");
-                    if (val.includes(".")) {
-                      const parts = val.split(".");
-                      val =
-                        parts[0].slice(0, 3) +
-                        "." +
-                        parts.slice(1).join("").slice(0, 2);
-                    } else {
-                      val = val.slice(0, 3);
-                    }
-                    e.target.value = val;
-                  }}
-                />
-                {errors.tenth_percentage && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.tenth_percentage.message}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="font-medium text-gray-800 py-2">
-                {formData.tenth_percentage
-                  ? `${formData.tenth_percentage}%`
-                  : "-"}
-              </p>
-            )}
-          </div>
+          <FormInputField
+            label="10th Percentage"
+            name="tenth_percentage"
+            register={register}
+            errors={errors}
+            isEditing={isEditing}
+            value={formData.tenth_percentage ? `${formData.tenth_percentage}%` : ""}
+            type="number"
+            step="0.01"
+            readOnly={isLocked}
+            required={true}
+            maxLength={3}
+            onInput={percentageOnInput}
+          />
           <div className="flex items-end">
             <DocumentUploadItem
               label="10th Marksheet"
@@ -97,51 +77,20 @@ const AcademicDetailsSection = ({
 
         {/* 12th */}
         <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              12th Percentage <span className="text-red-500">*</span>
-            </label>
-            {isEditing ? (
-              <>
-                <input
-                  {...register("twelfth_percentage")}
-                  type="number"
-                  step="0.01"
-                  readOnly={isLocked}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-                    errors.twelfth_percentage
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  } ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                  maxLength={3}
-                  onInput={(e) => {
-                    let val = e.target.value.replace(/[^0-9.]/g, "");
-                    if (val.includes(".")) {
-                      const parts = val.split(".");
-                      val =
-                        parts[0].slice(0, 3) +
-                        "." +
-                        parts.slice(1).join("").slice(0, 2);
-                    } else {
-                      val = val.slice(0, 3);
-                    }
-                    e.target.value = val;
-                  }}
-                />
-                {errors.twelfth_percentage && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.twelfth_percentage.message}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="font-medium text-gray-800 py-2">
-                {formData.twelfth_percentage
-                  ? `${formData.twelfth_percentage}%`
-                  : "-"}
-              </p>
-            )}
-          </div>
+          <FormInputField
+            label="12th Percentage"
+            name="twelfth_percentage"
+            register={register}
+            errors={errors}
+            isEditing={isEditing}
+            value={formData.twelfth_percentage ? `${formData.twelfth_percentage}%` : ""}
+            type="number"
+            step="0.01"
+            readOnly={isLocked}
+            required={true}
+            maxLength={3}
+            onInput={percentageOnInput}
+          />
           <div className="flex items-end">
             <DocumentUploadItem
               label="12th Marksheet"
@@ -175,62 +124,7 @@ const AcademicDetailsSection = ({
                       });
                     }
                   }}
-                  options={[
-                    { id: "High School Diploma", name: "High School Diploma" },
-                    {
-                      id: "Vocational / Trade Qualification",
-                      name: "Vocational / Trade Qualification",
-                    },
-                    { id: "Diploma", name: "Diploma" },
-                    {
-                      id: "Associate Degrees (AA, AS)",
-                      name: "Associate Degrees (AA, AS)",
-                    },
-                    {
-                      id: "Bachelor of Arts/Science (BA/BS)",
-                      name: "Bachelor of Arts/Science (BA/BS)",
-                    },
-                    {
-                      id: "Bachelor of Engineering/Technology (B.E/B.Tech)",
-                      name: "Bachelor of Engineering/Technology (B.E/B.Tech)",
-                    },
-                    {
-                      id: "Bachelor of Business (BBA/BCom)",
-                      name: "Bachelor of Business (BBA/BCom)",
-                    },
-                    {
-                      id: "Bachelor of Computer Applications (BCA)",
-                      name: "Bachelor of Computer Applications (BCA)",
-                    },
-                    {
-                      id: "Bachelor of Fine Arts (BFA)",
-                      name: "Bachelor of Fine Arts (BFA)",
-                    },
-                    {
-                      id: "Bachelor of Laws (LLB)",
-                      name: "Bachelor of Laws (LLB)",
-                    },
-                    {
-                      id: "Bachelor of Medicine (MBBS)",
-                      name: "Bachelor of Medicine (MBBS)",
-                    },
-                    {
-                      id: "Master of Arts/Science (MA/MS)",
-                      name: "Master of Arts/Science (MA/MS)",
-                    },
-                    {
-                      id: "Master of Business/Management (MBA/MIM)",
-                      name: "Master of Business/Management (MBA/MIM)",
-                    },
-                    {
-                      id: "Master of Engineering/Technology (M.E/M.Tech)",
-                      name: "Master of Engineering/Technology (M.E/M.Tech)",
-                    },
-                    {
-                      id: "Doctorate (PhD/DBA/EdD)",
-                      name: "Doctorate (PhD/DBA/EdD)",
-                    },
-                  ]}
+                  options={DEGREE_OPTIONS}
                   disabled={isLockedInternal}
                   required={true}
                   allowCustom={true}
@@ -254,51 +148,22 @@ const AcademicDetailsSection = ({
               </>
             )}
           </div>
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">
-              Degree Percentage <span className="text-red-500">*</span>
-            </label>
-            {isEditing ? (
-              <>
-                <input
-                  {...register("degree_percentage")}
-                  type="number"
-                  step="0.01"
-                  readOnly={isLockedInternal}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${
-                    errors.degree_percentage
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  } ${isLockedInternal ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                  maxLength={3}
-                  onInput={(e) => {
-                    let val = e.target.value.replace(/[^0-9.]/g, "");
-                    if (val.includes(".")) {
-                      const parts = val.split(".");
-                      val =
-                        parts[0].slice(0, 3) +
-                        "." +
-                        parts.slice(1).join("").slice(0, 2);
-                    } else {
-                      val = val.slice(0, 3);
-                    }
-                    e.target.value = val;
-                  }}
-                />
-                {errors.degree_percentage && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.degree_percentage.message}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="font-medium text-gray-800 py-2">
-                {formData.degree_percentage
-                  ? `${formData.degree_percentage}%`
-                  : "-"}
-              </p>
-            )}
-          </div>
+          
+          <FormInputField
+            label="Degree Percentage"
+            name="degree_percentage"
+            register={register}
+            errors={errors}
+            isEditing={isEditing}
+            value={formData.degree_percentage ? `${formData.degree_percentage}%` : ""}
+            type="number"
+            step="0.01"
+            readOnly={isLockedInternal}
+            required={true}
+            maxLength={3}
+            onInput={percentageOnInput}
+          />
+          
           <div className="flex items-end">
             <DocumentUploadItem
               label="Degree Certificate Upload"

@@ -1,5 +1,7 @@
 import React from "react";
 import SearchableSelect from "../../UI/SearchableSelect";
+import FormInputField from "../../UI/FormInputField";
+import FormSelectField from "../../UI/FormSelectField";
 
 const ContactInfoSection = ({
   register,
@@ -18,89 +20,51 @@ const ContactInfoSection = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 md:col-span-2">
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Personal Email Address <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("personal_email_id")}
-                type="email"
-                readOnly
-                className={`w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none ${errors.personal_email_id ? "border-red-500" : "border-gray-200"}`}
-              />
-              {errors.personal_email_id && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.personal_email_id.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.personal_email_id || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Personal Email Address"
+          name="personal_email_id"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.personal_email_id}
+          type="email"
+          readOnly={true}
+          required={true}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Phone Number <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("phone")}
-                type="tel"
-                readOnly={isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.phone ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                maxLength={10}
-                minLength={10}
-                onInput={(e) => {
-                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                }}
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.phone.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.phone || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Phone Number"
+          name="phone"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.phone}
+          type="tel"
+          readOnly={isLocked}
+          required={true}
+          maxLength={10}
+          minLength={10}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Gender <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <select
-                {...register("gender")}
-                disabled={isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 bg-white ${errors.gender ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-              {errors.gender && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.gender.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.gender || "-"}
-            </p>
-          )}
-        </div>
+        <FormSelectField
+          label="Gender"
+          name="gender"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.gender}
+          disabled={isLocked}
+          required={true}
+          options={[
+            { value: "Male", label: "Male" },
+            { value: "Female", label: "Female" },
+            { value: "Other", label: "Other" },
+          ]}
+          placeholder="Select Gender"
+        />
 
         <div>
           {isEditing ? (
@@ -149,59 +113,33 @@ const ContactInfoSection = ({
           )}
         </div>
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Emergency Contact Name <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("emergency_contact_name")}
-                readOnly={isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.emergency_contact_name ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-              {errors.emergency_contact_name && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.emergency_contact_name.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.emergency_contact_name || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Emergency Contact Name"
+          name="emergency_contact_name"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.emergency_contact_name}
+          readOnly={isLocked}
+          required={true}
+        />
 
-        <div>
-          <label className="block text-sm text-gray-500 mb-1">
-            Emergency Contact Number <span className="text-red-500">*</span>
-          </label>
-          {isEditing ? (
-            <>
-              <input
-                {...register("emergency_contact_number")}
-                type="tel"
-                readOnly={isLocked}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 ${errors.emergency_contact_number ? "border-red-500" : "border-gray-200"} ${isLocked ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
-                maxLength={10}
-                minLength={10}
-                onInput={(e) => {
-                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                }}
-              />
-              {errors.emergency_contact_number && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.emergency_contact_number.message}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="font-medium text-gray-800 py-2">
-              {formData.emergency_contact_number || "-"}
-            </p>
-          )}
-        </div>
+        <FormInputField
+          label="Emergency Contact Number"
+          name="emergency_contact_number"
+          register={register}
+          errors={errors}
+          isEditing={isEditing}
+          value={formData.emergency_contact_number}
+          type="tel"
+          readOnly={isLocked}
+          required={true}
+          maxLength={10}
+          minLength={10}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
+        />
       </div>
     </>
   );

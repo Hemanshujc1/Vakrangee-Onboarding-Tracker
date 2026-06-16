@@ -36,18 +36,20 @@ const ManageEmployees = () => {
         role: formData.role || "EMPLOYEE",
         firstName: formData.firstName,
         lastName: formData.lastName,
-        department: formData.department_name, // Sending string name
-        department_id: formData.department_id, // Sending external ID
-        jobTitle: formData.job_title, // Sending string name
-        designation_id: formData.designation_id, // Sending external ID
-        work_location: formData.work_location, // Sending hierarchical object
-        location: formData.location, // Legacy fallback
+        department: formData.department_name,
+        department_id: formData.department_id,
+        jobTitle: formData.job_title, 
+        designation_id: formData.designation_id,
+        work_location: formData.work_location, 
+        location: formData.location, 
         phone: formData.phone,
         startDate: formData.startDate,
         onboarding_hr_id: formData.onboarding_hr_id,
         employee_id: formData.employee_id,
-        band: formData.band,
-        level: formData.level,
+        band_id: formData.band_id,
+        band_name: formData.band_name,
+        band_level_id: formData.band_level_id,
+        level_name: formData.level_name,
       };
 
       await axios.post("/api/auth/register", payload, config);
@@ -116,6 +118,8 @@ const ManageEmployees = () => {
           department: "Department",
           jobTitle: "Job Title",
           location: "Location",
+          band: "Band",
+          level: "Level",
           dateOfJoining: "Joining Date",
           status: "Status",
           assignedHRName: "HR Assigned",

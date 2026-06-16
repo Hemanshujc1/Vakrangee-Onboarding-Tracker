@@ -5,7 +5,6 @@ const AddressCard = ({ employee }) => {
   const perm = employee.permanent_address || {};
   const comm = employee.communication_address || {};
 
-  // If communication address is same as permanent, use the permanent address details
   const isSame = comm.is_same_as_permanent || false;
   const effectiveComm = isSame ? perm : comm;
 

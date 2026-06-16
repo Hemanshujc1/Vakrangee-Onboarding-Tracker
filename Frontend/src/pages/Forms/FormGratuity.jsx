@@ -12,6 +12,8 @@ import GratuityEmployerCertificate from "./GratuitySections/GratuityEmployerCert
 import GratuityAcknowledgement from "./GratuitySections/GratuityAcknowledgement";
 import useFormGratuity from "./useFormGratuity";
 
+import useOnboardingActions from "../../hooks/useOnboardingActions";
+
 const FormGratuity = () => {
   const {
     autoFillData,
@@ -23,6 +25,7 @@ const FormGratuity = () => {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     errors,
     isSubmitting,
@@ -32,7 +35,22 @@ const FormGratuity = () => {
     witnessFields,
     appendNominee,
     removeNominee,
+    isPreviewRef,
+    setIsPreviewMode,
   } = useFormGratuity();
+
+  const { actions, signatureProps } = useOnboardingActions({
+    isSubmitting,
+    setValue,
+    getValues,
+    isPreviewRef,
+    setIsPreviewMode,
+    onFormSubmit,
+    errors,
+    signaturePreview,
+    setSignaturePreview,
+    hasSavedSignature,
+  });
 
   if (loading) return <div>Loading...</div>;
 
@@ -48,22 +66,8 @@ const FormGratuity = () => {
         onSubmit={handleSubmit(onFormSubmit, (e) =>
           onValidationFail(e, showAlert),
         )}
-        actions={{
-          isSubmitting,
-          onSaveDraft: () => {
-            setValue("isDraft", true);
-            handleSubmit(onFormSubmit, (e) => onValidationFail(e, showAlert))();
-          },
-          onSubmit: () => setValue("isDraft", false),
-        }}
-        signature={{
-          setValue,
-          error: errors.signature,
-          preview: signaturePreview,
-          setPreview: setSignaturePreview,
-          isSaved: hasSavedSignature,
-          fieldName: "signature",
-        }}
+        actions={actions}
+        signature={signatureProps}
       >
         <GratuityHeader />
         <GratuityRecipient />

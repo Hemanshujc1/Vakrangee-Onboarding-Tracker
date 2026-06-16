@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAutoFill, useAlert } from "../utils/formDependencies";
+import { getAuthUser } from "../utils/employeeUtils";
 
 /**
  * Shared hook for Onboarding Forms to handle common logic:
@@ -17,7 +18,7 @@ const useOnboardingForm = () => {
   const { showAlert } = useAlert();
 
   // 1. Resolve User & Target ID
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = getAuthUser();
   const targetId =
     employeeId ||
     user.employeeId ||
@@ -29,13 +30,6 @@ const useOnboardingForm = () => {
   // 3. State Management
   const [signaturePreview, setSignaturePreview] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-
-  // 4. Derive Common Status
-  // Note: Specific locking status key (e.g., epfStatus, tdsStatus) needs to be checked in the specific form hook
-  // but we can provide helper to check it easily.
-  
-  // 5. Common Effects
-  // (e.g., redirect if no access, though usually handled by ProtectedRoute)
 
   return {
     navigate,
@@ -49,7 +43,7 @@ const useOnboardingForm = () => {
     setSignaturePreview,
     isPreviewMode,
     setIsPreviewMode,
-    isRef: useRef(false), // To track preview mode ref across re-renders if needed
+    isRef: useRef(false),
   };
 };
 
