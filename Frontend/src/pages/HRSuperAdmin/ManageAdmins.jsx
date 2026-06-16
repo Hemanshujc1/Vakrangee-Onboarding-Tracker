@@ -13,7 +13,7 @@ import Pagination from "../../Components/UI/Pagination";
 import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import ExportModal from "../../Components/Shared/ExportModal";
 import AdminTable from "../../Components/Admin/AdminTable";
-import { useManageAdmins } from "./hooks/useManageAdmins";
+import { useManageAdmins } from "./useManageAdmins";
 
 const ManageAdmins = () => {
   const navigate = useNavigate();

@@ -1,4 +1,5 @@
-import { React, FormLayout } from "../../utils/formDependencies";
+import React from "react";
+import FormLayout from "../../Components/Forms/FormLayout";
 import { DocumentFields } from "../../Components/Forms/Shared";
 import PersonalInformation from "./ApplicationSections/PersonalInformation";
 import AddressDetails from "./ApplicationSections/AddressDetails";

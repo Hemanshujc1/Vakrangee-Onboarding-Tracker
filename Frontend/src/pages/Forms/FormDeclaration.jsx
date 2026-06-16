@@ -1,8 +1,6 @@
-import {
-  React,
-  FormLayout,
-  onValidationFail,
-} from "../../utils/formDependencies";
+import React from "react";
+import FormLayout from "../../Components/Forms/FormLayout";
+import { onValidationFail } from "../../utils/formUtils";
 import useFormDeclaration from "./useFormDeclaration";
 import useOnboardingActions from "../../hooks/useOnboardingActions";
 import SelfDeclaration from "./DeclarationSections/SelfDeclaration";

@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  onValidationFail,
-  formatDateForAPI,
-} from "../../utils/formDependencies";
+import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
 import {
   getValidationSchema,
   defaultValues,

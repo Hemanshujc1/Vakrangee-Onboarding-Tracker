@@ -1,4 +1,4 @@
-import { React } from "../../../utils/formDependencies";
+import React from "react";
 
 const GratuityAcknowledgement = () => (
   <div className="mt-12 mb-5 pt-6 border-t-4 border-gray-900 page-break-inside-avoid">

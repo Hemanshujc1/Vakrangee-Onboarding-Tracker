@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { commonSchemas, readOnlySchemas, createSignatureSchema } from "../../../utils/formDependencies";
+import { commonSchemas, readOnlySchemas, createSignatureSchema } from "../../../utils/validations";
 
 export const getValidationSchema = (hasSavedSignature) =>
   Yup.object().shape({

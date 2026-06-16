@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
-import {
-  yupResolver,
-  Yup,
-  axios,
-  readOnlySchemas,
-  createSignatureSchema,
-} from "../../utils/formDependencies";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import axios from "axios";
+import { readOnlySchemas, createSignatureSchema } from "../../utils/validations";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormNDA = () => {

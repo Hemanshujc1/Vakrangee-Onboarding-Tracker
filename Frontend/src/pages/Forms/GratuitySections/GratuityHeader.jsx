@@ -1,4 +1,4 @@
-import { React } from "../../../utils/formDependencies";
+import React from "react";
 
 const GratuityHeader = () => (
   <div className="text-center mb-8 font-serif">

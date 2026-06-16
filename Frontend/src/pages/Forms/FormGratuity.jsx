@@ -1,8 +1,6 @@
-import {
-  React,
-  FormLayout,
-  onValidationFail,
-} from "../../utils/formDependencies";
+import React from "react";
+import FormLayout from "../../Components/Forms/FormLayout";
+import { onValidationFail } from "../../utils/formUtils";
 import GratuityHeader from "./GratuitySections/GratuityHeader";
 import GratuityRecipient from "./GratuitySections/GratuityRecipient";
 import GratuityNomineeStatement from "./GratuitySections/GratuityNomineeStatement";

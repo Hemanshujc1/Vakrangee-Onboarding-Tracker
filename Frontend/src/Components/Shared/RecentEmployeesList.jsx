@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import StatusBadge from '../Shared/StatusBadge';
+import StatusBadge from './StatusBadge';
 import { getEmployeeStatus } from '../../utils/employeeUtils';
 
-const RecentEmployeesList = ({ 
-    title = "Recent Employees", 
-    viewAllLink, 
-    employees = [], 
+const RecentEmployeesList = ({
+    title = "Recent Employees",
+    viewAllLink,
+    employees = [],
     loading = false,
     emptyMessage = "No recent employees found.",
-    onEmployeeClick 
+    onEmployeeClick
 }) => {
     const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ const RecentEmployeesList = ({
         if (onEmployeeClick) {
             onEmployeeClick(id);
         } else if (viewAllLink) {
-             navigate(`${viewAllLink}/${id}`);
+            navigate(`${viewAllLink}/${id}`);
         }
     };
 
@@ -39,9 +39,7 @@ const RecentEmployeesList = ({
 
             <div className="space-y-4">
                 {loading ? (
-                    <p className="text-gray-400 text-sm text-center py-4">
-                        Loading...
-                    </p>
+                    <p className="text-gray-400 text-sm text-center py-4">Loading...</p>
                 ) : employees.length > 0 ? (
                     employees.map((employee) => (
                         <div

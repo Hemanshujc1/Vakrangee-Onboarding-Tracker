@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from './Badge'; 
+import { cn } from '../../utils/cn';
 
 const ProgressBar = ({ value, max = 100, className, colorClass = "bg-blue-600" }) => {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);

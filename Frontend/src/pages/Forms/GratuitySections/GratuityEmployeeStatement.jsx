@@ -1,4 +1,6 @@
-import { React, FormInput, FormSelect } from "../../../utils/formDependencies";
+import React from "react";
+import FormInput from "../../../Components/Forms/FormInput";
+import FormSelect from "../../../Components/Forms/FormSelect";
 
 const GratuityEmployeeStatement = ({
   register,

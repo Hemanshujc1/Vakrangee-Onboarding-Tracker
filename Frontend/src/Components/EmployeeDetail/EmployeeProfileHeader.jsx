@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import SearchableSelect from "../UI/SearchableSelect";
 
-const ProfileHeader = ({
+const EmployeeProfileHeader = ({
   employee,
   isEditing,
   editForm,
@@ -163,4 +163,4 @@ const ProfileHeader = ({
   );
 };
 
-export default ProfileHeader;
+export default EmployeeProfileHeader;

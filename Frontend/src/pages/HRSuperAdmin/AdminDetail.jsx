@@ -6,10 +6,12 @@ import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import ExportModal from "../../Components/Shared/ExportModal";
 import { getUniqueOptions, getEmployeeStatus } from "../../utils/employeeUtils";
 import { useAlert } from "../../context/AlertContext";
-import AdminProfileHeader from "./AdminDetailSections/AdminProfileHeader";
-import AdminProfileCard from "./AdminDetailSections/AdminProfileCard";
-import AdminStatsGrid from "./AdminDetailSections/AdminStatsGrid";
-import AdminAssignedEmployees from "./AdminDetailSections/AdminAssignedEmployees";
+import {
+  AdminProfileHeader,
+  AdminProfileCard,
+  AdminStatsGrid,
+  AdminAssignedEmployees,
+} from "./AdminDetailSections";
 
 const AdminDetail = () => {
   const { id } = useParams();

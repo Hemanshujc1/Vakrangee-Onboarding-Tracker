@@ -1,8 +1,5 @@
-import {
-  React,
-  DynamicTable,
-  AddButton,
-} from "../../../utils/formDependencies";
+import React from "react";
+import { DynamicTable, AddButton } from "../../../Components/Forms/Shared";
 
 const GratuityNomineeStatement = ({
   register,

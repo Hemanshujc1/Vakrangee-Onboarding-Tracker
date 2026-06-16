@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getEmployeeStatus, getUniqueOptions } from "../../../utils/employeeUtils";
+import { getEmployeeStatus, getUniqueOptions } from "../../utils/employeeUtils";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -34,61 +34,58 @@ export const useExportModal = ({ data, formatOptions, fileName, options }) => {
   useEffect(() => {
     let result = data;
 
-    // Search
     if (searchTerm) {
       const lowerTerm = searchTerm.toLowerCase();
-      result = result.filter(item => 
-        Object.values(item).some(val => 
+      result = result.filter(item =>
+        Object.values(item).some(val =>
           String(val).toLowerCase().includes(lowerTerm)
         )
       );
     }
 
-    // Filters
     if (filterStatus) {
-         result = result.filter(item => {
-             const itemStatus = item.status || getEmployeeStatus(item);
-             return itemStatus === filterStatus || item.accountStatus === filterStatus;
-         });
+      result = result.filter(item => {
+        const itemStatus = item.status || getEmployeeStatus(item);
+        return itemStatus === filterStatus || item.accountStatus === filterStatus;
+      });
     }
     if (filterDepartment) result = result.filter(item => item.department === filterDepartment);
     if (filterJobTitle) result = result.filter(item => item.jobTitle === filterJobTitle);
     if (filterLocation) result = result.filter(item => item.location === filterLocation);
     if (filterAssignedHR) {
-        if (filterAssignedHR === "Not Assigned") {
-            result = result.filter(item => !item.assignedHRName || item.assignedHRName === '-');
-        } else {
-            result = result.filter(item => item.assignedHRName === filterAssignedHR);
-        }
+      if (filterAssignedHR === "Not Assigned") {
+        result = result.filter(item => !item.assignedHRName || item.assignedHRName === '-');
+      } else {
+        result = result.filter(item => item.assignedHRName === filterAssignedHR);
+      }
     }
 
-    // Sort
     if (sortConfig.key) {
-        result = [...result].sort((a, b) => { 
-            const aVal = a[sortConfig.key] || "";
-            const bVal = b[sortConfig.key] || "";
-            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortConfig.key] || "";
+        const bVal = b[sortConfig.key] || "";
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
     }
 
     setFilteredData(result);
   }, [data, searchTerm, filterStatus, filterDepartment, filterJobTitle, filterLocation, filterAssignedHR, sortConfig]);
 
   const handleFieldToggle = (field) => {
-    setSelectedFields(prev => 
+    setSelectedFields(prev =>
       prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]
     );
   };
 
   const handleSelectAll = (e) => {
-      setSelectedFields(e.target.checked ? allFields : []);
-  }
+    setSelectedFields(e.target.checked ? allFields : []);
+  };
 
   const exportToCSV = () => {
     const headers = selectedFields.map(field => formatOptions[field] || field).join(",");
-    const rows = filteredData.map(item => 
+    const rows = filteredData.map(item =>
       selectedFields.map(field => {
         let val = item[field];
         if (val === null || val === undefined) val = "";
@@ -109,32 +106,32 @@ export const useExportModal = ({ data, formatOptions, fileName, options }) => {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    
+
     const tableColumns = selectedFields.map(field => ({
-        header: formatOptions[field] || field,
-        dataKey: field
+      header: formatOptions[field] || field,
+      dataKey: field,
     }));
 
     const tableRows = filteredData.map(item => {
-        const row = {};
-        selectedFields.forEach(field => {
-            let val = item[field];
-            if (val === null || val === undefined) val = "-";
-            row[field] = String(val);
-        });
-        return row;
+      const row = {};
+      selectedFields.forEach(field => {
+        let val = item[field];
+        if (val === null || val === undefined) val = "-";
+        row[field] = String(val);
+      });
+      return row;
     });
 
     doc.text(`Export: ${fileName}`, 14, 15);
     doc.text(`Total Records: ${filteredData.length}`, 14, 22);
 
     autoTable(doc, {
-        startY: 30,
-        columns: tableColumns,
-        body: tableRows,
-        theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [63, 81, 181] } 
+      startY: 30,
+      columns: tableColumns,
+      body: tableRows,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [63, 81, 181] },
     });
 
     doc.save(`${fileName}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -142,9 +139,9 @@ export const useExportModal = ({ data, formatOptions, fileName, options }) => {
 
   const handleExport = () => {
     if (exportFormat === "csv") {
-        exportToCSV();
+      exportToCSV();
     } else {
-        exportToPDF();
+      exportToPDF();
     }
   };
 

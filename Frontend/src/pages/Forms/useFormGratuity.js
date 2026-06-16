@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import {
-  yupResolver,
-  Yup,
-  readOnlySchemas,
-  createSignatureSchema,
-  formatDateForAPI,
-} from "../../utils/formDependencies";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import { readOnlySchemas, createSignatureSchema } from "../../utils/validations";
+import { formatDateForAPI } from "../../utils/formUtils";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormGratuity = () => {

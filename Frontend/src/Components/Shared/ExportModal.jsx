@@ -1,10 +1,109 @@
 import React from "react";
-import { X, Download, Filter } from "lucide-react";
+import { X, Download, Filter, FileSpreadsheet, FileText } from "lucide-react";
 import EmployeeFilters from "./EmployeeFilters";
-import { useExportModal } from "./hooks/useExportModal";
-import ExportModalFields from "./ExportModal/ExportModalFields";
-import ExportModalFormats from "./ExportModal/ExportModalFormats";
+import { useExportModal } from "./useExportModal";
 
+// --- Fields Section ---
+const ExportModalFields = ({
+  isFieldsOpen,
+  setIsFieldsOpen,
+  allFields,
+  selectedFields,
+  handleFieldToggle,
+  handleSelectAll,
+  formatOptions,
+}) => (
+  <section>
+    <div className="flex justify-between items-center mb-3">
+      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+        2. Select Fields
+      </h3>
+      <button
+        onClick={() => setIsFieldsOpen(!isFieldsOpen)}
+        className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
+      >
+        {isFieldsOpen ? "Hide Fields" : "Show Fields"}
+      </button>
+    </div>
+
+    <div
+      className={`bg-gray-50 border border-gray-200 rounded-xl transition-all duration-300 overflow-hidden ${
+        isFieldsOpen ? "p-4" : "max-h-0 border-0"
+      }`}
+    >
+      <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
+        <span className="text-sm text-gray-600 font-medium">
+          Select columns to include
+        </span>
+        <label className="flex items-center gap-2 text-sm text-blue-600 cursor-pointer hover:underline">
+          <input
+            type="checkbox"
+            onChange={handleSelectAll}
+            checked={selectedFields.length === allFields.length}
+            className="accent-blue-600"
+          />
+          Select All
+        </label>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        {allFields.map((field) => (
+          <label
+            key={field}
+            className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-100 p-2 rounded cursor-pointer transition-colors bg-white border border-gray-100"
+          >
+            <input
+              type="checkbox"
+              checked={selectedFields.includes(field)}
+              onChange={() => handleFieldToggle(field)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            {formatOptions[field] || field}
+          </label>
+        ))}
+      </div>
+    </div>
+    {!isFieldsOpen && (
+      <div className="text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 inline-block">
+        {selectedFields.length} of {allFields.length} fields selected.
+      </div>
+    )}
+  </section>
+);
+
+// --- Format Section ---
+const ExportModalFormats = ({ exportFormat, setExportFormat }) => (
+  <section>
+    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+      3. Export Format
+    </h3>
+    <div className="grid grid-cols-2 gap-4">
+      <button
+        onClick={() => setExportFormat("csv")}
+        className={`flex align-middle items-center justify-center p-2 rounded-xl border-2 transition-all ${
+          exportFormat === "csv"
+            ? "border-green-500 bg-green-50 text-green-700"
+            : "border-gray-200 hover:border-green-200 hover:bg-gray-50 text-gray-600"
+        }`}
+      >
+        <FileSpreadsheet size={24} className="mb-2" />
+        <span className="font-semibold">CSV</span>
+      </button>
+      <button
+        onClick={() => setExportFormat("pdf")}
+        className={`flex align-middle items-center justify-center p-2 rounded-xl border-2 transition-all ${
+          exportFormat === "pdf"
+            ? "border-red-500 bg-red-50 text-red-700"
+            : "border-gray-200 hover:border-red-200 hover:bg-gray-50 text-gray-600"
+        }`}
+      >
+        <FileText size={24} className="mb-2" />
+        <span className="font-semibold">PDF</span>
+      </button>
+    </div>
+  </section>
+);
+
+// --- Main Modal ---
 const ExportModal = ({
   isOpen,
   onClose,

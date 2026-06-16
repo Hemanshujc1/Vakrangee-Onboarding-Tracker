@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
-import {
-  yupResolver,
-  Yup,
-  axios,
-  createSignatureSchema,
-  onValidationFail,
-  formatDateForAPI,
-  readOnlySchemas,
-} from "../../utils/formDependencies";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import axios from "axios";
+import { createSignatureSchema, readOnlySchemas } from "../../utils/validations";
+import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormEPF = () => {

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { getUniqueOptions } from "../../../utils/employeeUtils";
-import { useAlert } from "../../../context/AlertContext";
+import { getUniqueOptions } from "../../utils/employeeUtils";
+import { useAlert } from "../../context/AlertContext";
 
 export const useManageAdmins = () => {
   const { showAlert, showConfirm } = useAlert();
-  
+
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,25 +99,13 @@ export const useManageAdmins = () => {
         admins.find((a) => a.id === id)?.lastLoginAt;
       const newStatus = hasLoggedIn ? "ACTIVE" : "INVITED";
 
-      await axios.put(
-        `/api/employees/${id}`,
-        {
-          accountStatus: newStatus,
-        },
-        config,
-      );
+      await axios.put(`/api/employees/${id}`, { accountStatus: newStatus }, config);
 
       setAdmins((prev) =>
         prev.map((admin) =>
-          admin.id === id
-            ? {
-                ...admin,
-                accountStatus: newStatus,
-              }
-            : admin,
+          admin.id === id ? { ...admin, accountStatus: newStatus } : admin,
         ),
       );
-
       await showAlert("Admin activated successfully!", { type: "success" });
     } catch (error) {
       console.error("Error activating admin:", error);
@@ -146,16 +134,13 @@ export const useManageAdmins = () => {
       }
 
       const config = { headers: { Authorization: `Bearer ${token}` } };
-
       await axios.delete(`/api/employees/${id}`, config);
 
-      // Optimistic update
       setAdmins((prev) =>
         prev.map((admin) =>
           admin.id === id ? { ...admin, accountStatus: "Inactive" } : admin,
         ),
       );
-
       await showAlert("Admin deactivated successfully", { type: "success" });
     } catch (error) {
       console.error("Error deleting admin:", error);
@@ -181,12 +166,8 @@ export const useManageAdmins = () => {
       admin.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesJob = filterJobTitle
-      ? admin.jobTitle === filterJobTitle
-      : true;
-    const matchesLocation = filterLocation
-      ? admin.location === filterLocation
-      : true;
+    const matchesJob = filterJobTitle ? admin.jobTitle === filterJobTitle : true;
+    const matchesLocation = filterLocation ? admin.location === filterLocation : true;
     const matchesStatus = filterStatus
       ? (admin.accountStatus || "ACTIVE") === filterStatus
       : true;
@@ -195,12 +176,11 @@ export const useManageAdmins = () => {
   });
 
   filteredAdmins.sort((a, b) => {
-    // 1. Primary Sort: Inactive to bottom
     const statusA = a.accountStatus || "ACTIVE";
     const statusB = b.accountStatus || "ACTIVE";
     if (statusA === "Inactive" && statusB !== "Inactive") return 1;
     if (statusA !== "Inactive" && statusB === "Inactive") return -1;
-    // 2. Secondary Sort: User Selected Config
+
     if (sortConfig.key) {
       let aValue, bValue;
       if (sortConfig.key === "onboardedCount") {

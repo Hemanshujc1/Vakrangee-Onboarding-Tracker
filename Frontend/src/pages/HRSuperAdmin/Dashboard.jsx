@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import StatCard from "../../Components/Shared/StatCard";
 import useDashboardStats from "../../hooks/useDashboardStats";
-import RecentEmployeesList from "../../Components/Dashboard/RecentEmployeesList";
-import QuickActionsGrid from "../../Components/Dashboard/QuickActionsGrid";
+import RecentEmployeesList from "../../Components/Shared/RecentEmployeesList";
+import QuickActionsGrid from "../../Components/Shared/QuickActionsGrid";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {

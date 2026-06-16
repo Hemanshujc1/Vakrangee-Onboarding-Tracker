@@ -1,8 +1,6 @@
-import {
-  React,
-  FormLayout,
-  onValidationFail,
-} from "../../utils/formDependencies";
+import React from "react";
+import FormLayout from "../../Components/Forms/FormLayout";
+import { onValidationFail } from "../../utils/formUtils";
 import EPFFormHeader from "./EPFSections/EPFFormHeader";
 import EPFMemberDetails from "./EPFSections/EPFMemberDetails";
 import EPFPreviousEmployment from "./EPFSections/EPFPreviousEmployment";

@@ -1,7 +1,7 @@
 import React from "react";
 import FormLayout from "../../Components/Forms/FormLayout";
 import { InstructionBlock } from "../../Components/Forms/Shared";
-import { onValidationFail } from "../../utils/formDependencies";
+import { onValidationFail } from "../../utils/formUtils";
 import EmployeeDetails from "./MediclaimSections/EmployeeDetails";
 import AddressDetails from "./MediclaimSections/AddressDetails";
 import FamilyDetails from "./MediclaimSections/FamilyDetails";

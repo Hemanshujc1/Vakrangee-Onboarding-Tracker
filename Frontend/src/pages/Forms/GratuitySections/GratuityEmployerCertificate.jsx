@@ -1,4 +1,4 @@
-import { React } from "../../../utils/formDependencies";
+import React from "react";
 
 const GratuityEmployerCertificate = () => (
   <div className="mt-10 pt-6 border-t-2 border-dashed border-gray-400 page-break-inside-avoid">

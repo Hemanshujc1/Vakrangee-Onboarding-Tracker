@@ -5,7 +5,7 @@ import {
   FileCheck,
   Briefcase,
 } from "lucide-react";
-import ProfileHeader from "../../Components/EmployeeDetail/ProfileHeader";
+import EmployeeProfileHeader from "../../Components/EmployeeDetail/EmployeeProfileHeader";
 import PersonalInfoGrid from "../../Components/EmployeeDetail/PersonalInfoGrid";
 import AddressCard from "../../Components/EmployeeDetail/AddressCard";
 import JobDetailsCard from "../../Components/EmployeeDetail/JobDetailsCard";
@@ -99,7 +99,7 @@ const EmployeeDetail = () => {
         />
 
         {/* Profile Header & Personal Info Grid (Combined Card) */}
-        <ProfileHeader
+        <EmployeeProfileHeader
           employee={employee}
           isEditing={isEditing}
           editForm={editForm}
@@ -114,7 +114,7 @@ const EmployeeDetail = () => {
             editForm={editForm}
             setEditForm={setEditForm}
           />
-        </ProfileHeader>
+        </EmployeeProfileHeader>
 
         <StageControl
           employee={employee}

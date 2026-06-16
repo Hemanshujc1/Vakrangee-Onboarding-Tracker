@@ -1,16 +1,65 @@
 import React from "react";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Building,
-  Briefcase,
-  Users,
-  Pencil,
-} from "lucide-react";
-import SearchableSelect from "../../../Components/UI/SearchableSelect";
+import { ArrowLeft, Mail, Phone, MapPin, Building, Briefcase, Users, Pencil, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
+import SearchableSelect from "../../Components/UI/SearchableSelect";
+import EmployeeTable from "../../Components/Shared/EmployeeTable";
 
-const AdminProfileCard = ({
+// ---------------------------------------------------------------------------
+// AdminProfileHeader — back button + page title + account status badge
+// ---------------------------------------------------------------------------
+export const AdminProfileHeader = ({ navigate, accountStatus }) => (
+  <div>
+    <button
+      onClick={() => navigate(-1)}
+      className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors mb-4"
+    >
+      <ArrowLeft size={20} />
+      <span>Back to Admins</span>
+    </button>
+    <div className="flex justify-between items-center">
+      <h1 className="text-3xl font-bold text-gray-800">Admin Profile</h1>
+      <div
+        className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${
+          accountStatus === "Inactive"
+            ? "bg-red-50 text-red-600 border-red-500"
+            : accountStatus === "INVITED"
+              ? "bg-yellow-50 text-yellow-600 border-yellow-500"
+              : "bg-green-50 text-green-600 border-green-500"
+        }`}
+      >
+        {accountStatus || "ACTIVE"}
+      </div>
+    </div>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// AdminStatsGrid — 4 stat tiles for the admin detail page
+// ---------------------------------------------------------------------------
+export const AdminStatsGrid = ({ stats }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {[
+      { label: "Assigned Employees", value: stats?.totalAssigned || 0, icon: Users, color: "blue" },
+      { label: "Onboarding Active", value: stats?.activeOnboarding || 0, icon: Clock, color: "yellow" },
+      { label: "Fully Onboarded", value: stats?.completed || 0, icon: CheckCircle, color: "green" },
+      { label: "Not Joined", value: stats?.notJoined || 0, icon: Users, color: "gray" },
+    ].map(({ label, value, icon: Icon, color }) => (
+      <div key={label} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-gray-500 font-medium text-sm">{label}</h3>
+          <div className={`p-2 bg-${color}-50 text-${color}-600 rounded-lg`}>
+            <Icon size={20} />
+          </div>
+        </div>
+        <p className="text-3xl font-bold text-[#4E4E4E]">{value}</p>
+      </div>
+    ))}
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// AdminProfileCard — editable profile info card
+// ---------------------------------------------------------------------------
+export const AdminProfileCard = ({
   admin,
   isEditing,
   setIsEditing,
@@ -92,24 +141,21 @@ const AdminProfileCard = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
-              <Mail size={18} />
+          {[
+            { icon: Mail, label: "Company Email", value: admin.email },
+            { icon: Phone, label: "Phone", value: admin.phone || "N/A" },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="flex items-center gap-3 text-gray-600">
+              <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+                <Icon size={18} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">{label}</p>
+                <p className="font-medium text-sm">{value}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">Company Email</p>
-              <p className="font-medium text-sm">{admin.email}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
-              <Phone size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">Phone</p>
-              <p className="font-medium text-sm">{admin.phone || "N/A"}</p>
-            </div>
-          </div>
+          ))}
+
           <div className="flex items-center gap-3 text-gray-600">
             <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
               <Building size={18} />
@@ -129,12 +175,11 @@ const AdminProfileCard = ({
                   disabled={loadingDropdowns}
                 />
               ) : (
-                <p className="font-medium text-sm">
-                  {admin.department || "N/A"}
-                </p>
+                <p className="font-medium text-sm">{admin.department || "N/A"}</p>
               )}
             </div>
           </div>
+
           <div className="flex items-center gap-3 text-gray-600">
             <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
               <MapPin size={18} />
@@ -155,6 +200,7 @@ const AdminProfileCard = ({
               )}
             </div>
           </div>
+
           {isEditing && (
             <div className="flex items-center gap-3 col-span-1 md:col-span-3 justify-end mt-4 border-t pt-4">
               <button
@@ -197,4 +243,67 @@ const AdminProfileCard = ({
   );
 };
 
-export default AdminProfileCard;
+// ---------------------------------------------------------------------------
+// AdminAssignedEmployees — search + filter + export toolbar + employee table
+// ---------------------------------------------------------------------------
+export const AdminAssignedEmployees = ({
+  searchTerm,
+  setSearchTerm,
+  setIsSidebarOpen,
+  setIsExportModalOpen,
+  filteredEmployees,
+  assignedEmployeesLength,
+  onRowClick,
+  onActivate,
+  onDelete,
+}) => (
+  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 mb-4">
+      <h3 className="text-lg font-bold text-[#4E4E4E]">Assigned Employees</h3>
+
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="relative flex-1 sm:w-64">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={16}
+          />
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#2C9DE6]"
+          />
+        </div>
+
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
+          title="Filter"
+        >
+          <Filter size={18} />
+        </button>
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="p-2 text-gray-600 hover:text-[#2C9DE6] bg-white border border-gray-200 hover:border-[#2C9DE6] rounded-lg transition-all"
+          title="Export"
+        >
+          <Download size={18} />
+        </button>
+      </div>
+    </div>
+
+    <EmployeeTable
+      employees={filteredEmployees}
+      onRowClick={onRowClick}
+      showAssignedDate={true}
+      emptyMessage={
+        assignedEmployeesLength === 0
+          ? "No employees assigned to this admin yet."
+          : "No employees match your search."
+      }
+      onActivate={onActivate}
+      onDelete={onDelete}
+    />
+  </div>
+);
