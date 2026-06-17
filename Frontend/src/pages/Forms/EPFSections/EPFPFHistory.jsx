@@ -16,10 +16,13 @@ const EPFPFHistory = ({ register, errors }) => {
         />
         <FormInput
           label="First Employment EPF Wages"
-          type="number"
           register={register}
           name="first_epf_wages"
           error={errors.first_epf_wages}
+           maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormSelect
           label="Member before Sep 2014?"

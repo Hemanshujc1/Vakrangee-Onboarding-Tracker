@@ -35,7 +35,7 @@ const TDSEmployeeDetails = ({ formData, signaturePreview }) => {
           <span className="font-bold min-w-37.5 inline-block">
             Employee Code:
           </span>
-          {formData.employee_id}
+          {formData.employee_code}
         </div>
 
         <div>

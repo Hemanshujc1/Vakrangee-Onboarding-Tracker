@@ -43,12 +43,18 @@ const FamilyDetails = ({ register, errors, fields, remove, append }) => {
               error={errors.dependents?.[index]?.age}
               placeholder="Age"
               required
+              onInput={(e) => {
+                if (e.target.value.length > 2) {
+                  e.target.value = e.target.value.slice(0, 2);
+                }
+              }}
             />
             <TableInput
               type="date"
               register={register(`dependents.${index}.dob`)}
               error={errors.dependents?.[index]?.dob}
               required
+              max={new Date().toISOString().split("T")[0]}
             />
           </>
         )}

@@ -20,6 +20,7 @@ const GratuityWitnessDeclaration = ({ witnessFields, register, errors }) => (
             <input
               {...register(`witnesses.${index}.name`)}
               placeholder="Name in full"
+              maxLength={50}
               className="w-full border-b border-gray-300 py-1 outline-none bg-transparent"
             />
             {errors.witnesses?.[index]?.name && (
@@ -30,6 +31,7 @@ const GratuityWitnessDeclaration = ({ witnessFields, register, errors }) => (
             <textarea
               {...register(`witnesses.${index}.address`)}
               placeholder="Full Address"
+               maxLength={200}
               className="w-full border border-gray-300 p-2 text-xs resize-none h-20 outline-none bg-transparent"
             />
             {errors.witnesses?.[index]?.address && (
@@ -52,6 +54,7 @@ const GratuityWitnessDeclaration = ({ witnessFields, register, errors }) => (
           {...register("witnesses_place")}
           className="border-b border-black outline-none px-2 bg-transparent"
           placeholder="Place"
+            maxLength={30}
         />
         {errors.witnesses_place && (
           <span className="text-red-500 text-xs">Required</span>

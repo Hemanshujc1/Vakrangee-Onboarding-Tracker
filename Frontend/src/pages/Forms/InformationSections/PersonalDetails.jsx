@@ -2,8 +2,9 @@ import React from "react";
 import FormSection from "../../../Components/Forms/FormSection";
 import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
+import LocationDropdowns from "../../../Components/Forms/Shared/LocationDropdowns";
 
-const PersonalDetails = ({ register, errors, autoFillData }) => {
+const PersonalDetails = ({ register, errors, autoFillData, watch, setValue }) => {
   const eighteenYearsAgo = new Date();
   eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
   const maxDate = eighteenYearsAgo.toISOString().split("T")[0];
@@ -24,7 +25,6 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           name="middle_name"
           register={register}
           error={errors.middle_name}
-          // disabled={!!autoFillData?.middlename}
         />
         <FormInput
           label="Last Name"
@@ -39,17 +39,20 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           label="Father's First Name"
           name="father_name"
           register={register}
+          maxLength={50}
           error={errors.father_name}
         />
         <FormInput
           label="Father's Middle Name"
           name="father_middle_name"
+          maxLength={50}
           register={register}
           error={errors.father_middle_name}
         />
         <FormInput
           label="Father's Last Name"
           name="father_last_name"
+          maxLength={50}
           register={register}
           error={errors.father_last_name}
         />
@@ -64,19 +67,12 @@ const PersonalDetails = ({ register, errors, autoFillData }) => {
           max={maxDate}
           disabled
         />
-        <FormInput
-          label="Birth City"
-          name="birth_city"
-          register={register}
-          error={errors.birth_city}
-          required
-        />
-        <FormInput
-          label="Birth State"
-          name="birth_state"
-          register={register}
-          error={errors.birth_state}
-          required
+        <LocationDropdowns
+          prefix="birth_"
+          watch={watch}
+          setValue={setValue}
+          errors={errors}
+          required={true}
         />
         <div className="hidden">
           <FormInput

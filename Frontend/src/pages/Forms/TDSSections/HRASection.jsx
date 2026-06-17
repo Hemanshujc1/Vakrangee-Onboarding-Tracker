@@ -8,16 +8,16 @@ const HRASection = ({ register, errors, watchRelatedLandlord }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label="Rent Per Month (Rs.)"
-          type="number"
           register={register}
           name="hra_rent_per_month"
           error={errors.hra_rent_per_month}
-          min={0}
-          max={9999999999}
+          maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="No. of Months"
-          type="number"
           register={register}
           name="hra_months"
           error={errors.hra_months}
@@ -28,7 +28,6 @@ const HRASection = ({ register, errors, watchRelatedLandlord }) => {
           onInput={(e) => {
             e.target.value = e.target.value.replace(/[^0-9]/g, "");
           }}
-          
         />
       </div>
       <div className="mt-4 border-t pt-4">
@@ -61,6 +60,7 @@ const HRASection = ({ register, errors, watchRelatedLandlord }) => {
               name="hra_landlord_relationship"
               placeholder="e.g. Father/Mother"
               error={errors.hra_landlord_relationship}
+              maxLength={50}
             />
             <p className="text-xs text-red-500 mt-1">
               In case of Parents, Registered Agreement is compulsory.

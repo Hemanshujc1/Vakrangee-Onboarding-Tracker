@@ -52,6 +52,13 @@ const EmployeeDeclaration = ({ register, errors, watch }) => {
             disabled
             error={errors.contact_no}
           />
+           <FormInput
+            label="Employee Code"
+            register={register}
+            name="employee_code"
+            disabled
+            error={errors.employee_code}
+          />
         </div>
       </FormSection>
     </>

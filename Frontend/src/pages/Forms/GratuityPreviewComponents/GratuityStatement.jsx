@@ -76,38 +76,38 @@ const GratuityStatement = ({ formData, formatDate, signaturePreview }) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 gap-x-8 gap-y-2 ml-0 md:ml-4 print:ml-4">
             <div className="flex items-end gap-2">
-              <span>Village</span>
-              <span className="flex-1 border-b border-black px-2">
-                {formData.village}
+              <span className="shrink-0">Village</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.city}>
+                {formData.city}
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span>Thana</span>
-              <span className="flex-1 border-b border-black px-2">
+              <span className="shrink-0">Thana</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.thana}>
                 {formData.thana}
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span>Sub-division</span>
-              <span className="flex-1 border-b border-black px-2">
+              <span className="shrink-0">Sub-division</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.sub_division}>
                 {formData.sub_division}
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span>Post Office</span>
-              <span className="flex-1 border-b border-black px-2">
+              <span className="shrink-0">Post Office</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.post_office}>
                 {formData.post_office}
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span>District</span>
-              <span className="flex-1 border-b border-black px-2">
+              <span className="shrink-0">District</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.district}>
                 {formData.district}
               </span>
             </div>
             <div className="flex items-end gap-2">
-              <span>State</span>
-              <span className="flex-1 border-b border-black px-2">
+              <span className="shrink-0">State</span>
+              <span className="flex-1 border-b border-black px-2 text-[10px] leading-tight pb-1" title={formData.state}>
                 {formData.state}
               </span>
             </div>

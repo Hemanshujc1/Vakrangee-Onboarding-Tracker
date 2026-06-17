@@ -82,6 +82,8 @@ export const useEmployeeProfile = ({
           // ── Job Info (read-only) ─────────────────────────────────────────
           job_title: ji.job_title || "",
           department_name: ji.department_name || "",
+          band_name: ji.band_name || "",
+          level_name: ji.level_name || "",
           date_of_joining: doj,
 
           // ── Permanent Address (perm_ prefix) ──────────────────────────────

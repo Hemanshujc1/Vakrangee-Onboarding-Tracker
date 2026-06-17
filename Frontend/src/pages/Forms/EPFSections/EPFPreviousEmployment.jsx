@@ -71,12 +71,18 @@ const EPFPreviousEmployment = ({
             register={register}
             name="uan_number"
             error={errors.uan_number}
+            maxLength={12}
+            pattern="^\\d{12}$"
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            }}
           />
           <FormInput
             label="Previous PF Account Number"
             register={register}
             name="prev_pf_number"
             error={errors.prev_pf_number}
+            maxLength={20}
           />
           <FormInput
             label="Date of Exit from Previous Employment"
@@ -90,12 +96,14 @@ const EPFPreviousEmployment = ({
             register={register}
             name="scheme_cert_no"
             error={errors.scheme_cert_no}
+             maxLength={20}
           />
           <FormInput
             label="Pension Payment Order (PPO) (If issued)"
             register={register}
             name="ppo_no"
             error={errors.ppo_no}
+            maxLength={20}
           />
         </div>
       )}

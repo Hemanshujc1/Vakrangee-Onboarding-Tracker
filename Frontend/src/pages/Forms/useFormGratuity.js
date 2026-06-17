@@ -196,13 +196,13 @@ const useFormGratuity = () => {
           savedData.marital_status || autoFillData.maritalStatus || "Unmarried",
         gender: savedData.gender || "",
         department: savedData.department || "",
-        ticket_no: savedData.ticket_no || "",
+        ticket_no: savedData.ticket_no || autoFillData.employee_id || "",
         date_of_appointment:
           formatDateForAPI(savedData.date_of_appointment) || "",
 
         city: savedData.city || autoFillData.address?.city || "",
         thana: savedData.thana || "",
-        sub_division: savedData.sub_division || "",
+        sub_division: savedData.sub_division || autoFillData.address?.sub_division || "",
         post_office:
           savedData.post_office || autoFillData.address?.post_office || "",
         district: savedData.district || "",

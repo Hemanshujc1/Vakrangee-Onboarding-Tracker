@@ -62,7 +62,7 @@ const useFormMediclaim = () => {
     () =>
       Yup.object({
         employee_full_name: readOnlySchemas.nameString.label("Full Name"),
-        date_of_birth: readOnlySchemas.dateRequired,
+        date_of_birth: readOnlySchemas.datePast,
         gender: readOnlySchemas.stringRequired,
         marital_status: readOnlySchemas.stringRequired,
         mobile_number: readOnlySchemas.mobile,

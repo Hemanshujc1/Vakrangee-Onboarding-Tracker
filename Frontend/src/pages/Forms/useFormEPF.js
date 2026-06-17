@@ -93,8 +93,8 @@ const useFormEPF = () => {
           })
           .transform((v, o) => (o === "" ? null : v)),
 
-        bank_account_no: readOnlySchemas.bankAccount,
-        ifsc_code: readOnlySchemas.ifsc,
+        bank_account_no: commonSchemas.bankAccount,
+        ifsc_code: commonSchemas.ifsc.required("Required"),
         aadhaar_no: readOnlySchemas.aadhaar,
         pan_no: readOnlySchemas.pan,
 
@@ -151,6 +151,7 @@ const useFormEPF = () => {
   const prevEpsMember = watch("prev_eps_member");
   const internationalWorker = watch("international_worker");
   const relationshipType = watch("relationship_type");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isEmployee = user.role === "EMPLOYEE";
 
   useEffect(() => {

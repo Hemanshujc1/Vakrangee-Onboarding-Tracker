@@ -31,6 +31,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="Degree/Specialization"
               name={`educational_details.${index}.degree`}
               register={register}
+              maxLength={30}
               error={errors.educational_details?.[index]?.degree}
               required
             />
@@ -39,6 +40,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="Institute/College"
               name={`educational_details.${index}.institute`}
               register={register}
+              maxLength={100}
               error={errors.educational_details?.[index]?.institute}
               required
             />
@@ -46,6 +48,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="Address"
               name={`educational_details.${index}.address`}
               register={register}
+              maxLength={200}
               error={errors.educational_details?.[index]?.address}
               required
             />
@@ -53,6 +56,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="State"
               name={`educational_details.${index}.state`}
               register={register}
+              maxLength={100}
               error={errors.educational_details?.[index]?.state}
               required
             />
@@ -64,15 +68,16 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               required
               maxLength={6}
               minLength={6}
-                onInput={(e) => {
-                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                }}
+              onInput={(e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, "");
+              }}
             />
 
             <FormInput
               label="University/Board"
               name={`educational_details.${index}.university`}
               register={register}
+              maxLength={100}
               error={errors.educational_details?.[index]?.university}
               required
             />
@@ -80,6 +85,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="University Address"
               name={`educational_details.${index}.universityAddress`}
               register={register}
+              maxLength={200}
               error={errors.educational_details?.[index]?.universityAddress}
             />
             <div className="flex gap-4">
@@ -87,6 +93,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
                 label="University State"
                 name={`educational_details.${index}.universitystate`}
                 register={register}
+                maxLength={50}
                 error={errors.educational_details?.[index]?.universitystate}
               />
               <FormInput
@@ -111,31 +118,30 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               error={errors.educational_details?.[index]?.enrollmentNo}
             />
             <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 p-4  bg-white rounded border border-gray-200">
-
-                  <div className="flex items-center">
-                    <label className="font-bold text-gray-700 mr-2 whitespace-nowrap">Duration</label>
-                  </div>
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                    <FormInput
-                      label="Start Date"
-                      type="date"
-                      name={`educational_details.${index}.startDate`}
-                      register={register}
-                      error={errors.educational_details?.[index]?.startDate}
-                      required
-                    />
-                    <FormInput
-                      label="End Date"
-                      type="date"
-                      name={`educational_details.${index}.endDate`}
-                      register={register}
-                      error={errors.educational_details?.[index]?.endDate}
-                      required
-                    />
-                  </div>
+              <div className="flex items-center">
+                <label className="font-bold text-gray-700 mr-2 whitespace-nowrap">
+                  Duration
+                </label>
               </div>
-
-         
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <FormInput
+                  label="Start Date"
+                  type="date"
+                  name={`educational_details.${index}.startDate`}
+                  register={register}
+                  error={errors.educational_details?.[index]?.startDate}
+                  required
+                />
+                <FormInput
+                  label="End Date"
+                  type="date"
+                  name={`educational_details.${index}.endDate`}
+                  register={register}
+                  error={errors.educational_details?.[index]?.endDate}
+                  required
+                />
+              </div>
+            </div>
 
             <FormSelect
               label="Status"
@@ -184,6 +190,7 @@ const EducationDetails = ({ register, errors, eduFields }) => {
               label="SIGNIFICANT ACHIEVEMENTS / OTHER COURSES / DIPLOMA COMPLETED: (Please mention Institute name / Year of completion / Duration)"
               name={`educational_details.${index}.achievements`}
               register={register}
+              maxLength={500}
               error={errors.educational_details?.[index]?.achievements}
             />
           </div>

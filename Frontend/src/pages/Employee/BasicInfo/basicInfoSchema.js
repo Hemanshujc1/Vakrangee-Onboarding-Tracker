@@ -147,6 +147,8 @@ export const defaultBasicInfoValues = {
 
   job_title: "",
   department_name: "",
+  band_name: "",
+  level_name: "",
   date_of_joining: "",
 
   perm_address_line1: "",

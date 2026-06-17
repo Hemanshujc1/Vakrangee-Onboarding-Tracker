@@ -22,6 +22,7 @@ export const getValidationSchema = (hasSavedSignature) =>
       )
       .required("Date of Birth is required"),
     birth_city: commonSchemas.stringRequired,
+    birth_district: commonSchemas.stringRequired,
     birth_state: commonSchemas.stringRequired,
     country: readOnlySchemas.country,
     blood_group: Yup.string().required("Required"),
@@ -206,6 +207,7 @@ export const defaultValues = {
   father_last_name: "",
   date_of_birth: "",
   birth_city: "",
+  birth_district: "",
   birth_state: "",
   country: "",
   blood_group: "",

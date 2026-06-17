@@ -42,11 +42,20 @@ const OtherDetails = ({
               />
               <TableInput
                 register={register(`family.${index}.age`)}
-                type="number"
+                type="text"
+                inputMode="numeric"
+                onInput={(e) => {
+                  e.target.value = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 2);
+                }}
                 error={errors.family?.[index]?.age}
                 required
               />
-              <TableInput register={register(`family.${index}.occupation`)} />
+              <TableInput
+                register={register(`family.${index}.occupation`)}
+                maxLength={10}
+              />
             </>
           )}
         />
@@ -122,6 +131,7 @@ const OtherDetails = ({
                 <tr key={item.id}>
                   <TableInput
                     register={register(`languages.${index}.language`)}
+                    maxLength={15}
                     error={errors.languages?.[index]?.language}
                     required
                   />
@@ -194,20 +204,30 @@ const OtherDetails = ({
             <>
               <TableInput
                 register={register(`references.${index}.name`)}
+                maxLength={30}
                 error={errors.references?.[index]?.name}
               />
-              <TableInput register={register(`references.${index}.position`)} />
+              <TableInput
+                register={register(`references.${index}.position`)}
+                maxLength={30}
+              />
               <TableInput
                 register={register(`references.${index}.company`)}
+                maxLength={50}
                 error={errors.references?.[index]?.company}
               />
-              <TableInput register={register(`references.${index}.address`)} />
+              <TableInput
+                register={register(`references.${index}.address`)}
+                maxLength={100}
+              />
               <TableInput
                 register={register(`references.${index}.contact`)}
                 type="text"
                 inputMode="numeric"
                 onInput={(e) => {
-                  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  e.target.value = e.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 10);
                 }}
                 error={errors.references?.[index]?.contact}
               />
@@ -224,31 +244,37 @@ const OtherDetails = ({
         <FormTextArea
           label="a) What are your career objectives & personal goals? Ideally, how would you like to see them develop over the next 5 Years."
           register={register}
+          maxLength={500}
           name="careerObjectives"
         />
         <FormTextArea
           label="b) Major achievements"
           register={register}
+          maxLength={500}
           name="majorAchievements"
         />
         <FormTextArea
           label="c) Physical or mental disability, if any"
+          maxLength={200}
           register={register}
           name="disability"
         />
         <FormTextArea
           label="d) Have you been interviewed in this organization before? If yes, details."
           register={register}
+          maxLength={500}
           name="interviewedBefore"
         />
         <FormTextArea
           label="e) List your hobbies"
           register={register}
+          maxLength={100}
           name="hobbies"
         />
         <FormTextArea
           label="f) Have you been convicted for any offence? If yes, details."
           register={register}
+          maxLength={500}
           name="conviction"
         />
       </FormSection>

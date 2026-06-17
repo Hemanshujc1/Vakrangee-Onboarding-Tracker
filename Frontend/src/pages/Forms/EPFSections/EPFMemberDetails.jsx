@@ -94,6 +94,7 @@ const EPFMemberDetails = ({
                   : "Spouse's Name"
               }
               register={register}
+              maxLength={50}
               name={
                 relationshipType === "Father" ? "father_name" : "spouse_name"
               }

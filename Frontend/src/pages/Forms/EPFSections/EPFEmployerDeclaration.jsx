@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const EPFEmployerDeclaration = ({ register, errors, watch, isEmployee }) => {
   return (
@@ -147,7 +148,7 @@ const EPFEmployerDeclaration = ({ register, errors, watch, isEmployee }) => {
       </ul>
 
       <div className="flex justify-between mt-12 items-end">
-        <span>Date:</span>
+        <span>Date: {formatToday()}</span>
         <div className="text-center">
           <div className="w-48 h-12 mb-1"></div>
           <span>Signature of Employer with Seal of Establishment</span>

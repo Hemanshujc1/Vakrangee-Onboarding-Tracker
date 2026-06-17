@@ -47,10 +47,12 @@ export const readOnlySchemas = {
   datePast: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .max(new Date(), "Enter Valid Date")
     .required("Required"),
   datePastOptional: Yup.date()
     .nullable()
-    .transform((value, originalValue) => (originalValue === "" ? null : value)),
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .max(new Date(), "Enter Valid Date"),
   dateFuture: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))

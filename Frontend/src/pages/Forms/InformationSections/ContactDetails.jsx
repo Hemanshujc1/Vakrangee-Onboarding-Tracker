@@ -2,8 +2,9 @@ import React from "react";
 import FormSection from "../../../Components/Forms/FormSection";
 import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
+import LocationDropdowns from "../../../Components/Forms/Shared/LocationDropdowns";
 
-const ContactDetails = ({ register, errors }) => {
+const ContactDetails = ({ register, errors, watch, setValue }) => {
   return (
     <FormSection title="Contact Details (Fill In Block Letters)">
       <div className="space-y-8">
@@ -31,6 +32,7 @@ const ContactDetails = ({ register, errors }) => {
               label="Building Name"
               name="current_building_name"
               register={register}
+              maxLength={50}
               error={errors.current_building_name}
               required
             />
@@ -38,12 +40,14 @@ const ContactDetails = ({ register, errors }) => {
             label="Landlord's Name"
             name="current_landlord_name"
             register={register}
+            maxLength={50}
             error={errors.current_landlord_name}
           />
             <FormInput
               label="Flat/House No"
               name="current_flat_house_no"
               register={register}
+              maxLength={15}
               error={errors.current_flat_house_no}
               required
             />
@@ -52,6 +56,7 @@ const ContactDetails = ({ register, errors }) => {
               label="Block/Street No"
               name="current_block_street_no"
               register={register}
+              maxLength={10}
               error={errors.current_block_street_no}
               required
             />
@@ -59,37 +64,26 @@ const ContactDetails = ({ register, errors }) => {
               label="Street Name"
               name="current_street_name"
               register={register}
+              maxLength={50}
               error={errors.current_street_name}
               required
             />
-            <FormInput
-              label="City"
-              name="current_city"
-              register={register}
-              error={errors.current_city}
-              required
-            />
-            <FormInput
-              label="District"
-              name="current_district"
-              register={register}
-              error={errors.current_district}
-              required
+            <LocationDropdowns
+              prefix="current_"
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              required={true}
             />
             <FormInput
               label="Post Office"
               name="current_post_office"
               register={register}
+              maxLength={30}
               error={errors.current_post_office}
               required
             />
-            <FormInput
-              label="State"
-              name="current_state"
-              register={register}
-              error={errors.current_state}
-              required
-            />
+       
             <FormInput
               label="Pin Code"
               name="current_pin_code"
@@ -170,19 +164,12 @@ const ContactDetails = ({ register, errors }) => {
               error={errors.permanent_street_name}
               required
             />
-            <FormInput
-              label="City"
-              name="permanent_city"
-              register={register}
-              error={errors.permanent_city}
-              required
-            />
-            <FormInput
-              label="District"
-              name="permanent_district"
-              register={register}
-              error={errors.permanent_district}
-              required
+            <LocationDropdowns
+              prefix="permanent_"
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              required={true}
             />
             <FormInput
               label="Post Office"
@@ -191,13 +178,7 @@ const ContactDetails = ({ register, errors }) => {
               error={errors.permanent_post_office}
               required
             />
-            <FormInput
-              label="State"
-              name="permanent_state"
-              register={register}
-              error={errors.permanent_state}
-              required
-            />
+         
             <FormInput
               label="Pin Code"
               name="permanent_pin_code"

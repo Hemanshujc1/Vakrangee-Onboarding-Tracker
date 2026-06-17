@@ -26,7 +26,7 @@ const useOnboardingActions = ({
       onFormSubmit(currentValues);
     }, [setValue, isPreviewRef, setIsPreviewMode, getValues, onFormSubmit]),
     onSubmit: useCallback(() => {
-      setValue("isDraft", true);
+      setValue("isDraft", false);
       if (isPreviewRef && isPreviewRef.hasOwnProperty("current")) {
         isPreviewRef.current = true;
       }

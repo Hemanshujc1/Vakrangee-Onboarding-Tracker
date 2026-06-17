@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import axios from "axios";
-import { createSignatureSchema } from "../../utils/validations";
+import { createSignatureSchema, commonSchemas } from "../../utils/validations";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
 const useFormTDS = () => {
@@ -60,7 +60,7 @@ const useFormTDS = () => {
         education_loan_start_year: Yup.string()
           .test(
             "year-or-zero",
-            "Enter a valid year (YYYY), 0, or leave empty",
+            "Enter a valid year, 0, or leave empty",
             (val) => {
               if (!val || val === "") return true;
               if (val === "0") return true;

@@ -31,6 +31,24 @@ const JobInformationSection = ({ register, formData }) => {
           disabled={true}
           placeholder="Not Assigned"
         />
+        <FormInputField
+          label="Band"
+          name="band_name"
+          register={register}
+          isEditing={true}
+          value={formData.band_name}
+          disabled={true}
+          placeholder="Not Assigned"
+        />
+        <FormInputField
+          label="Level"
+          name="level_name"
+          register={register}
+          isEditing={true}
+          value={formData.level_name}
+          disabled={true}
+          placeholder="Not Assigned"
+        />
         <div className="w-full">
           <label className="block text-sm text-gray-500 mb-1">
             Work Location

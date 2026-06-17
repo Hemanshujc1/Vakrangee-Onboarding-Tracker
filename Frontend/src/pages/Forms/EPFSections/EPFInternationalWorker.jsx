@@ -54,6 +54,7 @@ const EPFInternationalWorker = ({
             register={register}
             name="country_of_origin"
             error={errors.country_of_origin}
+            maxLength={20}
           />
           <FormInput
             label="Passport No."

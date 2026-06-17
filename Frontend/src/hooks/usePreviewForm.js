@@ -85,6 +85,7 @@ const usePreviewForm = ({ apiEndpoint, verifyEndpoint, dataKey, statusKey, reaso
     handleVerification,
     navigate,
     showAlert,
+    showConfirm,
   };
 };
 

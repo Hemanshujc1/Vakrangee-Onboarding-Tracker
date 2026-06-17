@@ -75,10 +75,10 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
           error={errors.emergencyNo}
           required
           maxLength={10}
-                minLength={10}
-                  onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                  }}
+          minLength={10}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
           disabled={true}
         />
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
@@ -92,7 +92,13 @@ const PersonalInformation = ({ register, errors, autoFillData }) => {
             disabled={!!autoFillData?.gender}
             className="col-span-2"
           />
-          <FormInput label="Age" type="number" register={register} name="age" />
+          <FormInput
+            label="Age"
+            type="number"
+            register={register}
+            name="age"
+            disabled
+          />
           <FormInput
             label="Date of Birth"
             type="date"

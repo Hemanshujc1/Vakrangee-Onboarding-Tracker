@@ -22,6 +22,7 @@ const FormInformation = () => {
     handleSubmit,
     setValue,
     getValues,
+    watch,
     errors,
     isSubmitting,
     eduFields,
@@ -88,9 +89,16 @@ const FormInformation = () => {
         register={register}
         errors={errors}
         autoFillData={autoFillData}
+        watch={watch}
+        setValue={setValue}
       />
 
-      <ContactDetails register={register} errors={errors} />
+      <ContactDetails 
+        register={register} 
+        errors={errors} 
+        watch={watch}
+        setValue={setValue}
+      />
 
       <EducationDetails
         register={register}

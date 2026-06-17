@@ -8,21 +8,23 @@ const HousingLoanSection = ({ register, errors }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label="Principal Amount Payable"
-          type="number"
           register={register}
           name="housing_loan_principal"
           error={errors.housing_loan_principal}
-          min={0}
-          max={9999999999}
+          maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="Interest Amount Payable"
-          type="number"
           register={register}
           name="housing_loan_interest"
           error={errors.housing_loan_interest}
-          min={0}
-          max={9999999999}
+          maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
       </div>
     </FormSection>

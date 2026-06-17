@@ -27,6 +27,7 @@ const GratuityEmployeeStatement = ({
       <FormInput
         label="Middle Name"
         register={register}
+        maxLength={50}
         name="middlename"
         // disabled={!!autoFillData?.middlename}
       />
@@ -54,6 +55,7 @@ const GratuityEmployeeStatement = ({
         label="Religion"
         register={register}
         name="religion"
+        maxLength={15}
         error={errors.religion}
         required
       />
@@ -79,6 +81,8 @@ const GratuityEmployeeStatement = ({
         label="Ticket/Serial No. (Emp Code)"
         register={register}
         name="ticket_no"
+                maxLength={10}
+
         error={errors.ticket_no}
       />
       <FormInput
@@ -107,6 +111,8 @@ const GratuityEmployeeStatement = ({
           label="Thana"
           register={register}
           name="thana"
+                  maxLength={20}
+
           error={errors.thana}
           required
         />

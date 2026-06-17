@@ -337,6 +337,7 @@ const WorkExperience = ({
                     register={register(
                       `employmentHistory.${index}.reportingOfficer`,
                     )}
+                    maxLength={20} 
                     error={errors.employmentHistory?.[index]?.reportingOfficer}
                   />
                   <td className="border border-gray-300 p-2 text-center">
@@ -378,3 +379,4 @@ const WorkExperience = ({
 };
 
 export default WorkExperience;
+

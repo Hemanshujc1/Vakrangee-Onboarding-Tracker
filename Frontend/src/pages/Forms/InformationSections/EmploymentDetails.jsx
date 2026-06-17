@@ -17,12 +17,14 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Company Name"
               name={`employment_details.${index}.companyName`}
               register={register}
+              maxLength={50}
               error={errors.employment_details?.[index]?.companyName}
             />
             <FormInput
               label="Address"
               name={`employment_details.${index}.address`}
               register={register}
+              maxLength={200}
               error={errors.employment_details?.[index]?.address}
             />
             <FormSelect
@@ -36,6 +38,7 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Employment Code"
               name={`employment_details.${index}.empCode`}
               register={register}
+              maxLength={10}
               error={errors.employment_details?.[index]?.empCode}
             />
 
@@ -67,6 +70,7 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Position Held"
               name={`employment_details.${index}.position`}
               register={register}
+              maxLength={50}
               error={errors.employment_details?.[index]?.position}
             />
             <FormInput
@@ -74,15 +78,14 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               name={`employment_details.${index}.compensation`}
               type="number"
               register={register}
+              maxLength={8}
               error={errors.employment_details?.[index]?.compensation}
-
             />
             <FormInput
               label="City Last Worked"
               name={`employment_details.${index}.city`}
               register={register}
               error={errors.employment_details?.[index]?.city}
-
             />
 
             {/* HR Rep */}
@@ -93,30 +96,37 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Name"
               name={`employment_details.${index}.hrRep`}
               register={register}
+              maxLength={50}
               error={errors.employment_details?.[index]?.hrRep}
-
             />
             <div className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Telephone"
                 name={`employment_details.${index}.hrTel`}
                 register={register}
+                maxLength={10}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 error={errors.employment_details?.[index]?.hrTel}
               />
               <FormInput
                 label="Mobile"
                 name={`employment_details.${index}.hrMob`}
                 register={register}
+                maxLength={10}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 error={errors.employment_details?.[index]?.hrMob}
-
               />
             </div>
             <FormInput
               label="Email"
               name={`employment_details.${index}.hrEmail`}
               register={register}
+              maxLength={60}
               error={errors.employment_details?.[index]?.hrEmail}
-
             />
 
             {/* Supervisor */}
@@ -127,38 +137,45 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Name"
               name={`employment_details.${index}.supervisorName`}
               register={register}
+              maxLength={50}
               error={errors.employment_details?.[index]?.supervisorName}
-
             />
             <div className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Telephone"
                 name={`employment_details.${index}.supTel`}
                 register={register}
+                maxLength={10}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 error={errors.employment_details?.[index]?.supTel}
               />
               <FormInput
                 label="Mobile"
                 name={`employment_details.${index}.supMob`}
                 register={register}
+                maxLength={10}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 error={errors.employment_details?.[index]?.supMob}
-
               />
             </div>
             <FormInput
               label="Email"
               name={`employment_details.${index}.supEmail`}
               register={register}
+              maxLength={60}
               error={errors.employment_details?.[index]?.supEmail}
-
             />
 
             <FormInput
               label="Designation"
               name={`employment_details.${index}.designation`}
               register={register}
+              maxLength={50}
               error={errors.employment_details?.[index]?.designation}
-
             />
             <div className="mt-4 flex flex-col md:flex-row gap-4 p-3 bg-white rounded border border-gray-200 items-start md:items-center">
               <div className="flex items-center">
@@ -173,7 +190,6 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                   name={`employment_details.${index}.reportStartDate`}
                   register={register}
                   error={errors.employment_details?.[index]?.reportStartDate}
-
                 />
                 <FormInput
                   label="End Date"
@@ -197,6 +213,7 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                   label="Supervisor Name"
                   name={`employment_details.${index}.supervisorName2`}
                   register={register}
+                  maxLength={50}
                   error={errors.employment_details?.[index]?.supervisorName2}
                 />
                 <div className="grid grid-cols-2 gap-4">
@@ -204,12 +221,20 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                     label="Telephone"
                     name={`employment_details.${index}.supTel2`}
                     register={register}
+                    maxLength={10}
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    }}
                     error={errors.employment_details?.[index]?.supTel2}
                   />
                   <FormInput
                     label="Mobile"
                     name={`employment_details.${index}.supMob2`}
                     register={register}
+                    maxLength={10}
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    }}
                     error={errors.employment_details?.[index]?.supMob2}
                   />
                 </div>
@@ -217,12 +242,14 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                   label="Email"
                   name={`employment_details.${index}.supEmail2`}
                   register={register}
+                  maxLength={60}
                   error={errors.employment_details?.[index]?.supEmail2}
                 />
                 <FormInput
                   label="Designation"
                   name={`employment_details.${index}.designation2`}
                   register={register}
+                  maxLength={50}
                   error={errors.employment_details?.[index]?.designation2}
                 />
               </div>
@@ -246,7 +273,6 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
                     name={`employment_details.${index}.reportEndDate2`}
                     register={register}
                     error={errors.employment_details?.[index]?.reportEndDate2}
-                    
                   />
                 </div>
               </div>
@@ -256,15 +282,15 @@ const EmploymentDetails = ({ register, errors, empFields }) => {
               label="Nature of Duties"
               name={`employment_details.${index}.duties`}
               register={register}
+              maxLength={500}
               error={errors.employment_details?.[index]?.duties}
-
             />
             <FormTextArea
               label="Reason for Leaving"
               name={`employment_details.${index}.reasonLeaving`}
               register={register}
+              maxLength={500}
               error={errors.employment_details?.[index]?.reasonLeaving}
-
             />
           </div>
         </div>

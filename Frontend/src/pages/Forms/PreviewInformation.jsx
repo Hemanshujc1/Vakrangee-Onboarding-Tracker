@@ -25,6 +25,7 @@ const PreviewInformation = () => {
     handleVerification,
     navigate,
     showAlert,
+    showConfirm,
     targetId,
   } = usePreviewForm({
     apiEndpoint: "/api/forms/save-employee-info", // Actually not used by `handleFinalSubmit` below, but used by verify.
@@ -51,7 +52,8 @@ const PreviewInformation = () => {
     // In this specific form, there is no signature or file upload logic for submission.
     // However, it used showConfirm directly in `handleSubmit`. The standard forms don't prompt for confirmation on submit.
     // To match the original form behavior, we'll keep the confirmation logic.
-    if (!window.confirm("Are you sure you want to submit? You won't be able to edit afterwards.")) return;
+    const isConfirmed = await showConfirm("Are you sure you want to submit? You won't be able to edit afterwards.");
+    if (!isConfirmed) return;
 
     setIsSubmitting(true);
     try {

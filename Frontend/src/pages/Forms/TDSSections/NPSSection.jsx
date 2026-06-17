@@ -7,13 +7,14 @@ const NPSSection = ({ register, errors }) => {
     <FormSection title="3. Contribution to National Pension Scheme (NPS)">
       <FormInput
         label="Amount"
-        type="number"
         register={register}
         name="nps_contribution"
         className="max-w-xs"
         error={errors.nps_contribution}
-        min={0}
-        max={9999999999}
+        maxLength={8}
+        onInput={(e) => {
+          e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        }}
       />
     </FormSection>
   );

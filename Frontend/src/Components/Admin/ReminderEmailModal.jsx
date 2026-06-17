@@ -31,12 +31,13 @@ const PRE_JOINING_FORMS_LIST = [
     label: "Application Form",
     statusKey: "applicationStatus",
   },
-  {
-    key: "DECLARATION",
-    label: "Declaration Form",
-    statusKey: "declarationStatus",
-  },
+
   { key: "MEDICLAIM", label: "Mediclaim Form", statusKey: "mediclaimStatus" },
+  {
+    key: "EMPLOYEE_INFO",
+    label: "Employee Information Form",
+    statusKey: "employeeInfoStatus",
+  },
   {
     key: "GRATUITY",
     label: "Gratuity Form (Form F)",
@@ -46,15 +47,16 @@ const PRE_JOINING_FORMS_LIST = [
 
 const POST_JOINING_FORMS_LIST = [
   {
-    key: "EMPLOYEE_INFO",
-    label: "Employee Information Form",
-    statusKey: "employeeInfoStatus",
-  },
-  {
     key: "NDA",
     label: "Non-Disclosure Agreement (NDA)",
     statusKey: "ndaStatus",
   },
+  {
+    key: "DECLARATION",
+    label: "Declaration Form",
+    statusKey: "declarationStatus",
+  },
+
   { key: "TDS", label: "TDS Declaration Form", statusKey: "tdsStatus" },
   { key: "EPF", label: "EPF Form", statusKey: "epfStatus" },
 ];

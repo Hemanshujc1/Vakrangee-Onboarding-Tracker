@@ -112,7 +112,7 @@ const WorkLocationPicker = ({ location, setLocation, layout = "vertical", errors
           onChange={(e) => handleStateChange(e.target.value, e.target.option?.name || "")}
           placeholder="State"
           required
-          error={errors["work_location.state"]}
+          error={errors["work_location.state"]?.message}
         />
         <SearchableSelect
           label="District"
@@ -126,7 +126,7 @@ const WorkLocationPicker = ({ location, setLocation, layout = "vertical", errors
           placeholder="District"
           disabled={!selectedStateId || loadingRegions}
           required
-          error={errors["work_location.district"]}
+          error={errors["work_location.district"]?.message}
         />
         <SearchableSelect
           label="City"
@@ -140,7 +140,7 @@ const WorkLocationPicker = ({ location, setLocation, layout = "vertical", errors
           placeholder="City"
           disabled={!selectedDistrictId || loadingRegions}
           required
-          error={errors["work_location.city"]}
+          error={errors["work_location.city"]?.message}
         />
       </div>
     </div>

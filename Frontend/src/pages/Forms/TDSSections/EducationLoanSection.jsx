@@ -8,12 +8,13 @@ const EducationLoanSection = ({ register, errors }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormInput
           label="Education Loan Amount"
-          type="number"
           register={register}
           name="education_loan_amt"
           error={errors.education_loan_amt}
-          min={0}
-          max={9999999999}
+          maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
         <FormInput
           label="Start Year (Loan Taken)"
@@ -24,15 +25,17 @@ const EducationLoanSection = ({ register, errors }) => {
           onInput={(e) => {
             e.target.value = e.target.value.replace(/[^0-9]/g, "");
           }}
+          maxLength={4}
         />
         <FormInput
           label="Interest Payable (Apr-Mar)"
-          type="number"
           register={register}
           name="education_interest"
           error={errors.education_interest}
-          min={0}
-          max={9999999999}
+          maxLength={8}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
       </div>
     </FormSection>

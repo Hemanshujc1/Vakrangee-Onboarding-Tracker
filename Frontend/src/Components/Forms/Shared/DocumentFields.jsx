@@ -14,6 +14,8 @@ const DocumentFields = ({
   const hasLicense = watch("hasLicense");
   const hasPassport = watch("hasPassport");
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <FormSection title="Documents">
       {/* PAN Card */}
@@ -65,6 +67,7 @@ const DocumentFields = ({
             name="licenseIssueDate"
             error={errors.licenseIssueDate}
             required
+            max={today}
           />
           <FormInput
             label="Expiry Date"
@@ -73,6 +76,7 @@ const DocumentFields = ({
             name="licenseExpiryDate"
             error={errors.licenseExpiryDate}
             required
+            min={today}
           />
         </div>
       )}
@@ -104,6 +108,7 @@ const DocumentFields = ({
             name="passportIssueDate"
             error={errors.passportIssueDate}
             required
+            max={today}
           />
           <FormInput
             label="Expiry Date"
@@ -112,6 +117,7 @@ const DocumentFields = ({
             name="passportExpiryDate"
             error={errors.passportExpiryDate}
             required
+            min={today}
           />
         </div>
       )}
@@ -120,3 +126,4 @@ const DocumentFields = ({
 };
 
 export default DocumentFields;
+

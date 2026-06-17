@@ -97,6 +97,7 @@ const GratuityNomineeStatement = ({
               <input
                 {...register(`nominees.${index}.name`)}
                 placeholder="Full Name"
+                maxLength={50}
                 className={`w-full border-b border-gray-300 outline-none p-1 mb-1 bg-transparent ${
                   errors.nominees?.[index]?.name ? "bg-red-50" : ""
                 }`}
@@ -110,6 +111,8 @@ const GratuityNomineeStatement = ({
               <textarea
                 {...register(`nominees.${index}.address`)}
                 placeholder="Full Address"
+                                maxLength={200}
+
                 className={`w-full border border-gray-200 outline-none p-1 text-xs h-16 resize-none mt-1 ${
                   errors.nominees?.[index]?.address ? "bg-red-50" : ""
                 }`}
@@ -124,6 +127,7 @@ const GratuityNomineeStatement = ({
               <input
                 {...register(`nominees.${index}.relationship`)}
                 placeholder="e.g. Spouse"
+                maxLength={50}
                 className={`w-full outline-none p-1 bg-transparent ${
                   errors.nominees?.[index]?.relationship ? "bg-red-50" : ""
                 }`}
@@ -136,9 +140,13 @@ const GratuityNomineeStatement = ({
             </td>
             <td className="border border-gray-300 p-1 align-top">
               <input
-                type="number"
+                type="text"
                 {...register(`nominees.${index}.age`)}
                 placeholder="Age"
+                maxLength={2}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 className={`w-full outline-none p-1 bg-transparent ${
                   errors.nominees?.[index]?.age ? "bg-red-50" : ""
                 }`}
@@ -152,9 +160,17 @@ const GratuityNomineeStatement = ({
             <td className="border border-gray-300 p-1 align-top">
               <div className="flex items-center gap-1">
                 <input
-                  type="number"
+                  type="text"
                   {...register(`nominees.${index}.share`)}
                   placeholder="%"
+                  maxLength={3}
+                  onInput={(e) => {
+                    let val = e.target.value.replace(/[^0-9]/g, "");
+                    if (val !== "" && parseInt(val, 10) > 100) {
+                      val = "100";
+                    }
+                    e.target.value = val;
+                  }}
                   className={`w-full outline-none p-1 bg-transparent ${
                     errors.nominees?.[index]?.share ? "bg-red-50" : ""
                   }`}
