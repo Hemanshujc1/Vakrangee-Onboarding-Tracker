@@ -4,6 +4,7 @@ import { Upload, Eye, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react
 import { useAlert } from '../../context/AlertContext';
 import axios from 'axios';
 import { DOCUMENT_CONFIG, validateDocumentFile } from '../../config/documentConfig';
+import { formatDate } from '../../utils/basicInfoHelpers';
 
 
 const Documents = () => {
@@ -155,7 +156,7 @@ const Documents = () => {
                                     {data ? (
                                         <div className="text-sm text-gray-500 mt-1">
                                             <p className="truncate max-w-xs">{data.original_name}</p>
-                                            <p className="text-xs">Uploaded on {new Date(data.uploaded_at).toLocaleDateString()}</p>
+                                            <p className="text-xs">Uploaded on {formatDate(data.uploaded_at)}</p>
                                             {status === 'REJECTED' && data.rejection_reason && (
                                                 <p className="text-xs text-red-600 mt-1 font-medium">Reason: {data.rejection_reason}</p>
                                             )}

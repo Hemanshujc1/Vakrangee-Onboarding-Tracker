@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { readOnlySchemas, createSignatureSchema } from "../../utils/validations";
+import { readOnlySchemas, createSignatureSchema, commonSchemas } from "../../utils/validations";
 import { formatDateForAPI } from "../../utils/formUtils";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
@@ -90,12 +90,12 @@ const useFormGratuity = () => {
         witnesses_place: Yup.string().when("isDraft", {
           is: false,
           then: () => commonSchemas.stringOptional,
-          otherwise: () => schema.optional(),
+          otherwise: (schema) => schema.optional(),
         }),
         witnesses_date: Yup.date().when("isDraft", {
           is: false,
           then: () => commonSchemas.dateOptional,
-          otherwise: () => schema.optional(),
+          otherwise: (schema) => schema.optional(),
         }),
 
         signature: Yup.mixed().when("isDraft", {

@@ -3,13 +3,13 @@ import DocumentUploadItem from "./DocumentUploadItem";
 import { DOC_CONFIG_MAP } from "../../../config/documentConfig";
 import FormInputField from "../../UI/FormInputField";
 import FormSelectField from "../../UI/FormSelectField";
+import { formatForDateInput } from "../../../utils/basicInfoHelpers";
 
 const ProfileIdentitySection = ({
   register,
   errors,
   isEditing,
   formData,
-  formatDate,
   getDocStatus,
   uploadingState,
   handleUpload,
@@ -75,7 +75,7 @@ const ProfileIdentitySection = ({
           register={register}
           errors={errors}
           isEditing={isEditing}
-          value={formatDate(formData.date_of_birth)}
+          value={formatForDateInput(formData.date_of_birth)}
           type="date"
           readOnly={panVerified || isLocked}
           required={true}

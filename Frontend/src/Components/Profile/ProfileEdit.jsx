@@ -3,6 +3,7 @@ import SearchableSelect from "../UI/SearchableSelect";
 import { formatWorkLocation } from "../../utils/employeeUtils";
 import { useRegionDropdowns } from "../../hooks/useRegionDropdowns";
 import ProfileInputField from "./ProfileInputField";
+import WorkLocationPicker from "../UI/WorkLocationPicker";
 
 const ProfileEdit = ({
   formData,
@@ -27,6 +28,7 @@ const ProfileEdit = ({
     cities,
     loadingRegions,
     selectedStateId,
+    selectedDistrictId,
     onStateChange,
     onDistrictChange,
     onCityChange,
@@ -87,7 +89,9 @@ const ProfileEdit = ({
             }
           />
           {errors.department_name && (
-            <p className="text-red-500 text-xs mt-1">{errors.department_name}</p>
+            <p className="text-red-500 text-xs mt-1">
+              {errors.department_name}
+            </p>
           )}
         </div>
 
@@ -114,21 +118,40 @@ const ProfileEdit = ({
         </div>
 
         {/* Location & Contact */}
-        <ProfileInputField
-          label="Work Location"
-          name="work_location"
-          value={
-            typeof formData.work_location === "object"
-              ? formatWorkLocation(formData.work_location) || ""
-              : formData.work_location || ""
-          }
-          onChange={handleInputChange}
-          onBlur={(e) => validateField("work_location", e.target.value)}
-          error={errors.work_location}
-          disabled={role === "HR_ADMIN" && !!initialRecord.work_location}
-          required
-        />
-
+        <div className="md:col-span-2">
+          <WorkLocationPicker
+            layout="horizontal"
+            errors={errors}
+            location={
+              typeof formData.work_location === "object" &&
+              formData.work_location !== null
+                ? formData.work_location
+                : {
+                    state: "",
+                    district: "",
+                    city: formData.work_location || "",
+                  }
+            }
+            setLocation={(newLoc) => {
+              const resolvedLoc =
+                typeof newLoc === "function"
+                  ? newLoc(
+                      typeof formData.work_location === "object" &&
+                        formData.work_location !== null
+                        ? formData.work_location
+                        : {
+                            state: "",
+                            district: "",
+                            city: formData.work_location || "",
+                          },
+                    )
+                  : newLoc;
+              handleInputChange({
+                target: { name: "work_location", value: resolvedLoc },
+              });
+            }}
+          />
+        </div>
         <ProfileInputField
           label="Phone"
           name="phone"
@@ -226,6 +249,7 @@ const ProfileEdit = ({
           }}
           placeholder="Select State"
           required
+          error={errors.state}
         />
 
         <SearchableSelect
@@ -242,6 +266,7 @@ const ProfileEdit = ({
           placeholder="Select District"
           disabled={!selectedStateId || loadingRegions}
           required
+          error={errors.district}
         />
 
         <SearchableSelect
@@ -256,6 +281,7 @@ const ProfileEdit = ({
           placeholder="Select City"
           disabled={!selectedDistrictId || loadingRegions}
           required
+          error={errors.city}
         />
 
         <ProfileInputField
@@ -296,6 +322,7 @@ const ProfileEdit = ({
           type="email"
           value={companyEmail}
           disabled
+          required
         />
 
         <ProfileInputField

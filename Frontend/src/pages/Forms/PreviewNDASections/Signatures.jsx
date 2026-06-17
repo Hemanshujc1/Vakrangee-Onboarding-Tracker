@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const Signatures = ({ formData, finalSignature }) => {
   return (
@@ -49,7 +50,7 @@ const Signatures = ({ formData, finalSignature }) => {
         <div className="mt-6 flex items-end gap-2 w-full md:pl-8 print:pl-8 justify-between">
           <span className="uppercase">Date:</span>
           <span className="border-b border-black flex-1 text-center text-sm px-2 pb-0.5">
-            {new Date().toLocaleDateString("en-GB")}
+            {formatToday()}
           </span>
         </div>
       </div>

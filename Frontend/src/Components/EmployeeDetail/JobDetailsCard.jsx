@@ -1,7 +1,9 @@
 import React from "react";
 import { Building, MapPin, Calendar, UserCheck, Briefcase } from "lucide-react";
 import SearchableSelect from "../UI/SearchableSelect";
+import WorkLocationPicker from "../UI/WorkLocationPicker";
 import { bandLevelData, uniqueBands } from "../../utils/bandLevelData";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 const JobDetailsCard = ({
   employee,
@@ -40,9 +42,21 @@ const JobDetailsCard = ({
           </div>
           <div className="w-full min-w-0">
             <p className="text-xs text-gray-400">Employee ID</p>
-            <p className="font-medium text-sm truncate">
-              {employee.employeeId || "N/A"}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editForm.employeeId}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, employeeId: e.target.value })
+                }
+                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all bg-white"
+                placeholder="Employee ID"
+              />
+            ) : (
+              <p className="font-medium text-sm truncate">
+                {employee.employeeId || "N/A"}
+              </p>
+            )}
           </div>
         </div>
 
@@ -100,31 +114,6 @@ const JobDetailsCard = ({
           </div>
         </div>
 
-        {/* Work Location */}
-        <div className="flex items-center gap-3 text-gray-600 col-span-1 sm:col-span-2">
-          <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
-            <MapPin size={18} />
-          </div>
-          <div className="w-full min-w-0">
-            <p className="text-xs text-gray-400">Work Location</p>
-            {isEditing ? (
-              <input
-                type="text"
-                value={editForm.location}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, location: e.target.value })
-                }
-                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm mt-1 focus:outline-none focus:border-blue-500 transition-all"
-                placeholder="Work Location"
-              />
-            ) : (
-              <p className="font-medium text-sm wrap-break-word whitespace-normal">
-                {employee.location || "N/A"}
-              </p>
-            )}
-          </div>
-        </div>
-
         {/* Joining Date */}
         <div className="flex items-center gap-3 text-gray-600">
           <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
@@ -145,9 +134,48 @@ const JobDetailsCard = ({
               />
             ) : (
               <p className="font-medium text-sm truncate">
-                {employee.dateOfJoining
-                  ? new Date(employee.dateOfJoining).toLocaleDateString("en-GB")
-                  : "N/A"}
+                {formatDate(employee.dateOfJoining)}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Work Location */}
+        <div
+          className={`flex ${isEditing ? "flex-col" : "items-center"} gap-3 text-gray-600 col-span-1 sm:col-span-2`}
+        >
+          {!isEditing && (
+            <div className="p-2 bg-gray-50 rounded-lg text-gray-500 shrink-0">
+              <MapPin size={18} />
+            </div>
+          )}
+          <div className="w-full min-w-0">
+            {!isEditing && (
+              <p className="text-xs text-gray-400">Work Location</p>
+            )}
+            {isEditing ? (
+              <WorkLocationPicker
+                location={
+                  editForm.work_location || {
+                    state: "",
+                    district: "",
+                    city: "",
+                  }
+                }
+                setLocation={(newLoc) => {
+                  setEditForm({
+                    ...editForm,
+                    work_location:
+                      typeof newLoc === "function"
+                        ? newLoc(editForm.work_location || {})
+                        : newLoc,
+                  });
+                }}
+                layout="horizontal"
+              />
+            ) : (
+              <p className="font-medium text-sm wrap-break-word whitespace-normal">
+                {employee.location || "N/A"}
               </p>
             )}
           </div>
@@ -262,7 +290,7 @@ const JobDetailsCard = ({
               >
                 <option value="">-- Select HR --</option>
                 {hrAdmins.map((hr) => (
-                  <option key={hr.id} value={hr.userId || hr.id}>
+                  <option key={hr.id} value={hr.employeeId}>
                     {hr.firstName} {hr.lastName} ({hr.role})
                   </option>
                 ))}

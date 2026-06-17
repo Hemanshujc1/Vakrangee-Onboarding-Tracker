@@ -18,8 +18,6 @@ const OtherDetails = ({
   appendFamily,
   removeFamily,
   referenceFields,
-  appendRef,
-  removeRef,
 }) => {
   return (
     <>
@@ -206,6 +204,11 @@ const OtherDetails = ({
               <TableInput register={register(`references.${index}.address`)} />
               <TableInput
                 register={register(`references.${index}.contact`)}
+                type="text"
+                inputMode="numeric"
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                }}
                 error={errors.references?.[index]?.contact}
               />
             </>

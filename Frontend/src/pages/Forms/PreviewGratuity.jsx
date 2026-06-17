@@ -8,6 +8,7 @@ import GratuityStatement from "./GratuityPreviewComponents/GratuityStatement";
 import GratuityWitnesses from "./GratuityPreviewComponents/GratuityWitnesses";
 import GratuityEmployerCertificate from "./GratuityPreviewComponents/GratuityEmployerCertificate";
 import GratuityAcknowledgement from "./GratuityPreviewComponents/GratuityAcknowledgement";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 const PreviewGratuity = () => {
   const componentRef = useRef();
@@ -81,13 +82,6 @@ const PreviewGratuity = () => {
       },
     ];
   }
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString("en-GB");
-  };
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);

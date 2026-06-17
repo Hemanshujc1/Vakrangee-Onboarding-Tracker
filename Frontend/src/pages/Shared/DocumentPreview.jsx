@@ -5,6 +5,8 @@ import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import PreviewActions from "../../Components/Forms/Shared/PreviewActions";
 import { useAlert } from "../../context/AlertContext";
 import { FileText, User } from "lucide-react";
+import { CiZoomIn, CiZoomOut } from "react-icons/ci";
+
 
 const DocumentPreview = () => {
   const { id: employeeId, docId } = useParams();
@@ -14,6 +16,7 @@ const DocumentPreview = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [employee, setEmployee] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isHR = ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
@@ -162,13 +165,30 @@ const DocumentPreview = () => {
            
           </div>
 
-          <div className="p-8 bg-gray-900 flex justify-center min-h-150">
+          <div className="relative p-8 bg-gray-50 flex justify-center items-start overflow-auto min-h-[600px] max-h-[80vh]">
             {isImage ? (
-              <img src={fileUrl} alt={document.document_type} className="max-w-full h-auto shadow-2xl rounded-lg" />
+              <div className="flex flex-col items-center w-full">
+                <div className="sticky top-0 z-10 flex gap-2 mb-4 p-2 bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg">
+                  <button onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.25))} className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded font-medium text-sm transition-colors"><CiZoomOut size={16}/></button>
+                  <button onClick={() => setZoomLevel(1)} className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded font-medium text-sm transition-colors">Reset</button>
+                  <button onClick={() => setZoomLevel(z => Math.min(4, z + 0.25))} className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded font-medium text-sm transition-colors"><CiZoomIn size={16}/></button>
+                </div>
+                <img 
+                  src={fileUrl} 
+                  alt={document.document_type} 
+                  style={{ 
+                    transform: `scale(${zoomLevel})`, 
+                    transformOrigin: "top center", 
+                    transition: "transform 0.2s ease-out",
+                    imageRendering: zoomLevel > 1 ? "high-quality" : "auto"
+                  }} 
+                  className="max-w-full h-auto shadow-2xl rounded-lg origin-top" 
+                />
+              </div>
             ) : isPDF ? (
-              <iframe id="pdf-preview-iframe" src={fileUrl} className="w-full h-200 border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
+              <iframe id="pdf-preview-iframe" src={fileUrl} className="w-full h-[600px] border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
             ) : (
-              <div className="flex flex-col items-center justify-center text-gray-400 gap-4">
+              <div className="flex flex-col items-center justify-center text-gray-400 gap-4 mt-20">
                 <FileText size={64} />
                 <p>Preview not available for this file type.</p>
                 <a href={fileUrl} className="text-blue-400 hover:underline">Download to view</a>

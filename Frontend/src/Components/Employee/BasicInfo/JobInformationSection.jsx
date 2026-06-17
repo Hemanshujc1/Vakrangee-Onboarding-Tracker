@@ -1,8 +1,9 @@
 import React from "react";
 import { formatWorkLocation } from "../../../utils/employeeUtils";
 import FormInputField from "../../UI/FormInputField";
+import { formatDate } from "../../../utils/basicInfoHelpers";
 
-const JobInformationSection = ({ register, formData, formatDate }) => {
+const JobInformationSection = ({ register, formData }) => {
   return (
     <>
       <div className="mt-6">

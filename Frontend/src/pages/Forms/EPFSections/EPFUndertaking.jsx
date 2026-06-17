@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const EPFUndertaking = ({ register, errors }) => {
   return (
@@ -26,7 +27,7 @@ const EPFUndertaking = ({ register, errors }) => {
 
       <div className="flex flex-col sm:flex-row justify-between items-end gap-6">
         <div className="text-sm flex flex-col gap-3">
-          <p>Date: {new Date().toLocaleDateString("en-GB")}</p>
+          <p>Date: {formatToday()}</p>
           <p>
             Place:{" "}
             <input

@@ -1,6 +1,7 @@
 import React from "react";
 import FormInput from "../../../Components/Forms/FormInput";
 import FormSelect from "../../../Components/Forms/FormSelect";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const GratuityEmployeeStatement = ({
   register,
@@ -159,7 +160,7 @@ const GratuityEmployeeStatement = ({
         </div>
         <div className="flex-1">
           <label className="font-bold mr-2">Date:</label>
-          <span>{new Date().toLocaleDateString("en-GB")}</span>
+          <span>{formatToday()}</span>
         </div>
       </div>
       <div>

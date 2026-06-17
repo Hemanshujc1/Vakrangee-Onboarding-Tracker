@@ -165,7 +165,7 @@ export const commonSchemas = {
     .transform((v) => (v === "" ? null : v))
     .matches(
       commonPatterns.mobile,
-      "Enter a valid 10-digit mobile number starting with 6-9",
+      "Enter a valid mobile number",
     )
     .test(
       "no-repeating-digits",
@@ -229,7 +229,7 @@ export const commonSchemas = {
   dateRequired: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(new Date("1900-01-01"), "Invalid Date")
+    .min(new Date("1950-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
     .required("Required"),
@@ -237,14 +237,14 @@ export const commonSchemas = {
   dateOptional: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(new Date("1900-01-01"), "Invalid Date")
-    .max(new Date("3000-01-01"), "Invalid Date")
+    .min(new Date("1950-01-01"), "Invalid Date")
+    .max(new Date("2050-01-01"), "Invalid Date")
     .typeError("Invalid Date"),
 
   datePast: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(new Date("1900-01-01"), "Invalid Date")
+    .min(new Date("1950-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date")
     .required("Required"),
@@ -252,7 +252,7 @@ export const commonSchemas = {
   datePastOptional: Yup.date()
     .nullable()
     .transform((value, originalValue) => (originalValue === "" ? null : value))
-    .min(new Date("1900-01-01"), "Invalid Date")
+    .min(new Date("1950-01-01"), "Invalid Date")
     .max(new Date(), "Date cannot be in the future")
     .typeError("Invalid Date"),
 

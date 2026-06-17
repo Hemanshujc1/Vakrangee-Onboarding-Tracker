@@ -11,7 +11,7 @@ export const commonPatterns = {
   license: /^[A-Z]{2}[-\s]?\d{2}[-\s]?\d{4}[-\s]?\d{7}$/,
   bankAccount: /^\d{9,18}$/,
   email:
-    /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._]{0,62}[A-Za-z0-9]@(?:gmail|vakrangee|admin|hotmail|yahoo|zohomail|outlook|live|icloud|aol|proton|protonmail|rediff|zoho)\.(?:com|co\.in|io|co|in)$/,
+    /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._]{0,62}[A-Za-z0-9]@(?:gmail|example|vakrangee|admin|hotmail|yahoo|zohomail|outlook|live|icloud|aol|proton|protonmail|rediff|zoho)\.(?:com|co\.in|io|co|in)$/,
   // Min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char, no spaces
   password:
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])\S{8,}$/,

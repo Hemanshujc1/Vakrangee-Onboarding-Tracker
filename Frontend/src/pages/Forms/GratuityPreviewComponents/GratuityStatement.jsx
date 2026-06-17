@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const GratuityStatement = ({ formData, formatDate, signaturePreview }) => {
   return (
@@ -125,7 +126,7 @@ const GratuityStatement = ({ formData, formatDate, signaturePreview }) => {
           <div className="flex items-end gap-2">
             <span>Date:</span>
             <span className="flex-1 border-b border-black font-bold h-6">
-              {new Date().toLocaleDateString("en-GB")}
+              {formatToday()}
             </span>
           </div>
         </div>

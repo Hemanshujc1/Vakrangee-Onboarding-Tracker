@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, CheckSquare, Square, Info, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 
 const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
@@ -294,15 +295,6 @@ const DownloadSelectionModal = ({ isOpen, onClose, employee, documents }) => {
         {status}
       </span>
     );
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
   };
 
   return (

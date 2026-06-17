@@ -11,7 +11,7 @@ import FinancialHRDocumentsSection from "../../Components/Employee/BasicInfo/Fin
 import SignatureSection from "../../Components/Employee/BasicInfo/SignatureSection";
 import AccordionSection from "../../Components/Employee/BasicInfo/AccordionSection";
 import { useBasicInformation } from "./hooks/useBasicInformation";
-import { formatDate } from "../../utils/basicInfoHelpers";
+import { getMissingProfileFields } from "../../utils/basicInfoHelpers";
 
 const BasicInformation = () => {
   const {
@@ -96,10 +96,36 @@ const BasicInformation = () => {
             setIsEditing(true);
             setTimeout(() => {
               trigger();
-              showAlert(
-                "Please fill all the required fields and upload required documents to submit.",
-                { type: "error" }
-              );
+              
+              const missingData = getMissingProfileFields({
+                formData,
+                documents,
+                previewImage,
+                previewSignature,
+                panVerified,
+              });
+
+              if (missingData.length > 0) {
+                const messageNode = (
+                  <div className="text-sm text-left">
+                    <p className="font-semibold mb-2">Please complete the following missing items to submit:</p>
+                    <ul className="list-disc pl-5 space-y-2 max-h-[60vh] overflow-y-auto">
+                      {missingData.map((section, idx) => (
+                        <li key={idx}>
+                          <span className="font-semibold text-gray-800">{section.section}:</span>
+                          <span className="ml-1 text-gray-600">{section.items.join(", ")}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+                showAlert(messageNode, { type: "error", title: "Incomplete Profile" });
+              } else {
+                showAlert(
+                  "Please fill all the required fields and upload required documents to submit.",
+                  { type: "error" }
+                );
+              }
             }, 100);
           }}
         />
@@ -147,7 +173,6 @@ const BasicInformation = () => {
                 errors={errors}
                 isEditing={isEditing}
                 formData={formData}
-                formatDate={formatDate}
                 getDocStatus={getDocStatus}
                 uploadingState={uploadingState}
                 handleUpload={handleUpload}
@@ -171,7 +196,6 @@ const BasicInformation = () => {
               <JobInformationSection
                 register={register}
                 formData={{ ...formData, work_location: workLocation }}
-                formatDate={formatDate}
                 verificationStatus={verificationStatus}
               />
             </AccordionSection>

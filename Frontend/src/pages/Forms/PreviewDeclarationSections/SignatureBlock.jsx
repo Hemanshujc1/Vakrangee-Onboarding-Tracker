@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const SignatureBlock = ({ formData, signaturePreview }) => {
   return (
@@ -43,7 +44,7 @@ const SignatureBlock = ({ formData, signaturePreview }) => {
       <div className="flex flex-col md:flex-row md:items-center print:flex-row print:items-center gap-2 md:gap-4 mt-8">
         <span className="min-w-30 w-32">Date:</span>
         <span className="font-semibold px-0 md:px-4 flex-1 w-full md:w-auto">
-          {new Date().toLocaleDateString("en-GB")}
+          {formatToday()}
         </span>
       </div>
     </div>

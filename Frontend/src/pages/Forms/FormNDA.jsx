@@ -6,6 +6,7 @@ import useOnboardingActions from "../../hooks/useOnboardingActions";
 import EmployeeParty from "./NDASections/EmployeeParty";
 import CompanyParty from "./NDASections/CompanyParty";
 import TermsAndConditions from "./NDASections/TermsAndConditions";
+import { formatToday } from "../../utils/basicInfoHelpers";
 
 const FormNDA = () => {
   const {
@@ -61,7 +62,7 @@ const FormNDA = () => {
             The “Agreement” is made effective from:
           </p>
           <p className="font-semibold mt-1">
-            Date: {new Date().toLocaleDateString("en-GB")}
+            Date: {formatToday()}
           </p>
         </div>
       </div>

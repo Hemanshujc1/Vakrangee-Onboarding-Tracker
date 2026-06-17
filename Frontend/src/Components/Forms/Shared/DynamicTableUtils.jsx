@@ -46,13 +46,14 @@ export const DynamicTable = ({
   </div>
 );
 
-export const TableInput = ({ register, placeholder, type = "text", error }) => (
+export const TableInput = ({ register, placeholder, type = "text", error, ...props }) => (
   <td className="border border-gray-300 p-1 align-top">
     <input
       {...register}
       type={type}
       placeholder={placeholder}
       className="w-full outline-none p-1 bg-transparent"
+      {...props}
     />
     {error && (
       <span className="text-red-500 text-xs block px-1">{error.message}</span>

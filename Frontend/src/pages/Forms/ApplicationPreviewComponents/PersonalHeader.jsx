@@ -1,5 +1,6 @@
 import React from "react";
 import { DocumentHeader } from "../../../Components/Forms/Shared";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const PersonalHeader = ({ autoFillData }) => {
   return (
@@ -27,7 +28,7 @@ const PersonalHeader = ({ autoFillData }) => {
           Personal Information: -
         </span>
         <span className="md:float-right print:float-right font-bold text-sm">
-          Date: {new Date().toLocaleDateString("en-GB")}
+          Date: {formatToday()}
         </span>
       </div>
     </>

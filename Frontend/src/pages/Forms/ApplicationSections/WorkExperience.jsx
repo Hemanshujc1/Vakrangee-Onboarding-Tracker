@@ -44,8 +44,16 @@ const WorkExperience = ({
                   <td className="p-0 w-[30%] relative">
                     <input
                       {...register(`workExperience.0.turnover`)}
-                      type="number"
-                      className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.turnover ? "bg-red-50" : ""}`}
+                      type="text"
+                      inputMode="numeric"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 8);
+                      }}
+                      className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${
+                        errors.workExperience?.[0]?.turnover ? "bg-red-50" : ""
+                      }`}
                     />
                     {errors.workExperience?.[0]?.turnover && (
                       <span className="absolute -bottom-4 left-0 text-[10px] text-red-500 bg-white px-1 z-10">
@@ -71,6 +79,11 @@ const WorkExperience = ({
                     <input
                       {...register(`workExperience.0.noOfEmployees`)}
                       type="number"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 5);
+                      }}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.noOfEmployees ? "bg-red-50" : ""}`}
                     />
                     {errors.workExperience?.[0]?.noOfEmployees && (
@@ -97,6 +110,11 @@ const WorkExperience = ({
                     <input
                       {...register(`workExperience.0.joiningCTC`)}
                       type="number"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 8);
+                      }}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.joiningCTC ? "bg-red-50" : ""}`}
                     />
                     {errors.workExperience?.[0]?.joiningCTC && (
@@ -122,6 +140,8 @@ const WorkExperience = ({
                   <td className="p-0 relative">
                     <input
                       type="date"
+                      min="1950-01-01"
+                      max={new Date().toISOString().split("T")[0]}
                       {...register(`workExperience.0.joiningDate`)}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.joiningDate ? "bg-red-50" : ""}`}
                     />
@@ -149,6 +169,11 @@ const WorkExperience = ({
                     <input
                       {...register(`workExperience.0.currentCTC`)}
                       type="number"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 8);
+                      }}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.currentCTC ? "bg-red-50" : ""}`}
                     />
                     {errors.workExperience?.[0]?.currentCTC && (
@@ -166,6 +191,11 @@ const WorkExperience = ({
                     <input
                       {...register(`workExperience.0.expectedSalary`)}
                       type="number"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 8);
+                      }}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.expectedSalary ? "bg-red-50" : ""}`}
                     />
                     {errors.workExperience?.[0]?.expectedSalary && (
@@ -181,6 +211,11 @@ const WorkExperience = ({
                     <input
                       {...register(`workExperience.0.noticePeriod`)}
                       type="number"
+                      onInput={(e) => {
+                        e.target.value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 3);
+                      }}
                       className={`w-full h-full p-2 outline-none absolute inset-0 bg-transparent ${errors.workExperience?.[0]?.noticePeriod ? "bg-red-50" : ""}`}
                     />
                     {errors.workExperience?.[0]?.noticePeriod && (
@@ -270,6 +305,7 @@ const WorkExperience = ({
                   <TableInput
                     register={register(`employmentHistory.${index}.fromDate`)}
                     type="date"
+                    max={new Date().toISOString().split("T")[0]}
                     error={errors.employmentHistory?.[index]?.fromDate}
                     required
                   />
@@ -288,7 +324,13 @@ const WorkExperience = ({
                   />
                   <TableInput
                     register={register(`employmentHistory.${index}.ctc`)}
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    onInput={(e) => {
+                      e.target.value = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 8);
+                    }}
                     error={errors.employmentHistory?.[index]?.ctc}
                   />
                   <TableInput

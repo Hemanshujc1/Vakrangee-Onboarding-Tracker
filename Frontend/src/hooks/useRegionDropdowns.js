@@ -128,6 +128,7 @@ export const useRegionDropdowns = (formData, handleInputChange) => {
     cities,
     loadingRegions,
     selectedStateId,
+    selectedDistrictId,
     onStateChange,
     onDistrictChange,
     onCityChange,

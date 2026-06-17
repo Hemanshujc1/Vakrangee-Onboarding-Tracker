@@ -18,6 +18,7 @@ import {
 import CollapsibleSection from "../UI/CollapsibleSection";
 import InfoField from "../UI/InfoField";
 import { useToggleSections } from "../../hooks/useToggleSections";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
   const [openSections, toggleSection] = useToggleSections({
@@ -67,13 +68,7 @@ const PersonalInfoGrid = ({ employee, isEditing, editForm, setEditForm }) => {
         <InfoField
           icon={CalendarDays}
           label="Date of Birth (as per PAN)"
-          value={
-            employee.date_of_birth || employee.dateOfBirth
-              ? new Date(
-                  employee.date_of_birth || employee.dateOfBirth,
-                ).toLocaleDateString("en-GB")
-              : null
-          }
+          value={formatDate(employee.date_of_birth || employee.dateOfBirth)}
         />
         <InfoField
           icon={Activity}

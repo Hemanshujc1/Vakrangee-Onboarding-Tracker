@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const TDSEmployeeDetails = ({ formData, signaturePreview }) => {
   return (
@@ -43,7 +44,7 @@ const TDSEmployeeDetails = ({ formData, signaturePreview }) => {
         </div>
         <div>
           <span className="font-bold min-w-37.5 inline-block">Date:</span>
-          {new Date().toLocaleDateString()}
+          {formatToday()}
         </div>
 
         {/* Signature Block */}

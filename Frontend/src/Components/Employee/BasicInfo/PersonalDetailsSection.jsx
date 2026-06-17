@@ -1,13 +1,13 @@
 import React from "react";
 import FormInputField from "../../UI/FormInputField";
 import FormSelectField from "../../UI/FormSelectField";
+import { formatForDateInput } from "../../../utils/basicInfoHelpers";
 
 const PersonalDetailsSection = ({
   register,
   errors,
   isEditing,
   formData,
-  formatDate,
 }) => {
   const eighteenYearsAgo = new Date();
   eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
@@ -102,7 +102,7 @@ const PersonalDetailsSection = ({
         register={register}
         errors={errors}
         isEditing={isEditing}
-        value={formatDate(formData.date_of_birth)}
+        value={formatForDateInput(formData.date_of_birth)}
         type="date"
         required={true}
         max={maxDate}

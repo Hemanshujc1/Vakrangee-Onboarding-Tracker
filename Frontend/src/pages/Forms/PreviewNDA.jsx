@@ -6,6 +6,7 @@ import PreviewLayout from "../../Components/Forms/Shared/PreviewLayout";
 import Parties from "./PreviewNDASections/Parties";
 import TermsAndConditions from "./PreviewNDASections/TermsAndConditions";
 import Signatures from "./PreviewNDASections/Signatures";
+import { formatToday } from "../../utils/basicInfoHelpers";
 
 const PreviewNDA = () => {
   const componentRef = useRef();
@@ -125,7 +126,7 @@ const PreviewNDA = () => {
       {/* 3. Effective Date */}
       <div className="mb-6 text-sm">
         <p className="mb-1">The "Agreement" is made effective from:</p>
-        <p>Date: {new Date().toLocaleDateString()}</p>
+        <p>Date: {formatToday()}</p>
       </div>
 
       <Parties formData={formData} />

@@ -1,4 +1,5 @@
 import React from "react";
+import { formatDate } from "../../../utils/basicInfoHelpers";
 
 const SignatureSection = ({ data, derivedSignature }) => {
   return (
@@ -16,7 +17,7 @@ const SignatureSection = ({ data, derivedSignature }) => {
       <div className="flex items-end gap-2 w-64">
         <span className="font-bold shrink-0 w-28 whitespace-nowrap text-right pr-2">Date :</span>
         <div className="flex-1 border-b border-black border-dotted h-6 text-center leading-none">
-          {data?.date || data?.created_at ? new Date(data.date || data.created_at).toLocaleDateString() : ""}
+          {data?.date || data?.created_at ? formatDate(data.date || data.created_at) : ""}
         </div>
       </div>
     </div>

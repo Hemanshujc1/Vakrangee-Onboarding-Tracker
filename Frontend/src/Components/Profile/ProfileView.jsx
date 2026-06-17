@@ -1,4 +1,5 @@
 import React from "react";
+import { formatDate } from "../../utils/basicInfoHelpers";
 import { formatWorkLocation } from "../../utils/employeeUtils";
 
 const ProfileView = ({ formData, companyEmail, fullAddress, onEdit }) => {
@@ -71,9 +72,7 @@ const ProfileView = ({ formData, companyEmail, fullAddress, onEdit }) => {
             Date of Birth
           </label>
           <p className="font-medium text-gray-800">
-            {formData.date_of_birth
-              ? new Date(formData.date_of_birth).toLocaleDateString("en-GB")
-              : "-"}
+            {formatDate(formData.date_of_birth)}
           </p>
         </div>
         <div>

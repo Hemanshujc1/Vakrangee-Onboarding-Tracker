@@ -25,6 +25,7 @@ const SearchableSelect = ({
   name,
   allowCustom = false,
   showSearch = true,
+  error,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,7 +72,7 @@ const SearchableSelect = ({
   // Find the label to display based on the current value (could be name or id)
   const displayLabel =
     options.find(
-      (opt) => String(opt.id) === String(value) || opt.name === value,
+      (opt) => String(opt.id) === String(value) || String(opt.name).toLowerCase() === String(value).toLowerCase(),
     )?.name || value;
 
   const handleToggle = () => {
@@ -125,10 +126,12 @@ const SearchableSelect = ({
 
       <div
         onClick={handleToggle}
-        className={`w-full px-4 py-2 rounded-xl border border-gray-200 bg-white flex items-center justify-between transition-all ${
+        className={`w-full px-4 py-2 rounded-xl border bg-white flex items-center justify-between transition-all ${
           isOpen
             ? "border-blue-500 ring-2 ring-blue-100"
-            : "hover:border-gray-300"
+            : error
+            ? "border-red-500"
+            : "border-gray-200 hover:border-gray-300"
         } ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50" : "cursor-pointer"}`}
       >
         {allowCustom && !showSearch ? (
@@ -229,6 +232,7 @@ const SearchableSelect = ({
             </div>
           </div>
         )}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
   );
 };

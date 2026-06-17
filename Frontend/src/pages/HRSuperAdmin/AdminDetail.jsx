@@ -6,6 +6,7 @@ import EmployeeFilters from "../../Components/Shared/EmployeeFilters";
 import ExportModal from "../../Components/Shared/ExportModal";
 import { getUniqueOptions, getEmployeeStatus } from "../../utils/employeeUtils";
 import { useAlert } from "../../context/AlertContext";
+import { formatDate, parseWorkLocation } from "../../utils/basicInfoHelpers";
 import {
   AdminProfileHeader,
   AdminProfileCard,
@@ -31,7 +32,9 @@ const AdminDetail = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
+    email: "",
     location: "",
+    work_location: { state: "", district: "", city: "" },
     jobTitle: "",
     designation_id: "",
     department: "",
@@ -77,7 +80,9 @@ const AdminDetail = () => {
       const { data } = await axios.get(`/api/employees/${id}`, config);
       setAdmin(data);
       setEditForm({
+        email: data.email || "",
         location: data.location || "",
+        work_location: parseWorkLocation(data.work_location, data.location),
         jobTitle: data.jobTitle || "",
         designation_id: data.designation_id || "",
         department: data.department || "",
@@ -348,13 +353,9 @@ const AdminDetail = () => {
         options={{ statuses, departments, jobTitles, locations }}
         data={assignedEmployees.map((emp) => ({
           ...emp,
-          joiningDate: emp.dateOfJoining
-            ? new Date(emp.dateOfJoining).toLocaleDateString("en-GB")
-            : "-",
+          joiningDate: formatDate(emp.dateOfJoining),
           status: getEmployeeStatus(emp),
-          assignedDate: emp.assignedDate
-            ? new Date(emp.assignedDate).toLocaleDateString("en-GB")
-            : "-",
+          assignedDate: formatDate(emp.assignedDate),
         }))}
         fileName={`Assigned_Employees_${admin.firstName}_${admin.lastName}`}
         formatOptions={{

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import { MANDATORY_DOC_KEYS } from "../../config/documentConfig";
+import { parseWorkLocation } from "../../utils/basicInfoHelpers";
 
 // ---------------------------------------------------------------------------
 // Pure computed helpers
@@ -63,8 +64,8 @@ const useEmployeeDetail = () => {
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
 
   const [editForm, setEditForm] = useState({
-    department: "", department_id: "", jobTitle: "", designation_id: "",
-    location: "", dateOfJoining: "", personalEmail: "", onboardingHrId: "",
+    employeeId: "", department: "", department_id: "", jobTitle: "", designation_id: "",
+    location: "", work_location: { state: "", district: "", city: "" }, dateOfJoining: "", personalEmail: "", onboardingHrId: "",
     band_id: "", band_name: "", band_level_id: "", level_name: "",
   });
 
@@ -123,14 +124,16 @@ const useEmployeeDetail = () => {
 
       setEmployee({ ...empData, ...formData, ...mappedAddressFields });
       setEditForm({
+        employeeId: empData.employee_id || empData.employeeId || "",
         department: empData.department || "",
         department_id: empData.department_id || "",
         jobTitle: empData.jobTitle || "",
         designation_id: empData.designation_id || "",
         location: empData.location || "",
+        work_location: parseWorkLocation(empData.work_location, empData.location),
         dateOfJoining: empData.dateOfJoining || "",
         personalEmail: empData.personalEmail || "",
-        onboardingHrId: empData.onboardingHrId || "",
+        onboardingHrId: empData.assignedHR?.id || empData.onboardingHrId || "",
         band_id: empData.band_id || "",
         band_name: empData.band_name || "",
         band_level_id: empData.band_level_id || "",
@@ -176,6 +179,7 @@ const useEmployeeDetail = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload = {
         ...editForm,
+        employee_id: editForm.employeeId,
         department_id: editForm.department_id === "" ? null : editForm.department_id,
         designation_id: editForm.designation_id === "" ? null : editForm.designation_id,
         onboardingHrId: editForm.onboardingHrId === "" ? null : editForm.onboardingHrId,
@@ -183,6 +187,7 @@ const useEmployeeDetail = () => {
         band_level_id: editForm.band_level_id === "" ? null : Number(editForm.band_level_id),
         band_name: editForm.band_name || null,
         level_name: editForm.level_name || null,
+        work_location: editForm.work_location,
       };
       await axios.put(`/api/employees/${id}`, payload, config);
       await fetchEmployeeDetails();
@@ -383,14 +388,16 @@ const useEmployeeDetail = () => {
     setIsEditing(false);
     if (employee) {
       setEditForm({
+        employeeId: employee.employee_id || employee.employeeId || "",
         department: employee.department || "",
         department_id: employee.department_id || "",
         jobTitle: employee.jobTitle || "",
         designation_id: employee.designation_id || "",
         location: employee.location || "",
+        work_location: parseWorkLocation(employee.work_location, employee.location),
         dateOfJoining: employee.dateOfJoining || "",
         personalEmail: employee.personalEmail || "",
-        onboardingHrId: employee.onboardingHrId || "",
+        onboardingHrId: employee.assignedHR?.id || employee.onboardingHrId || "",
         band_id: employee.band_id || "",
         band_name: employee.band_name || "",
         band_level_id: employee.band_level_id || "",

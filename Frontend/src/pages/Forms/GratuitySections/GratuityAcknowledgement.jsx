@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const GratuityAcknowledgement = () => (
   <div className="mt-12 mb-5 pt-6 border-t-4 border-gray-900 page-break-inside-avoid">
@@ -11,7 +12,7 @@ const GratuityAcknowledgement = () => (
     </p>
     <div className="flex justify-between items-end mt-12">
       <div>
-        <p>Date: {new Date().toLocaleDateString("en-GB")}</p>
+        <p>Date: {formatToday()}</p>
       </div>
     </div>
   </div>

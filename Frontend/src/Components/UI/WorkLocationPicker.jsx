@@ -3,7 +3,7 @@ import SearchableSelect from "./SearchableSelect";
 
 const DROPDOWN_BASE_URL = import.meta.env.VITE_DROPDOWN_BASE_URL;
 
-const WorkLocationPicker = ({ location, setLocation }) => {
+const WorkLocationPicker = ({ location, setLocation, layout = "vertical", errors = {} }) => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
@@ -20,7 +20,7 @@ const WorkLocationPicker = ({ location, setLocation }) => {
         if (data?.status) {
           setStates(data.data);
           if (location.state) {
-            const foundState = data.data.find((s) => s.state_name === location.state);
+            const foundState = data.data.find((s) => s.state_name.toLowerCase() === String(location.state).toLowerCase());
             if (foundState) setSelectedStateId(foundState.lg_state_id);
           }
         }
@@ -44,7 +44,7 @@ const WorkLocationPicker = ({ location, setLocation }) => {
         if (data?.status) {
           setDistricts(data.data);
           if (location.district) {
-            const foundDist = data.data.find((d) => d.district_name === location.district);
+            const foundDist = data.data.find((d) => d.district_name.toLowerCase() === String(location.district).toLowerCase());
             if (foundDist) setSelectedDistrictId(foundDist.district_id);
           }
         }
@@ -100,7 +100,7 @@ const WorkLocationPicker = ({ location, setLocation }) => {
       <h3 className="text-sm font-medium text-gray-700">
         Work Location <span className="text-red-500">*</span>
       </h3>
-      <div className="grid grid-cols-1 gap-4">
+      <div className={`grid gap-4 ${layout === "horizontal" ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"}`}>
         <SearchableSelect
           label="State"
           name="state"
@@ -112,6 +112,7 @@ const WorkLocationPicker = ({ location, setLocation }) => {
           onChange={(e) => handleStateChange(e.target.value, e.target.option?.name || "")}
           placeholder="State"
           required
+          error={errors["work_location.state"]}
         />
         <SearchableSelect
           label="District"
@@ -125,6 +126,7 @@ const WorkLocationPicker = ({ location, setLocation }) => {
           placeholder="District"
           disabled={!selectedStateId || loadingRegions}
           required
+          error={errors["work_location.district"]}
         />
         <SearchableSelect
           label="City"
@@ -138,10 +140,12 @@ const WorkLocationPicker = ({ location, setLocation }) => {
           placeholder="City"
           disabled={!selectedDistrictId || loadingRegions}
           required
+          error={errors["work_location.city"]}
         />
       </div>
     </div>
   );
 };
+
 
 export default WorkLocationPicker;

@@ -1,4 +1,5 @@
 import React from "react";
+import { formatDate } from "../../../utils/basicInfoHelpers";
 
 export const PrintText = ({ value = "", className = "" }) => {
   return (
@@ -26,21 +27,15 @@ export const PrintSectionHeader = ({ title }) => (
 );
 
 export const PrintDateBlock = ({ date }) => {
-  // Expects YYYY-MM-DD or ISO string
   if (!date)
     return (
       <div className="border-b border-gray-800 px-2 py-1 min-w-25 text-center">
         DD/MM/YYYY
       </div>
     );
-  const d = new Date(date);
-  const day = d.getDate().toString().padStart(2, "0");
-  const month = (d.getMonth() + 1).toString().padStart(2, "0");
-  const year = d.getFullYear().toString();
-
   return (
     <div className="font-mono border-b border-gray-800 px-2 py-1 min-w-25 text-center">
-      {day}/{month}/{year}
+      {formatDate(date)}
     </div>
   );
 };

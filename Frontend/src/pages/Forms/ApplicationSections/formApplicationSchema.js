@@ -1,5 +1,9 @@
 import * as Yup from "yup";
-import { commonSchemas, readOnlySchemas, createSignatureSchema } from "../../../utils/validations";
+import {
+  commonSchemas,
+  readOnlySchemas,
+  createSignatureSchema,
+} from "../../../utils/validations";
 
 export const getValidationSchema = (hasSavedSignature) =>
   Yup.object().shape({
@@ -18,7 +22,7 @@ export const getValidationSchema = (hasSavedSignature) =>
     dob: readOnlySchemas.datePast
       .max(
         new Date(new Date().setFullYear(new Date().getFullYear() - 18)),
-        "Must be 18 years or older"
+        "Must be 18 years or older",
       )
       .required("Date of Birth is required"),
 
@@ -85,15 +89,15 @@ export const getValidationSchema = (hasSavedSignature) =>
           qualification: commonSchemas.stringRequired,
           institute: commonSchemas.stringRequired,
           year: commonSchemas.numberOptional
-            .min(1900)
-            .max(new Date().getFullYear())
+            .min(1900, "Enter Valid Date")
+            .max(new Date().getFullYear(), "Enter Valid Date")
             .required("Required"),
           percentage: commonSchemas.numberOptional
             .min(0)
             .max(100)
             .required("Required"),
           location: Yup.string(),
-        })
+        }),
       ),
 
     otherTraining: Yup.array()
@@ -104,7 +108,7 @@ export const getValidationSchema = (hasSavedSignature) =>
           location: Yup.string(),
           duration: Yup.string(),
           details: Yup.string(),
-        })
+        }),
       ),
 
     achievements: Yup.array()
@@ -112,10 +116,10 @@ export const getValidationSchema = (hasSavedSignature) =>
       .of(
         Yup.object().shape({
           year: commonSchemas.numberOptional
-            .min(1900)
-            .max(new Date().getFullYear()),
+            .min(1900, "Enter Valid Date")
+            .max(new Date().getFullYear(), "Enter Valid Date"),
           details: Yup.string(),
-        })
+        }),
       ),
     employmentHistory: Yup.array()
       .max(5)
@@ -127,7 +131,7 @@ export const getValidationSchema = (hasSavedSignature) =>
           toDate: commonSchemas.dateOptional,
           ctc: commonSchemas.currency,
           reportingOfficer: Yup.string(),
-        })
+        }),
       ),
     workExperience: Yup.array().of(
       Yup.object().shape({
@@ -139,8 +143,8 @@ export const getValidationSchema = (hasSavedSignature) =>
         currentCTC: commonSchemas.currency.optional(),
         expectedSalary: commonSchemas.currency.optional(),
         noticePeriod: commonSchemas.numberOptional,
-        joiningDate: commonSchemas.dateOptional,
-      })
+        joiningDate: commonSchemas.datePastOptional.min(new Date("1950-01-01"), "Enter Valid Datw"),
+      }),
     ),
     references: Yup.array()
       .max(2)
@@ -151,7 +155,7 @@ export const getValidationSchema = (hasSavedSignature) =>
           contact: commonSchemas.mobileOptional,
           position: Yup.string(),
           address: commonSchemas.addressStringOptional,
-        })
+        }),
       ),
 
     family: Yup.array().of(
@@ -160,7 +164,7 @@ export const getValidationSchema = (hasSavedSignature) =>
         relationship: commonSchemas.stringOptional,
         age: commonSchemas.age.optional(),
         occupation: Yup.string(),
-      })
+      }),
     ),
 
     languages: Yup.array()
@@ -171,7 +175,7 @@ export const getValidationSchema = (hasSavedSignature) =>
           speak: Yup.boolean(),
           read: Yup.boolean(),
           write: Yup.boolean(),
-        })
+        }),
       ),
 
     // Signature

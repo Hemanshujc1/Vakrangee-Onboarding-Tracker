@@ -2,6 +2,7 @@ import React from 'react';
 import { Trash2, RotateCcw } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import { getEmployeeStatus } from '../../utils/employeeUtils';
+import { formatDate } from '../../utils/basicInfoHelpers';
 
 const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssignedDate = false, emptyMessage = "No employees found." }) => {
   return (
@@ -58,14 +59,14 @@ const EmployeeTable = ({ employees, onRowClick, onDelete, onActivate, showAssign
                       {emp.location || "-"}
                     </td>
                     <td className="hidden xl:table-cell px-4 py-4 text-gray-600">
-                      {emp.dateOfJoining ? new Date(emp.dateOfJoining).toLocaleDateString('en-GB') : "-"}
+                      {formatDate(emp.dateOfJoining)}
                     </td>
                     <td className="px-0 py-4">
                       <StatusBadge status={statusText} />
                     </td>
                     <td className="hidden md:table-cell px-4 py-4 text-gray-600">
-                      {showAssignedDate 
-                        ? (emp.assignedDate ? new Date(emp.assignedDate).toLocaleDateString('en-GB') : "-")
+                      {showAssignedDate
+                        ? formatDate(emp.assignedDate)
                         : (emp.assignedHRName || "-")}
                     </td>
                     {(onDelete || onActivate) && (

@@ -6,6 +6,7 @@ import PreviewLayout from "../../Components/Forms/Shared/PreviewLayout";
 import PersonalDetails from "./PreviewMediclaimSections/PersonalDetails";
 import FamilyDetails from "./PreviewMediclaimSections/FamilyDetails";
 import SignatureSection from "./PreviewMediclaimSections/SignatureSection";
+import { formatDate } from "../../utils/basicInfoHelpers";
 
 const PreviewMediclaim = () => {
   const componentRef = useRef();
@@ -110,17 +111,6 @@ const PreviewMediclaim = () => {
       await showAlert("Failed to connect to server.", { type: "error" });
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (dateVal) => {
-    if (!dateVal) return "";
-    try {
-      if (typeof dateVal === "string") return dateVal;
-      if (dateVal instanceof Date) return dateVal.toLocaleDateString();
-      return new Date(dateVal).toLocaleDateString();
-    } catch (e) {
-      return "";
     }
   };
 

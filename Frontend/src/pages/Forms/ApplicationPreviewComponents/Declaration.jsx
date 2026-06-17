@@ -1,4 +1,5 @@
 import React from "react";
+import { formatToday } from "../../../utils/basicInfoHelpers";
 
 const Declaration = ({ signaturePreview, formData, autoFillData }) => {
   return (
@@ -37,7 +38,7 @@ const Declaration = ({ signaturePreview, formData, autoFillData }) => {
             <div className="font-bold">Signature of the candidate</div>
           </div>
           <div className="font-bold mb-4 md:mr-20 print:mr-20">
-            Date: {new Date().toLocaleDateString("en-GB")}
+            Date: {formatToday()}
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { readOnlySchemas, createSignatureSchema } from "../../utils/validations";
+import { readOnlySchemas, createSignatureSchema, commonSchemas } from "../../utils/validations";
 import { formatDateForAPI } from "../../utils/formUtils";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
@@ -75,7 +75,7 @@ const useFormMediclaim = () => {
         pincode: readOnlySchemas.pincode,
         dependents: Yup.array().when("marital_status", {
           is: "Married",
-          then: () =>
+          then: (schema) =>
             schema
               .min(1, "Please add at least one dependent (Spouse is mandatory).")
               .test(
@@ -89,20 +89,20 @@ const useFormMediclaim = () => {
                   relationship: commonSchemas.stringRequired,
                   age: commonSchemas.age.when("relationship", {
                     is: "Spouse",
-                    then: () => schema.min(18, "Spouse must be 18+").required("Required"),
-                    otherwise: () => schema.required("Required"),
+                    then: (schema) => schema.min(18, "Spouse must be 18+").required("Required"),
+                    otherwise: (schema) => schema.required("Required"),
                   }),
                   dob: commonSchemas.datePast.when("relationship", {
                     is: "Spouse",
-                    then: () => schema.max(
+                    then: (schema) => schema.max(
                       new Date(new Date().setFullYear(new Date().getFullYear() - 18)), 
                       "Spouse must be 18+"
                     ).required("DOB is required"),
-                    otherwise: () => schema.required("DOB is required"),
+                    otherwise: (schema) => schema.required("DOB is required"),
                   }),
                 })
               ),
-          otherwise: () => schema.notRequired().nullable(),
+          otherwise: (schema) => schema.notRequired().nullable(),
         }),
         signature: createSignatureSchema(hasSavedSignature),
       }),

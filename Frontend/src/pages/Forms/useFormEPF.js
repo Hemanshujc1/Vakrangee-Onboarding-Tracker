@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import axios from "axios";
-import { createSignatureSchema, readOnlySchemas } from "../../utils/validations";
+import { createSignatureSchema, readOnlySchemas, commonSchemas } from "../../utils/validations";
 import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
 import useOnboardingForm from "../../hooks/useOnboardingForm";
 
@@ -56,7 +56,7 @@ const useFormEPF = () => {
         uan_number: Yup.string().when(["prev_epf_member", "prev_eps_member"], {
           is: (epf, eps) => epf === "Yes" || eps === "Yes",
           then: () => commonSchemas.uan.required("UAN Required"),
-          otherwise: () => schema.notRequired().nullable(),
+          otherwise: (schema) => schema.notRequired().nullable(),
         }),
         prev_pf_number: Yup.string().nullable().optional(),
         date_of_exit_prev: commonSchemas.datePastOptional

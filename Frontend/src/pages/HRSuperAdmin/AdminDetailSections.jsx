@@ -1,7 +1,9 @@
 import React from "react";
 import { ArrowLeft, Mail, Phone, MapPin, Building, Briefcase, Users, Pencil, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
 import SearchableSelect from "../../Components/UI/SearchableSelect";
+import WorkLocationPicker from "../../Components/UI/WorkLocationPicker";
 import EmployeeTable from "../../Components/Shared/EmployeeTable";
+import { parseWorkLocation } from "../../utils/basicInfoHelpers";
 
 // ---------------------------------------------------------------------------
 // AdminProfileHeader — back button + page title + account status badge
@@ -141,20 +143,36 @@ export const AdminProfileCard = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { icon: Mail, label: "Company Email", value: admin.email },
-            { icon: Phone, label: "Phone", value: admin.phone || "N/A" },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-center gap-3 text-gray-600">
-              <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
-                <Icon size={18} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">{label}</p>
-                <p className="font-medium text-sm">{value}</p>
-              </div>
+          <div className="flex items-center gap-3 text-gray-600">
+            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6] shrink-0">
+              <Mail size={18} />
             </div>
-          ))}
+            <div className="w-full">
+              <p className="text-xs text-gray-400">Company Email</p>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  className="border border-gray-300 rounded-xl px-4 py-2 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
+                />
+              ) : (
+                <p className="font-medium text-sm">{admin.email || "N/A"}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-gray-600">
+            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6] shrink-0">
+              <Phone size={18} />
+            </div>
+            <div className="w-full">
+              <p className="text-xs text-gray-400">Phone</p>
+              <p className="font-medium text-sm">{admin.phone || "N/A"}</p>
+            </div>
+          </div>
 
           <div className="flex items-center gap-3 text-gray-600">
             <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
@@ -180,21 +198,25 @@ export const AdminProfileCard = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-gray-600">
-            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+          <div className={`flex items-start gap-3 text-gray-600 ${isEditing ? "col-span-1 md:col-span-3" : ""}`}>
+            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6] shrink-0">
               <MapPin size={18} />
             </div>
             <div className="w-full">
               <p className="text-xs text-gray-400">Location</p>
               {isEditing ? (
-                <input
-                  type="text"
-                  value={editForm.location}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, location: e.target.value })
-                  }
-                  className="border border-gray-300 rounded-xl px-4 py-2 text-sm w-full mt-1 focus:outline-none focus:border-[#2C9DE6]"
-                />
+                <div className="mt-1">
+                  <WorkLocationPicker
+                    location={editForm.work_location || { state: "", district: "", city: "" }}
+                    setLocation={(newLoc) => {
+                      setEditForm({
+                        ...editForm,
+                        work_location: typeof newLoc === "function" ? newLoc(editForm.work_location || {}) : newLoc,
+                      });
+                    }}
+                    layout="horizontal"
+                  />
+                </div>
               ) : (
                 <p className="font-medium text-sm">{admin.location || "N/A"}</p>
               )}
@@ -207,7 +229,9 @@ export const AdminProfileCard = ({
                 onClick={() => {
                   setIsEditing(false);
                   setEditForm({
+                    email: admin.email || "",
                     location: admin.location || "",
+                    work_location: parseWorkLocation(admin.work_location, admin.location),
                     jobTitle: admin.jobTitle || "",
                     designation_id: admin.designation_id || "",
                     department: admin.department || "",
