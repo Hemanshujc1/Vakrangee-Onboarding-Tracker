@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, Mail, Phone, MapPin, Building, Briefcase, Users, Pencil, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Building, Briefcase, Users, Pencil, Search, Filter, Download, Clock, CheckCircle, IdCard } from "lucide-react";
 import SearchableSelect from "../../Components/UI/SearchableSelect";
 import WorkLocationPicker from "../../Components/UI/WorkLocationPicker";
 import EmployeeTable from "../../Components/Shared/EmployeeTable";
@@ -252,15 +252,25 @@ export const AdminProfileCard = ({
           )}
           {!isEditing && (
             <div className="flex items-center gap-3 text-gray-600">
-              <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6]">
+              <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6] shrink-0">
                 <Users size={18} />
               </div>
-              <div>
+              <div className="w-full">
                 <p className="text-xs text-gray-400">Gender</p>
                 <p className="font-medium text-sm">{admin.gender || "N/A"}</p>
               </div>
             </div>
           )}
+
+          <div className="flex items-center gap-3 text-gray-600">
+            <div className="p-2 bg-[#2C9DE6]/10 rounded-lg text-[#2C9DE6] shrink-0">
+              <IdCard size={18} />
+            </div>
+            <div className="w-full">
+              <p className="text-xs text-gray-400">Employee ID</p>
+              <p className="font-medium text-sm">{admin.employeeId || admin.employee_id || "N/A"}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

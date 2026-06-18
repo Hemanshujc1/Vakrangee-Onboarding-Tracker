@@ -51,6 +51,11 @@ const AddAdminModal = ({ isOpen, onClose, onAdd }) => {
     const isValid = await validateAll(["firstName", "lastName", "email"]);
     if (!isValid) return;
 
+    if (!formData.employee_id || !formData.firstName || !formData.lastName || !formData.email || !formData.department || !formData.jobTitle || !workLocation.state || !workLocation.district || !workLocation.city) {
+      await showAlert("Please fill all mandatory fields.", { type: "error" });
+      return;
+    }
+
     setLoading(true);
     try {
       const userInfo = localStorage.getItem("userInfo");

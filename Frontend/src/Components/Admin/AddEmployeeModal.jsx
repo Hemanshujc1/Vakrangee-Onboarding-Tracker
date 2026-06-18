@@ -130,6 +130,11 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd }) => {
     const isValid = await validateAll(["firstName", "lastName", "email"]);
     if (!isValid) return;
 
+    if (!formData.employee_id || !formData.startDate || !formData.firstName || !formData.lastName || !formData.email || !formData.band_id || !formData.band_level_id || !formData.department || !formData.jobTitle || !formData.managerId || !workLocation.state || !workLocation.district || !workLocation.city) {
+      await showAlert("Please fill all mandatory fields.", { type: "error" });
+      return;
+    }
+
     setLoading(true);
 
     try {
