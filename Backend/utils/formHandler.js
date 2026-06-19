@@ -341,7 +341,7 @@ exports.sendHRSubmissionNotification = async (employeeId, itemTitle) => {
             return;
         }
 
-        const hrUser = await User.findByPk(employee.EmployeeRecord.onboarding_hr_id);
+        const hrUser = await User.findOne({ where: { employee_id: employee.EmployeeRecord.onboarding_hr_id } });
         if (!hrUser || !hrUser.username) {
             logger.warn(`Could not send HR notification: HR user not found for ID ${employee.EmployeeRecord.onboarding_hr_id}.`);
             return;
