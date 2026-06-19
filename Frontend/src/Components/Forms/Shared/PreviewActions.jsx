@@ -1,39 +1,47 @@
-import React from 'react';
-import { ArrowLeft, CheckCircle, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
+import {
+  ArrowLeft,
+  CheckCircle,
+  Printer,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-const PreviewActions = ({ 
-  status, 
-  isHR, 
-  onBack, 
-  onPrint, 
+const PreviewActions = ({
+  status,
+  isHR,
+  onBack,
+  onPrint,
   printLabel,
-  onVerify, 
-  onEdit, 
-  onSubmit, 
+  onVerify,
+  onEdit,
+  onSubmit,
   isSubmitting,
   isSubmitHidden,
   onPrevious,
   onNext,
   disablePrevious,
-  disableNext
+  disableNext,
 }) => {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6 print:hidden">
-      
       {/* Back Button */}
       <button
         onClick={onBack}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 w-fit"
       >
         <ArrowLeft size={20} />
-        {status === "SUBMITTED" || status === "VERIFIED" || status === "REJECTED" || isHR
+        {status === "SUBMITTED" ||
+        status === "VERIFIED" ||
+        status === "REJECTED" ||
+        isHR
           ? "Back"
           : "Back to Edit"}
       </button>
 
       {/* Navigation Buttons */}
-      {(onPrevious || onNext) && (
-        <div className="flex items-center gap-2 mt-2 md:mt-0">
+      <div className="flex items-center gap-2 mt-2 md:mt-0">
+        <div className="relative group">
           <button
             onClick={onPrevious}
             disabled={disablePrevious}
@@ -42,10 +50,16 @@ const PreviewActions = ({
                 ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
             }`}
-            title="Previous"
           >
             <ChevronLeft size={20} />
           </button>
+
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-blue-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Previous Document
+          </div>
+        </div>
+
+        <div className="relative group">
           <button
             onClick={onNext}
             disabled={disableNext}
@@ -54,16 +68,18 @@ const PreviewActions = ({
                 ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
             }`}
-            title="Next"
           >
             <ChevronRight size={20} />
           </button>
+
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-blue-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Next Document
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3 justify-end md:justify-end">
-        
         {/* Print Button */}
         <button
           onClick={onPrint || (() => window.print())}
@@ -105,14 +121,14 @@ const PreviewActions = ({
           </button>
         ) : status === "REJECTED" ? (
           !isHR ? (
-            <button 
+            <button
               onClick={onEdit}
               className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 shadow-sm"
             >
               <ArrowLeft size={18} /> Edit & Resubmit
             </button>
           ) : (
-            <button 
+            <button
               disabled
               className="flex items-center gap-2 px-6 py-2 bg-red-100 text-red-700 rounded cursor-not-allowed border border-red-200"
             >
@@ -120,13 +136,16 @@ const PreviewActions = ({
             </button>
           )
         ) : (
-          !isHR && !isSubmitHidden && (
+          !isHR &&
+          !isSubmitHidden && (
             <button
               onClick={onSubmit}
               disabled={isSubmitting}
               className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 shadow-sm disabled:opacity-50"
             >
-              {isSubmitting ? "Submitting..." : (
+              {isSubmitting ? (
+                "Submitting..."
+              ) : (
                 <>
                   <CheckCircle size={18} /> Confirm & Submit
                 </>
