@@ -198,7 +198,7 @@ const DocumentPreview = () => {
            
           </div>
 
-          <div className="relative p-8 bg-gray-50 flex justify-center items-start overflow-auto min-h-[600px] max-h-[80vh]">
+          <div className="relative p-8 bg-gray-50 flex justify-center items-start overflow-auto min-h-150 max-h-[80vh]">
             {isImage ? (
               <div className="flex flex-col items-center w-full">
                 <div className="sticky top-0 z-10 flex gap-2 mb-4 p-2 bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg">
@@ -219,7 +219,7 @@ const DocumentPreview = () => {
                 />
               </div>
             ) : isPDF ? (
-              <iframe id="pdf-preview-iframe" src={fileUrl} className="w-full h-[600px] border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
+              <iframe id="pdf-preview-iframe" src={fileUrl} className="w-full h-150 border-none rounded-lg shadow-2xl bg-white" title="PDF Preview" />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-400 gap-4 mt-20">
                 <FileText size={64} />
