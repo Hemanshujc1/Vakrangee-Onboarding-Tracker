@@ -24,7 +24,7 @@ exports.verifyBasicInfo = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, rejectionReason } = req.body;
-    const hrUserId = req.user.id;
+    const hrUserId = req.user.employee_id;
 
     const result = await onboardingService.verifyBasicInfo(id, status, rejectionReason, hrUserId);
     res.json(result);

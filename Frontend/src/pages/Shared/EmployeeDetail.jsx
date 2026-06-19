@@ -17,8 +17,6 @@ import EmployeeForms from "../../Components/EmployeeDetail/EmployeeForms";
 import DownloadSelectionModal from "../../Components/Admin/DownloadSelectionModal";
 import ReminderEmailModal from "../../Components/Admin/ReminderEmailModal";
 import useEmployeeDetail from "./useEmployeeDetail";
-
-// Newly refactored UI components
 import EmployeeActionBar from "../../Components/EmployeeDetail/EmployeeActionBar";
 import AccordionSection from "../../Components/EmployeeDetail/AccordionSection";
 import StageControl from "../../Components/EmployeeDetail/StageControl";

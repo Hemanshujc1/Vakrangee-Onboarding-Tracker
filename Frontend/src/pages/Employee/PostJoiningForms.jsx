@@ -24,7 +24,7 @@ const PostJoiningForms = () => {
     {
       id: 1,
       name: "Non- Disclosure Agreement (NDA) Form",
-      description: "Lorem ipsum dolor sit amet.",
+      //description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "1 min",
       path: "/forms/non-disclosure-agreement",
@@ -32,7 +32,7 @@ const PostJoiningForms = () => {
     {
       id: 2,
       name: "TDS Declaration Form",
-      description: "Lorem ipsum dolor sit amet.",
+      //description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "5 min",
       path: "/forms/tds-form",
@@ -40,7 +40,7 @@ const PostJoiningForms = () => {
     {
       id: 3,
       name: "Declaration Form",
-      description: "Lorem ipsum dolor sit amet.",
+      //description: "Lorem ipsum dolor sit amet.",
       status: "Completed",
       time: "1 min",
       path: "/forms/declaration-form",
@@ -48,7 +48,7 @@ const PostJoiningForms = () => {
     {
       id: 4,
       name: "Employees Provident Fund (EPF) Form",
-      description: "Lorem ipsum dolor sit amet.",
+      //description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "5 min",
       path: "/forms/employees-provident-fund",
@@ -100,12 +100,12 @@ const PostJoiningForms = () => {
           status === "PENDING"
             ? "Pending"
             : status === "DRAFT"
-            ? "Draft"
-            : status === "VERIFIED"
-            ? "Approved"
-            : status === "REJECTED"
-            ? "Rejected"
-            : "Submitted"; 
+              ? "Draft"
+              : status === "VERIFIED"
+                ? "Approved"
+                : status === "REJECTED"
+                  ? "Rejected"
+                  : "Submitted";
 
         return {
           ...form,
@@ -124,15 +124,15 @@ const PostJoiningForms = () => {
     const previewPath = `${form.path}/preview/${employeeId}`;
 
     if (["Approved", "Submitted", "Rejected"].includes(form.status)) {
-         navigate(previewPath, {
-            state: {
-                formData: form.formData,
-                status: form.rawStatus,
-                rejectionReason: form.rejectionReason,
-            },
-        });
+      navigate(previewPath, {
+        state: {
+          formData: form.formData,
+          status: form.rawStatus,
+          rejectionReason: form.rejectionReason,
+        },
+      });
     } else {
-        navigate(form.path);
+      navigate(form.path);
     }
   };
 
@@ -149,10 +149,10 @@ const PostJoiningForms = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {forms.map((form) => (
-          <FormCard 
-            key={form.id} 
-            form={form} 
-            onClick={() => handleCardClick(form)} 
+          <FormCard
+            key={form.id}
+            form={form}
+            onClick={() => handleCardClick(form)}
           />
         ))}
       </div>

@@ -15,21 +15,34 @@ const getPersonalInfo = (rec) => rec?.personal_info || {};
 
 const resolveVerifierName = async (verifierId) => {
   if (!verifierId) return null;
-  const user = await User.findOne({ where: { employee_id: verifierId } });
-  if (!user) return "Unknown";
-  const empMaster = await EmployeeMaster.findOne({
-    where: { employee_id: user.employee_id },
-  });
-  if (!empMaster) return user.username;
+
+  // Try finding by employee_id string first (e.g. "EMP001")
+  let user = await User.findOne({ where: { employee_id: verifierId } });
+
+  // Fallback: if verifierId is a numeric DB id (legacy data stored req.user.id)
+  if (!user && !isNaN(verifierId)) {
+    user = await User.findByPk(Number(verifierId));
+  }
+
+  if (!user) return null;
 
   const empRecord = await EmployeeRecord.findOne({
-    where: { employee_id: empMaster.employee_id },
+    where: { employee_id: user.employee_id },
   });
-  if (!empRecord) return user.username;
+
+  // Names are stored inside the personal_info JSON column
   const pi = getPersonalInfo(empRecord);
-  return pi.firstname
-    ? `${pi.firstname} ${pi.lastname || ""}`.trim()
-    : user.username;
+  if (pi.firstname) {
+    return pi.firstname.trim();
+  }
+
+  // Last resort: extract readable name from email
+  if (user.username && user.username.includes("@")) {
+    const localPart = user.username.split("@")[0];
+    return localPart.charAt(0).toUpperCase() + localPart.slice(1);
+  }
+
+  return user.username || null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -435,6 +448,21 @@ exports.updateProfile = async (req, res) => {
         await FormSubmission.update(
           { verified_by: employee_id },
           { where: { verified_by: oldEmployeeId } }
+        );
+
+        // Update any documents verified by this HR
+        await EmployeeDocument.update(
+          { verified_by: employee_id },
+          { where: { verified_by: oldEmployeeId } }
+        );
+
+        // Update basic_info_verified_by inside the JSON column of EmployeeMaster
+        // (raw SQL is needed since it's a JSON field, not a flat column)
+        await sequelize.query(
+          `UPDATE employee_master
+           SET basic_info = JSON_SET(basic_info, '$.basic_info_verified_by', :newId)
+           WHERE JSON_UNQUOTE(JSON_EXTRACT(basic_info, '$.basic_info_verified_by')) = :oldId`,
+          { replacements: { newId: employee_id, oldId: oldEmployeeId } }
         );
       } finally {
         // Re-enable foreign key checks

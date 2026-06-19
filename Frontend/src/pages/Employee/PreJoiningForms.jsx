@@ -22,7 +22,7 @@ const PreJoiningForms = () => {
     {
       id: 2,
       name: "Employment Application Form",
-      description: "Lorem ipsum dolor sit amet.",
+      // description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "5 min",
       path: "/forms/employment-application",
@@ -30,7 +30,7 @@ const PreJoiningForms = () => {
     {
       id: 4,
       name: "Mediclaim Form",
-      description: "Lorem ipsum dolor sit amet.",
+      // description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "2 min",
       path: "/forms/mediclaim",
@@ -38,7 +38,7 @@ const PreJoiningForms = () => {
     {
       id: 1,
       name: "Employee Information Form",
-      description: "Lorem ipsum dolor sit amet.",
+      // description: "Lorem ipsum dolor sit amet.",
       status: "Pending",
       time: "5 min",
       path: "/forms/employment-info",
@@ -46,7 +46,7 @@ const PreJoiningForms = () => {
     {
       id: 3,
       name: "Form-F-Gratuity Nomination",
-      description: "Lorem ipsum dolor sit amet.",
+      // description: "Lorem ipsum dolor sit amet.",
       status: "Completed",
       time: "3 min",
       path: "/forms/gratuity-form",

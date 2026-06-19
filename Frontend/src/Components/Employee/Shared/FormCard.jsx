@@ -97,9 +97,9 @@ const FormCard = ({
                 : `~ ${time}`}
             </span>
 
-            {status === "Approved" && verifiedByName && (
-              <div className="text-[10px] text-gray-500 font-medium mt-1 text-right">
-                Verified by: {verifiedByName}
+            {(status === "Approved" || status === "Rejected") && verifiedByName && (
+              <div className={`text-[10px] font-medium mt-1 text-right ${status === "Rejected" ? "text-red-400" : "text-gray-500"}`}>
+                {status === "Rejected" ? "Rejected" : "Verified"} by: {verifiedByName}
               </div>
             )}
           </div>

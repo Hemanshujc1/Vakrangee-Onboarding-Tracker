@@ -3,7 +3,7 @@ import { ToggleLeft, ToggleRight, Lock } from "lucide-react";
 
 const FormRow = ({
   title,
-  description = "Lorem ipsum dolor sit.",
+  description,
   status,
   isDisabled,
   onToggle,
@@ -56,7 +56,7 @@ const FormRow = ({
           </span>
           {status === "VERIFIED" && verifiedByName && (
             <span className="text-[10px] text-gray-500 mt-1 font-medium">
-              By: {verifiedByName}
+            Reviewed By: {verifiedByName}
             </span>
           )}
         </div>

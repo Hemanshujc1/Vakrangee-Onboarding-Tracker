@@ -159,8 +159,8 @@ exports.verifyBasicInfo = async (id, status, rejectionReason, hrUserId) => {
     employee.basic_info = {
       ...bi,
       basic_info_status: "REJECTED",
-      basic_info_verified_by: null,
-      basic_info_verified_at: null,
+      basic_info_verified_by: hrUserId,
+      basic_info_verified_at: new Date(),
       basic_info_rejection_reason: rejectionReason || "Details mismatch or incomplete",
     };
   }
