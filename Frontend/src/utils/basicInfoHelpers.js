@@ -119,6 +119,7 @@ export const getSectionStatus = (
 
     case "contact":
       return !!(
+        formData.gender &&
         formData.personal_email_id &&
         formData.phone &&
         formData.emergency_contact_name &&
@@ -126,8 +127,8 @@ export const getSectionStatus = (
         formData.emergency_contact_number
       );
 
-    case "address":
-      return !!(
+    case "address": {
+      const isPermComplete = !!(
         formData.perm_address_line1 &&
         formData.perm_city &&
         formData.perm_district &&
@@ -135,6 +136,22 @@ export const getSectionStatus = (
         formData.perm_pincode &&
         formData.perm_post_office
       );
+
+      if (!isPermComplete) return false;
+
+      if (!formData.comm_same_as_permanent) {
+        return !!(
+          formData.comm_address_line1 &&
+          formData.comm_city &&
+          formData.comm_district &&
+          formData.comm_state &&
+          formData.comm_pincode &&
+          formData.comm_post_office
+        );
+      }
+
+      return true;
+    }
 
     case "academic":
       return !!(
@@ -230,12 +247,12 @@ export const getMissingProfileFields = ({
       { key: "firstname", label: "First Name" },
       { key: "lastname", label: "Last Name" },
       { key: "date_of_birth", label: "Date of Birth" },
-      { key: "gender", label: "Gender" },
       { key: "blood_group", label: "Blood Group" },
       { key: "adhar_number", label: "Aadhaar Number" },
       { key: "pan_number", label: "PAN Number" },
     ],
     "Contact Info": [
+      { key: "gender", label: "Gender" },
       { key: "personal_email_id", label: "Personal Email" },
       { key: "phone", label: "Phone Number" },
       { key: "emergency_contact_name", label: "Emergency Contact Name" },

@@ -184,10 +184,10 @@ export const fieldToSectionMap = {
   lastname: "identity",
   date_of_birth: "identity",
   blood_group: "identity",
-  gender: "identity",
   pan_number: "identity",
   adhar_number: "identity",
 
+  gender: "contact",
   email: "contact",
   personal_email_id: "contact",
   phone: "contact",

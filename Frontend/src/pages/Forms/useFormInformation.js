@@ -2,10 +2,7 @@ import { useMemo, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
-import {
-  onValidationFail,
-  formatDateForAPI,
-} from "../../utils/formUtils";
+import { onValidationFail, formatDateForAPI } from "../../utils/formUtils";
 import {
   getValidationSchema,
   defaultValues,
@@ -30,12 +27,12 @@ const useFormInformation = () => {
   );
 
   const isLocked = ["SUBMITTED", "VERIFIED"].includes(
-    autoFillData?.employeeInfoStatus
+    autoFillData?.employeeInfoStatus,
   );
 
   const validationSchema = useMemo(
     () => getValidationSchema(hasSavedSignature),
-    [hasSavedSignature]
+    [hasSavedSignature],
   );
 
   const {
@@ -116,7 +113,9 @@ const useFormInformation = () => {
         father_name: saved.father_name || "",
         father_middle_name: saved.father_middle_name || "",
         father_last_name: saved.father_last_name || "",
-        date_of_birth: formatDateForAPI(saved.date_of_birth || base.dateOfBirth || base.dob),
+        date_of_birth: formatDateForAPI(
+          saved.date_of_birth || base.dateOfBirth || base.dob,
+        ),
         birth_city: "",
         birth_district: "",
         birth_state: "",
@@ -126,8 +125,12 @@ const useFormInformation = () => {
         marital_status: saved.marital_status || base.maritalStatus || "",
 
         passport_number: saved.passport_number || autoFillData.passportNo || "",
-        passport_date_of_issue: formatDateForAPI(saved.passport_date_of_issue || autoFillData.passportIssueDate),
-        passport_expiry_date: formatDateForAPI(saved.passport_expiry_date || autoFillData.passportExpiryDate),
+        passport_date_of_issue: formatDateForAPI(
+          saved.passport_date_of_issue || autoFillData.passportIssueDate,
+        ),
+        passport_expiry_date: formatDateForAPI(
+          saved.passport_expiry_date || autoFillData.passportExpiryDate,
+        ),
         pan_number: saved.pan_number || base.panNo || "",
         aadhar_number: saved.aadhar_number || autoFillData.aadhaar || "",
 
@@ -142,7 +145,7 @@ const useFormInformation = () => {
         current_residence_type: saved.current_residence_type || "",
         current_pin_code: saved.current_pin_code || "",
         current_post_office: saved.current_post_office || "",
-        
+
         educational_details:
           saved.educational_details?.length > 0
             ? saved.educational_details
@@ -160,7 +163,7 @@ const useFormInformation = () => {
       if (saved.signature_path || autoFillData.signature) {
         const path = saved.signature_path || autoFillData.signature;
         setSignaturePreview(
-          path.startsWith("http") ? path : `/uploads/signatures/${path}`
+          path.startsWith("http") ? path : `/uploads/signatures/${path}`,
         );
       }
     }
@@ -184,22 +187,26 @@ const useFormInformation = () => {
       });
 
       if (allValues.educational_details) {
-        allValues.educational_details = allValues.educational_details.map((e) => ({
-          ...e,
-          startDate: formatDateForAPI(e.startDate),
-          endDate: formatDateForAPI(e.endDate),
-        }));
+        allValues.educational_details = allValues.educational_details.map(
+          (e) => ({
+            ...e,
+            startDate: formatDateForAPI(e.startDate),
+            endDate: formatDateForAPI(e.endDate),
+          }),
+        );
       }
       if (allValues.employment_details) {
-        allValues.employment_details = allValues.employment_details.map((e) => ({
-          ...e,
-          startDate: formatDateForAPI(e.startDate),
-          endDate: formatDateForAPI(e.endDate),
-          reportStartDate: formatDateForAPI(e.reportStartDate),
-          reportEndDate: formatDateForAPI(e.reportEndDate),
-          reportStartDate2: formatDateForAPI(e.reportStartDate2),
-          reportEndDate2: formatDateForAPI(e.reportEndDate2),
-        }));
+        allValues.employment_details = allValues.employment_details.map(
+          (e) => ({
+            ...e,
+            startDate: formatDateForAPI(e.startDate),
+            endDate: formatDateForAPI(e.endDate),
+            reportStartDate: formatDateForAPI(e.reportStartDate),
+            reportEndDate: formatDateForAPI(e.reportEndDate),
+            reportStartDate2: formatDateForAPI(e.reportStartDate2),
+            reportEndDate2: formatDateForAPI(e.reportEndDate2),
+          }),
+        );
       }
 
       Object.keys(allValues).forEach((key) => {
@@ -247,7 +254,7 @@ const useFormInformation = () => {
       }
     } catch (error) {
       console.error("Submission Error:", error);
-      await showAlert("Failed to save form. Check console for details.", {
+      await showAlert("Failed to save form", {
         type: "error",
       });
     }

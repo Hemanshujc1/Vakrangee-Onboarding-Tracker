@@ -45,11 +45,18 @@ const BasicInfoHeader = ({
         </div>
       );
     }
-    if (verificationStatus === "VERIFIED" && !hasRejectedDocs && !hasUploadedDocs && !hasSubmittedDocs) {
+    if (
+      verificationStatus === "VERIFIED" &&
+      !hasRejectedDocs &&
+      !hasUploadedDocs &&
+      !hasSubmittedDocs
+    ) {
       return (
         <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium border border-green-100 text-sm">
           <CheckCircle size={15} className="shrink-0" />
-          <span>Profile Verified{verifiedByName ? ` by ${verifiedByName}` : ""}</span>
+          <span>
+            Profile Verified{verifiedByName ? ` by ${verifiedByName}` : ""}
+          </span>
         </div>
       );
     }
@@ -61,7 +68,11 @@ const BasicInfoHeader = ({
         </div>
       );
     }
-    if (verificationStatus === "VERIFIED" && hasUploadedDocs && !hasRejectedDocs) {
+    if (
+      verificationStatus === "VERIFIED" &&
+      hasUploadedDocs &&
+      !hasRejectedDocs
+    ) {
       return (
         <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 text-sm">
           <Clock size={15} className="shrink-0" />
@@ -85,10 +96,13 @@ const BasicInfoHeader = ({
             <span className="font-bold">Verification Rejected</span>
             <span className="font-normal text-xs">
               {rejectionReason || "Please check the details again."}
-              {hasRejectedDocs && " Please re-upload the rejected documents as well."}
+              {hasRejectedDocs &&
+                " Please re-upload the rejected documents as well."}
             </span>
             {verifiedByName && (
-              <span className="text-xs text-red-400 font-normal">by {verifiedByName}</span>
+              <span className="text-xs text-red-400 font-normal">
+                by {verifiedByName}
+              </span>
             )}
           </div>
         </div>
@@ -100,14 +114,16 @@ const BasicInfoHeader = ({
   const statusBanner = renderStatusBanner();
 
   return (
-    <header className="mb-6">
+    <header className="mb-6 sticky top-[56px] lg:top-0 z-5000 bg-[#efefef]/95 backdrop-blur-sm pt-4 pb-4 border-b border-gray-200 -mx-4 px-4 lg:-mx-8 lg:px-8 -mt-4 lg:-mt-8 lg:pt-8">
       {/* Top row: title + action buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-(--color-text-dark)">
             Basic Information
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">Personal and professional details.</p>
+          <p className="text-gray-500 mt-1 text-sm">
+            Personal and professional details.
+          </p>
         </div>
 
         {/* Action buttons only */}
@@ -129,7 +145,9 @@ const BasicInfoHeader = ({
                   onClick={onSubmitVerification}
                   disabled={onSubmitLoading}
                   className={`flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg transition-all font-medium text-sm shadow-sm ${
-                    onSubmitLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-green-700"
+                    onSubmitLoading
+                      ? "opacity-70 cursor-not-allowed"
+                      : "hover:bg-green-700"
                   }`}
                 >
                   {onSubmitLoading ? (
@@ -141,8 +159,8 @@ const BasicInfoHeader = ({
                     {onSubmitLoading
                       ? "Submitting..."
                       : isResubmission
-                      ? "Resubmit"
-                      : "Submit"}
+                        ? "Resubmit"
+                        : "Submit"}
                   </span>
                 </button>
               ) : (
@@ -174,7 +192,9 @@ const BasicInfoHeader = ({
                 onClick={onSave}
                 disabled={saving}
                 className={`flex items-center gap-2 bg-(--color-primary) text-white px-4 py-2 rounded-lg transition-all font-medium text-sm shadow-sm ${
-                  saving ? "opacity-70 cursor-not-allowed" : "hover:brightness-110"
+                  saving
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:brightness-110"
                 }`}
               >
                 {saving ? (
