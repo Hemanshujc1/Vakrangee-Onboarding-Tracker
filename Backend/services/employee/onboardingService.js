@@ -211,7 +211,9 @@ exports.advanceOnboardingStage = async (id, stage) => {
     throw err;
   }
 
-  const employee = await EmployeeMaster.findByPk(id);
+  const employee = await EmployeeMaster.findByPk(id, {
+    include: [{ model: EmployeeRecord }, { model: User }],
+  });
   if (!employee) throw new Error("Employee not found");
 
   const empStatus = getEmpStatus(employee);
@@ -226,6 +228,47 @@ exports.advanceOnboardingStage = async (id, stage) => {
 
   await employee.save();
   const updatedStatus = getEmpStatus(employee);
+
+  const pi = employee.EmployeeRecord ? getPersonalInfo(employee.EmployeeRecord) : {};
+  const ci = employee.EmployeeRecord ? getContactInfo(employee.EmployeeRecord) : {};
+  const emailTo = ci.personal_email_id || employee.User?.username;
+  const employeeName = pi.firstname
+    ? `${pi.firstname} ${pi.lastname || ""}`.trim()
+    : "Employee";
+
+  if (emailTo && (stage === "PRE_JOINING" || stage === "POST_JOINING")) {
+    let subject, html;
+    if (stage === "PRE_JOINING") {
+      subject = "Action Required: Complete Your Pre-Joining Formalities";
+      html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2c9de6;">Pre-Joining Forms Unlocked</h2>
+          <p>Dear <strong>${employeeName}</strong>,</p>
+          <p>Your basic information verification is complete.</p>
+          <p>Please log in to the Onboarding Portal to complete and submit your <strong>Pre-Joining Forms</strong>.</p>
+          <br/>
+          <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
+        </div>
+      `;
+    } else if (stage === "POST_JOINING") {
+      subject = "Action Required: Complete Your Post-Joining Formalities";
+      html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2c9de6;">Post-Joining Forms Unlocked</h2>
+          <p>Dear <strong>${employeeName}</strong>,</p>
+          <p>Congratulations on reaching the post-joining stage!</p>
+          <p>Please log in to the Onboarding Portal to complete and submit your <strong>Post-Joining Forms</strong>.</p>
+          <br/>
+          <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
+        </div>
+      `;
+    }
+
+    if (subject && html) {
+      await sendEmail({ to: emailTo, subject, html, text: subject });
+      logger.info(`Stage advancement email sent to ${emailTo} for stage ${stage}`);
+    }
+  }
 
   return {
     message: `Stage updated to ${stage}`,
