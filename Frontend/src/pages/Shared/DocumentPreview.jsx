@@ -17,6 +17,7 @@ const DocumentPreview = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [employee, setEmployee] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [allDocuments, setAllDocuments] = useState([]);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isHR = ["HR_ADMIN", "HR_SUPER_ADMIN"].includes(user.role);
@@ -35,8 +36,10 @@ const DocumentPreview = () => {
         axios.get(`/api/employees/${employeeId}`, config)
       ]);
 
-      const doc = docRes.data.find(d => d.id === parseInt(docId));
+      const docList = docRes.data || [];
+      const doc = docList.find(d => d.id === parseInt(docId));
       setDocument(doc);
+      setAllDocuments(docList);
       setEmployee(empRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -45,6 +48,32 @@ const DocumentPreview = () => {
       setLoading(false);
     }
   };
+
+  const handleBack = () => {
+    const basePath = isHR ? (user.role === "HR_SUPER_ADMIN" ? "/hr-super-admin" : "/hr-admin") : "/employee";
+    navigate(`${basePath}/employees/${employeeId}#documents`);
+  };
+
+  const currentIndex = allDocuments.findIndex(d => d.id === parseInt(docId));
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex !== -1 && currentIndex < allDocuments.length - 1;
+
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      const prevDocId = allDocuments[currentIndex - 1].id;
+      const basePath = isHR ? (user.role === "HR_SUPER_ADMIN" ? "/hr-super-admin" : "/hr-admin") : "/employee";
+      navigate(`${basePath}/employees/${employeeId}/documents/${prevDocId}/preview`);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      const nextDocId = allDocuments[currentIndex + 1].id;
+      const basePath = isHR ? (user.role === "HR_SUPER_ADMIN" ? "/hr-super-admin" : "/hr-admin") : "/employee";
+      navigate(`${basePath}/employees/${employeeId}/documents/${nextDocId}/preview`);
+    }
+  };
+
 
   const handleVerification = async (status, reason = null) => {
     const isConfirmed = await showConfirm(
@@ -77,7 +106,7 @@ const DocumentPreview = () => {
       );
 
       await showAlert(`Document ${status === "VERIFIED" ? "verified" : "rejected"} successfully.`, { type: "success" });
-      navigate(-1);
+      handleBack();
     } catch (error) {
       console.error("Error verifying document:", error);
       showAlert("Failed to update status.", { type: "error" });
@@ -132,12 +161,16 @@ const DocumentPreview = () => {
         <PreviewActions
           status={document.status === "UPLOADED" ? "SUBMITTED" : document.status}
           isHR={isHR}
-          onBack={() => navigate(-1)}
+          onBack={handleBack}
           onVerify={handleVerification}
           onPrint={handleDownload}
           printLabel="Download"
           isSubmitting={actionLoading}
           isSubmitHidden={true}
+          onPrevious={hasPrevious ? handlePrevious : null}
+          onNext={hasNext ? handleNext : null}
+          disablePrevious={!hasPrevious}
+          disableNext={!hasNext}
         />
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

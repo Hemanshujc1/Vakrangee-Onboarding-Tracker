@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronDown } from "lucide-react";
 
 const AccordionSection = ({
+  id,
   title,
   icon: Icon,
   isOpen,
@@ -10,7 +11,7 @@ const AccordionSection = ({
   contentPadding = "p-6",
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div id={id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-6 hover:bg-gray-50/50 transition-all font-semibold text-gray-700 focus:outline-none group"

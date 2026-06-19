@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import DashboardLayout from "../../Components/Layout/DashboardLayout";
 import {
   FileText,
@@ -59,6 +60,22 @@ const EmployeeDetail = () => {
     employeeForms: false,
     jobAndAddress: false,
   });
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === "#documents") {
+      setOpenSections((prev) => ({ ...prev, documents: true }));
+      setTimeout(() => {
+        const el = document.getElementById("documents");
+        if (el) {
+          const yOffset = -80;
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, [location.hash]);
 
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
@@ -154,6 +171,7 @@ const EmployeeDetail = () => {
         />
 
         <AccordionSection
+          id="documents"
           title="Onboarding Documents"
           icon={FileText}
           isOpen={openSections.documents}

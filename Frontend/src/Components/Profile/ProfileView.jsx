@@ -17,6 +17,12 @@ const ProfileView = ({ formData, companyEmail, fullAddress, onEdit }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div>
+          <label className="text-sm text-gray-500 block mb-1">Employee ID</label>
+          <p className="font-medium text-gray-800">
+            {formData.employee_id || "-"}
+          </p>
+        </div>
+        <div>
           <label className="text-sm text-gray-500 block mb-1">First Name</label>
           <p className="font-medium text-gray-800">
             {formData.firstname || "-"}

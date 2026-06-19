@@ -12,7 +12,7 @@ const MyEmployees = () => {
 
   const employeeListProps = useEmployeeList({
     filterPredicate: (emp, user) => {
-      return emp.role === "EMPLOYEE" && emp.onboardingHrId == user.id;
+      return emp.role === "EMPLOYEE" && emp.onboardingHrId === user.employeeId;
     },
     itemsPerPage: 5,
   });

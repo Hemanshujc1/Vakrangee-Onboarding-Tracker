@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle, Printer } from "lucide-react";
+import { ArrowLeft, CheckCircle, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PreviewActions = ({ 
   status, 
@@ -11,7 +11,11 @@ const PreviewActions = ({
   onEdit, 
   onSubmit, 
   isSubmitting,
-  isSubmitHidden 
+  isSubmitHidden,
+  onPrevious,
+  onNext,
+  disablePrevious,
+  disableNext
 }) => {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-6 print:hidden">
@@ -26,6 +30,36 @@ const PreviewActions = ({
           ? "Back"
           : "Back to Edit"}
       </button>
+
+      {/* Navigation Buttons */}
+      {(onPrevious || onNext) && (
+        <div className="flex items-center gap-2 mt-2 md:mt-0">
+          <button
+            onClick={onPrevious}
+            disabled={disablePrevious}
+            className={`flex items-center justify-center p-2 rounded-full border ${
+              disablePrevious
+                ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+            title="Previous"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={onNext}
+            disabled={disableNext}
+            className={`flex items-center justify-center p-2 rounded-full border ${
+              disableNext
+                ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+            title="Next"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3 justify-end md:justify-end">

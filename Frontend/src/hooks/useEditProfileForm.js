@@ -69,6 +69,7 @@ export const useEditProfileForm = () => {
     date_of_birth: "",
     personal_email_id: "",
     gender: "",
+    employee_id: "",
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -122,6 +123,7 @@ export const useEditProfileForm = () => {
         date_of_birth: pi.date_of_birth || "",
         personal_email_id: ci.personal_email_id || "",
         gender: pi.gender || "",
+        employee_id: response.data.employeeId || "",
       });
 
       if (!pi.firstname || !pi.lastname) {

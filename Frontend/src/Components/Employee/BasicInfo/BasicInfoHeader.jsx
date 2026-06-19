@@ -114,7 +114,7 @@ const BasicInfoHeader = ({
   const statusBanner = renderStatusBanner();
 
   return (
-    <header className="mb-6 sticky top-[56px] lg:top-0 z-5000 bg-[#efefef]/95 backdrop-blur-sm pt-4 pb-4 border-b border-gray-200 -mx-4 px-4 lg:-mx-8 lg:px-8 -mt-4 lg:-mt-8 lg:pt-8">
+    <header className="mb-6 sticky top-14 lg:top-0 z-5000 bg-[#efefef]/95 backdrop-blur-sm pt-4 pb-4 border-b border-gray-200 -mx-4 px-4 lg:-mx-8 lg:px-8 -mt-4 lg:-mt-8 lg:pt-8">
       {/* Top row: title + action buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

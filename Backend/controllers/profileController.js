@@ -3,10 +3,12 @@ const {
   EmployeeMaster,
   EmployeeRecord,
   EmployeeDocument,
+  FormSubmission,
 } = require("../models");
 const logger = require("../utils/logger");
 const fs = require("fs");
 const path = require("path");
+const sequelize = require("../config/database");
 
 const getBasicInfo = (emp) => emp?.basic_info || {};
 const getPersonalInfo = (rec) => rec?.personal_info || {};
@@ -38,8 +40,13 @@ exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const employeeMaster = await EmployeeMaster.findOne({
-      where: { employee_id: req.user.employee_id },
+      where: { employee_id: user.employee_id },
       include: [{ model: EmployeeRecord }],
     });
 
@@ -148,8 +155,13 @@ exports.updateProfile = async (req, res) => {
     const cleanBool = (val) => val === true || val === "true";
 
     // ── Find EmployeeMaster ────────────────────────────────────────────────────
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const employeeMaster = await EmployeeMaster.findOne({
-      where: { employee_id: req.user.employee_id },
+      where: { employee_id: user.employee_id },
     });
     if (!employeeMaster) {
       return res.status(404).json({ message: "Employee master not found" });
@@ -392,12 +404,53 @@ exports.updateProfile = async (req, res) => {
         });
       }
     }
-    const { email } = req.body;
+    const { email, employee_id } = req.body;
+
+    if (employee_id && employee_id !== employeeMaster.employee_id) {
+      // Check if new employee_id is taken
+      const existing = await EmployeeMaster.findOne({ where: { employee_id } });
+      if (existing) {
+        return res.status(400).json({ message: "Employee ID is already in use by another account." });
+      }
+      
+      const oldEmployeeId = employeeMaster.employee_id;
+
+      // Temporarily disable foreign key checks to update the primary referenced field
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+      try {
+        // Update references to the old employee_id
+        await User.update({ employee_id }, { where: { employee_id: oldEmployeeId } });
+        await EmployeeMaster.update({ employee_id }, { where: { employee_id: oldEmployeeId } });
+        await EmployeeRecord.update({ employee_id }, { where: { employee_id: oldEmployeeId } });
+        await EmployeeDocument.update({ employee_id }, { where: { employee_id: oldEmployeeId } });
+        await FormSubmission.update({ employee_id }, { where: { employee_id: oldEmployeeId } });
+        
+        // Update any employees assigned to this HR
+        await EmployeeRecord.update(
+          { onboarding_hr_id: employee_id },
+          { where: { onboarding_hr_id: oldEmployeeId } }
+        );
+
+        // Update any forms verified by this HR
+        await FormSubmission.update(
+          { verified_by: employee_id },
+          { where: { verified_by: oldEmployeeId } }
+        );
+      } finally {
+        // Re-enable foreign key checks
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+      }
+      
+      employeeMaster.employee_id = employee_id;
+    }
+
     if (email) {
       employeeMaster.company_email_id = email;
-      await employeeMaster.save();
       await User.update({ username: email }, { where: { id: userId } });
     }
+
+    await employeeMaster.save();
+
 
     // Reload for response
     await record.reload();

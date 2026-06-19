@@ -45,6 +45,16 @@ const ProfileEdit = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        {/* Employee ID Field */}
+        <ProfileInputField
+          label="Employee ID"
+          name="employee_id"
+          value={formData.employee_id}
+          onChange={handleInputChange}
+          error={errors.employee_id}
+          disabled={role !== "HR_SUPER_ADMIN" && role !== "HR_ADMIN"}
+          required
+        />
         {/* Name Fields */}
         <ProfileInputField
           label="First Name"
