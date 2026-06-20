@@ -14,6 +14,7 @@ const BasicInfoHeader = ({
   verificationStatus,
   isEditing,
   setIsEditing,
+  isLocked = false,
   onCancel,
   onSubmitVerification,
   onSubmitLoading,
@@ -31,7 +32,10 @@ const BasicInfoHeader = ({
   const isResubmission =
     verificationStatus !== "PENDING" &&
     (verificationStatus === "REJECTED" || hasRejectedDocs || hasUploadedDocs);
+  // Only show Edit + Submit when the form is not locked.
+  // If locked (e.g. only optional docs rejected), hide action buttons entirely.
   const showSubmitButton =
+    !isLocked &&
     verificationStatus !== "SUBMITTED" &&
     (verificationStatus !== "VERIFIED" || hasRejectedDocs || hasUploadedDocs);
 
@@ -46,10 +50,7 @@ const BasicInfoHeader = ({
       );
     }
     if (
-      verificationStatus === "VERIFIED" &&
-      !hasRejectedDocs &&
-      !hasUploadedDocs &&
-      !hasSubmittedDocs
+      verificationStatus === "VERIFIED" && isLocked
     ) {
       return (
         <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium border border-green-100 text-sm">
@@ -60,7 +61,10 @@ const BasicInfoHeader = ({
         </div>
       );
     }
-    if (verificationStatus === "VERIFIED" && hasRejectedDocs) {
+    // Only show doc-state banners when the form is actually unlocked.
+    // When isLocked=true (only optional docs affected), fall through to the
+    // clean "Profile Verified" banner so the employee isn't confused.
+    if (!isLocked && verificationStatus === "VERIFIED" && hasRejectedDocs) {
       return (
         <div className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium border border-red-100 text-sm">
           <AlertCircle size={15} className="shrink-0" />
@@ -69,6 +73,7 @@ const BasicInfoHeader = ({
       );
     }
     if (
+      !isLocked &&
       verificationStatus === "VERIFIED" &&
       hasUploadedDocs &&
       !hasRejectedDocs
@@ -80,7 +85,7 @@ const BasicInfoHeader = ({
         </div>
       );
     }
-    if (verificationStatus === "VERIFIED" && hasSubmittedDocs) {
+    if (!isLocked && verificationStatus === "VERIFIED" && hasSubmittedDocs) {
       return (
         <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium border border-blue-100 text-sm">
           <Clock size={15} className="shrink-0" />
@@ -114,7 +119,7 @@ const BasicInfoHeader = ({
   const statusBanner = renderStatusBanner();
 
   return (
-    <header className="mb-6 sticky top-14 lg:top-0 z-5000 bg-[#efefef]/95 backdrop-blur-sm pt-4 pb-4 border-b border-gray-200 -mx-4 px-4 lg:-mx-8 lg:px-8 -mt-4 lg:-mt-8 lg:pt-8">
+    <header className="mb-6 sticky top-14 lg:top-0 z-80 bg-[#efefef]/95 backdrop-blur-sm pt-4 pb-4 border-b border-gray-200 -mx-4 px-4 lg:-mx-8 lg:px-8 -mt-4 lg:-mt-8 lg:pt-8">
       {/* Top row: title + action buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

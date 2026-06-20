@@ -11,6 +11,7 @@ import {
   fieldToSectionMap,
 } from "../BasicInfo/basicInfoSchema";
 import { getSectionStatus, isProfileComplete } from "../../../utils/basicInfoHelpers";
+import { MANDATORY_DOC_KEYS } from "../../../config/documentConfig";
 
 export const useBasicInformation = () => {
   const [expandedSection, setExpandedSection] = useState("identity");
@@ -93,8 +94,15 @@ export const useBasicInformation = () => {
     setExpandedSection(expandedSection === sectionId ? null : sectionId);
   };
 
+  const hasRejectedMandatoryDoc = documents.some(
+    (d) =>
+      ["REJECTED", "UPLOADED"].includes(d.status) &&
+      MANDATORY_DOC_KEYS.includes(d.document_type)
+  );
+
   const effectiveBasicInfoLocked =
-    verificationStatus === "SUBMITTED" || verificationStatus === "VERIFIED";
+    verificationStatus === "SUBMITTED" ||
+    (verificationStatus === "VERIFIED" && !hasRejectedMandatoryDoc);
 
   // Auto-save logic
   useEffect(() => {

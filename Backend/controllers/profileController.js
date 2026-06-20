@@ -190,18 +190,34 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (bi.basic_info_status === "VERIFIED") {
-      const pendingDocsCount = await EmployeeDocument.count({
+      // Only mandatory doc rejections/uploads should reopen the form.
+      // Optional doc rejections must NOT unlock Basic Info — use Documents.jsx for those.
+      const { Op } = require("sequelize");
+      const MANDATORY_DOC_TYPES = [
+        "PAN Card",
+        "Aadhar Card",
+        "10th Marksheet",
+        "12th Marksheet",
+        "Degree Certificate",
+        "Cancelled Cheque",
+        "Passport Size Photo",
+        "Signature",
+      ];
+      const rejectedMandatoryCount = await EmployeeDocument.count({
         where: {
           employee_id: employeeMaster.employee_id,
-          status: ["REJECTED", "UPLOADED"],
+          document_type: { [Op.in]: MANDATORY_DOC_TYPES },
+          status: { [Op.in]: ["REJECTED", "UPLOADED"] },
         },
       });
-      if (pendingDocsCount === 0 && bi.final_verification_email_sent) {
+      if (rejectedMandatoryCount === 0) {
+        // No mandatory docs need re-upload → form stays locked regardless of optional doc state
         return res.status(403).json({
           message: "Profile is verified and locked. Updates not allowed.",
           status: bi.basic_info_status,
         });
       }
+      // At least one mandatory doc is rejected/uploaded → allow form to open for re-upload
     }
 
     const personalInfoData = {
@@ -359,6 +375,9 @@ exports.updateProfile = async (req, res) => {
             file_path: profile_photo_file,
             status: "UPLOADED",
             uploaded_at: new Date(),
+            verified_by: null,
+            verified_at: null,
+            rejection_reason: null,
           });
         }
       }
@@ -394,6 +413,9 @@ exports.updateProfile = async (req, res) => {
             file_path: signature_file,
             status: "UPLOADED",
             uploaded_at: new Date(),
+            verified_by: null,
+            verified_at: null,
+            rejection_reason: null,
           });
         }
       }

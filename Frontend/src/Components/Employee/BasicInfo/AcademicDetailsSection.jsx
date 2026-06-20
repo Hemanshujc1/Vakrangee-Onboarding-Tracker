@@ -59,7 +59,7 @@ const AcademicDetailsSection = ({
             maxLength={3}
             onInput={percentageOnInput}
           />
-          <div className="flex items-end">
+          <div className="flex items-start">
             <DocumentUploadItem
               label="10th Marksheet"
               docKey="10th Marksheet"
@@ -91,7 +91,7 @@ const AcademicDetailsSection = ({
             maxLength={3}
             onInput={percentageOnInput}
           />
-          <div className="flex items-end">
+          <div className="flex items-start">
             <DocumentUploadItem
               label="12th Marksheet"
               docKey="12th Marksheet"
@@ -164,7 +164,7 @@ const AcademicDetailsSection = ({
             onInput={percentageOnInput}
           />
           
-          <div className="flex items-end">
+          <div className="flex items-start">
             <DocumentUploadItem
               label="Degree Certificate Upload"
               docKey="Degree Certificate"

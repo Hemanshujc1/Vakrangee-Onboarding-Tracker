@@ -135,6 +135,84 @@ exports.submitBasicInfo = async (employeeIdAuth) => {
   return { message: "Profile submitted for verification", status: "SUBMITTED" };
 };
 
+exports.submitDocuments = async (employeeIdAuth) => {
+  const employee = await EmployeeMaster.findOne({
+    where: { employee_id: employeeIdAuth },
+    include: [{ model: EmployeeRecord }, { model: User }],
+  });
+
+  if (!employee) throw new Error("Employee not found");
+
+  // Find all UPLOADED documents for this employee
+  const uploadedDocs = await EmployeeDocument.findAll({
+    where: {
+      employee_id: employee.employee_id,
+      status: "UPLOADED",
+    },
+  });
+
+  if (uploadedDocs.length === 0) {
+    const err = new Error(
+      "No new documents to submit. Please upload at least one document first."
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  // Mark all UPLOADED → SUBMITTED (does NOT change basic_info_status)
+  await EmployeeDocument.update(
+    { status: "SUBMITTED" },
+    {
+      where: {
+        employee_id: employee.employee_id,
+        status: "UPLOADED",
+      },
+    }
+  );
+
+  // Reset final_verification_email_sent so HR email actions re-activate on Employee Detail
+  const bi = getBasicInfo(employee);
+  await employee.update({
+    basic_info: { ...bi, final_verification_email_sent: false },
+  });
+
+  // Send HR notification with correct subject (not "Basic Information")
+  const record = employee.EmployeeRecord;
+  const pi = getPersonalInfo(record);
+  const employeeName = pi.firstname
+    ? `${pi.firstname} ${pi.lastname || ""}`.trim()
+    : "Employee";
+
+  if (record?.onboarding_hr_id) {
+    const hrUser = await User.findOne({
+      where: { employee_id: record.onboarding_hr_id },
+    });
+    if (hrUser?.username) {
+      const subject = `New Documents Submitted: ${employeeName}`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #1976d2;">New Documents Submitted for Review</h2>
+          <p>Dear HR Admin,</p>
+          <p>Employee <strong>${employeeName}</strong> has uploaded and submitted
+          <strong>${uploadedDocs.length} new document(s)</strong> for your review.</p>
+          <p>Please log in to the portal to verify the documents.</p>
+          <br/>
+          <p>Best regards,<br/><strong>Vakrangee Onboarding System</strong></p>
+        </div>
+      `;
+      await sendEmail({ to: hrUser.username, subject, html, text: subject });
+      logger.info(
+        `Document submission notification sent to ${hrUser.username} for ${employeeName}`
+      );
+    }
+  }
+
+  return {
+    message: "Documents submitted for HR review",
+    count: uploadedDocs.length,
+  };
+};
+
 exports.verifyBasicInfo = async (id, status, rejectionReason, hrUserId) => {
   if (!["VERIFIED", "REJECTED"].includes(status)) {
     const err = new Error("Invalid status");
@@ -309,6 +387,19 @@ exports.finalVerifyEmployee = async (id, hrUserId) => {
   const isBasicInfoRejected = bi.basic_info_status === "REJECTED";
   const isSuccess = !isBasicInfoRejected && rejectedDocs.length === 0;
 
+  const MANDATORY_DOC_TYPES = [
+    "PAN Card",
+    "Aadhar Card",
+    "10th Marksheet",
+    "12th Marksheet",
+    "Degree Certificate",
+    "Cancelled Cheque",
+    "Passport Size Photo",
+    "Signature",
+  ];
+  const hasRejectedMandatory = isBasicInfoRejected || rejectedDocs.some(doc => MANDATORY_DOC_TYPES.includes(doc.document_type));
+  const onlyOptionalRejected = !isSuccess && !hasRejectedMandatory;
+
   const pi = getPersonalInfo(employee.EmployeeRecord);
   const ci = getContactInfo(employee.EmployeeRecord);
   const emailTo = ci.personal_email_id || employee.User?.username;
@@ -328,7 +419,7 @@ exports.finalVerifyEmployee = async (id, hrUserId) => {
         <div style="background-color: #f1f8e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
            <strong>Status:</strong> Approved
         </div>
-        <p>You can now proceed with the next stages of your onboarding.</p>
+        <p>Please wait for the next update.</p>
         <br/>
         <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
       </div>
@@ -354,10 +445,15 @@ exports.finalVerifyEmployee = async (id, hrUserId) => {
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; text-align: left;">
         <h2 style="color: #d32f2f;">Verification Update</h2>
         <p>Dear <strong>${employeeName}</strong>,</p>
+        ${onlyOptionalRejected ? '<p style="color: #d32f2f; font-weight: bold; background-color: #ffebee; padding: 10px; border-radius: 5px;">Note: Please go to the Documents tab to re-upload them again.</p>' : ''}
         <p>Your profile verification has been processed. Some items require your attention.</p>
         <h4 style="margin-bottom: 10px; border-bottom: 2px solid #f44336; padding-bottom: 5px;">Review Summary:</h4>
         ${itemsListHtml}
-        <p style="margin-top: 20px; font-weight: bold;">Please log in to the portal to correct the rejected items and resubmit for verification.</p>
+        <p style="margin-top: 20px; font-weight: bold;">
+          ${onlyOptionalRejected 
+            ? "Please log in to the portal and visit the Documents tab to re-upload." 
+            : "Please log in to the portal to correct the rejected items and resubmit for verification."}
+        </p>
         <br/>
         <p>Best regards,<br/><strong>Vakrangee HR Team</strong></p>
       </div>
@@ -367,10 +463,14 @@ exports.finalVerifyEmployee = async (id, hrUserId) => {
   if (emailTo) {
     await sendEmail({ to: emailTo, subject, html, text: subject });
     logger.info(`Final verification email sent to ${emailTo} (Success: ${isSuccess})`);
-
-    employee.basic_info = { ...bi, final_verification_email_sent: true };
-    await employee.save();
+  } else {
+    logger.warn(`No email address found for employee ${employee.employee_id}. Skipping email.`);
   }
+
+  // Always mark as sent (or attempted) so the button locks regardless of email delivery
+  await employee.update({
+    basic_info: { ...bi, final_verification_email_sent: true },
+  });
 
   if (isSuccess) {
     await formHandler.checkAndUpdateBasicInfoStage(employee.id);

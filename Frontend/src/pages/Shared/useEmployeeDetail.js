@@ -107,7 +107,7 @@ const useEmployeeDetail = () => {
       const { data: empData } = await axios.get(`/api/employees/${id}`, config);
       const { data: formData } = await axios.get(`/api/forms/auto-fill/${id}`, config);
 
-      if (empData.finalVerificationEmailSent === true) setEmailSent(true);
+      setEmailSent(empData.finalVerificationEmailSent === true);
 
       const permAddr = empData.permanent_address || {};
       const mappedAddressFields = {
@@ -355,7 +355,7 @@ const useEmployeeDetail = () => {
         `Final verification completed: ${data.isSuccess ? "Approved" : "Rejected"}`,
         { type: "success" }
       );
-      setEmailSent(true);
+      // emailSent is already synced from DB inside fetchEmployeeDetails()
     } catch (error) {
       console.error("Error in final verification:", error);
       await showAlert(

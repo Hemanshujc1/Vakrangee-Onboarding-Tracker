@@ -106,7 +106,7 @@ const DocumentPreview = () => {
       );
 
       await showAlert(`Document ${status === "VERIFIED" ? "verified" : "rejected"} successfully.`, { type: "success" });
-      handleBack();
+      fetchData();
     } catch (error) {
       console.error("Error verifying document:", error);
       showAlert("Failed to update status.", { type: "error" });

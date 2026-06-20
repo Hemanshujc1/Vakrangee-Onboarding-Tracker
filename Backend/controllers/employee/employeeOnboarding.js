@@ -19,6 +19,24 @@ exports.submitBasicInfo = async (req, res) => {
   }
 };
 
+// Submit Documents Only (Employee) — does NOT change basic_info_status
+exports.submitDocuments = async (req, res) => {
+  try {
+    const employeeIdAuth = req.user.employee_id;
+    const result = await onboardingService.submitDocuments(employeeIdAuth);
+    res.json(result);
+  } catch (error) {
+    logger.error("Error submitting documents: %o", error);
+    if (error.status === 400) {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.message === "Employee not found") {
+      return res.status(404).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Server error submitting documents" });
+  }
+};
+
 // Verify/Reject Basic Info (HR)
 exports.verifyBasicInfo = async (req, res) => {
   try {

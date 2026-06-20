@@ -77,6 +77,7 @@ const BasicInformation = () => {
           verificationStatus={verificationStatus}
           isEditing={isEditing}
           setIsEditing={setIsEditing}
+          isLocked={effectiveBasicInfoLocked}
           onCancel={() => {
             setIsEditing(false);
             fetchProfile();

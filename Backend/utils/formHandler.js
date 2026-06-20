@@ -305,7 +305,7 @@ exports.sendVerificationNotification = async (employeeId, itemTitle, status, rej
         
         const statusText = status === 'VERIFIED' ? 'successfully verified' : 'rejected';
         const actionText = status === 'VERIFIED' 
-            ? 'You can now proceed with the next steps of your onboarding.' 
+            ? 'Please wait for the next update.' 
             : `Please log in to the portal to correct the details and resubmit. \n\nReason for rejection: ${rejectionReason}`;
 
         const text = `Dear ${employeeName},\n\nYour ${itemTitle} has been ${statusText}.\n\n${actionText}\n\nBest regards,\nVakrangee HR Team`;

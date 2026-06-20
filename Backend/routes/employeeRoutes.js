@@ -19,6 +19,7 @@ router.delete("/:id", protect, employeeMutations.deleteEmployee);
 
 // Onboarding Operations
 router.post("/submit-basic-info", protect, employeeOnboarding.submitBasicInfo);
+router.post("/submit-documents", protect, employeeOnboarding.submitDocuments);
 router.post("/:id/verify-basic-info", protect, employeeOnboarding.verifyBasicInfo);
 router.post("/:id/advance-stage", protect, employeeOnboarding.advanceOnboardingStage);
 router.put("/:id/form-access", protect, employeeOnboarding.updateFormAccess);

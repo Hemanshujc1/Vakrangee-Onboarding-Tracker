@@ -182,6 +182,9 @@ exports.uploadDocument = async (req, res) => {
         original_name: req.file.originalname,
         status: "UPLOADED",
         uploaded_at: new Date(),
+        verified_by: null,
+        verified_at: null,
+        rejection_reason: null,
       });
     } else {
       document = await EmployeeDocument.create({
@@ -193,14 +196,11 @@ exports.uploadDocument = async (req, res) => {
       });
     }
 
-    try {
-      await employee.update({ final_verification_email_sent: false });
-    } catch (updateErr) {
-      logger.warn(
-        "Failed to reset final_verification_email_sent (possible schema mismatch): %o",
-        updateErr,
-      );
-    }
+    const currentBi = employee.basic_info || {};
+    await employee.update({
+      basic_info: { ...currentBi, final_verification_email_sent: false },
+    });
+
     res.json({ message: "Document uploaded successfully", document });
   } catch (error) {
     logger.error("Error uploading document: %o", error);
@@ -247,6 +247,17 @@ exports.deleteDocument = async (req, res) => {
     }
 
     await document.destroy();
+
+    // Reset email-sent flag so HR can re-send a summary after the employee re-uploads
+    const empForDelete = await EmployeeMaster.findOne({
+      where: { employee_id: employee.employee_id },
+    });
+    if (empForDelete) {
+      const currentBi = empForDelete.basic_info || {};
+      await empForDelete.update({
+        basic_info: { ...currentBi, final_verification_email_sent: false },
+      });
+    }
 
     res.json({ message: "Document deleted successfully" });
   } catch (error) {
